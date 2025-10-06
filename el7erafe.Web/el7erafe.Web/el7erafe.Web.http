@@ -1,0 +1,6 @@
+@el7erafe.Web_HostAddress = http://localhost:5270
+
+GET {{el7erafe.Web_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
