@@ -3,20 +3,16 @@
   "WorkspaceRootPath": "C:\\Users\\alima\\OneDrive\\Desktop\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{244E192D-DD09-4AEC-B826-0B4079BAF1FE}|el7erafe.Web\\el7erafe.Web.csproj|c:\\users\\alima\\onedrive\\desktop\\grad project\\el7erafe-backend-api\\el7erafe.web\\el7erafe.web\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{244E192D-DD09-4AEC-B826-0B4079BAF1FE}|el7erafe.Web\\el7erafe.Web.csproj|solutionrelative:el7erafe.web\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{F51139DB-A380-4263-BB23-9BEDF5796734}|Infrastructure\\Persistance\\Persistance.csproj|c:\\users\\alima\\onedrive\\desktop\\grad project\\el7erafe-backend-api\\el7erafe.web\\infrastructure\\persistance\\databases\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F51139DB-A380-4263-BB23-9BEDF5796734}|Infrastructure\\Persistance\\Persistance.csproj|solutionrelative:infrastructure\\persistance\\databases\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{244E192D-DD09-4AEC-B826-0B4079BAF1FE}|el7erafe.Web\\el7erafe.Web.csproj|c:\\users\\alima\\onedrive\\desktop\\grad project\\el7erafe-backend-api\\el7erafe.web\\el7erafe.web\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{244E192D-DD09-4AEC-B826-0B4079BAF1FE}|el7erafe.Web\\el7erafe.Web.csproj|solutionrelative:el7erafe.web\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{F51139DB-A380-4263-BB23-9BEDF5796734}|Infrastructure\\Persistance\\Persistance.csproj|c:\\users\\alima\\onedrive\\desktop\\grad project\\el7erafe-backend-api\\el7erafe.web\\infrastructure\\persistance\\persistanceservicesregistration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F51139DB-A380-4263-BB23-9BEDF5796734}|Infrastructure\\Persistance\\Persistance.csproj|solutionrelative:infrastructure\\persistance\\persistanceservicesregistration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{244E192D-DD09-4AEC-B826-0B4079BAF1FE}|el7erafe.Web\\el7erafe.Web.csproj|c:\\users\\alima\\onedrive\\desktop\\grad project\\el7erafe-backend-api\\el7erafe.web\\el7erafe.web\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{244E192D-DD09-4AEC-B826-0B4079BAF1FE}|el7erafe.Web\\el7erafe.Web.csproj|solutionrelative:el7erafe.web\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{128B4B71-1272-4EC4-8FBF-75CBC0704B02}|Core\\DomainLayer\\DomainLayer.csproj|c:\\users\\alima\\onedrive\\desktop\\grad project\\el7erafe-backend-api\\el7erafe.web\\core\\domainlayer\\domainlayer.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
-      "RelativeMoniker": "D:0:0:{128B4B71-1272-4EC4-8FBF-75CBC0704B02}|Core\\DomainLayer\\DomainLayer.csproj|solutionrelative:core\\domainlayer\\domainlayer.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     }
   ],
   "DocumentGroupContainers": [
@@ -26,7 +22,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 6,
           "Children": [
             {
               "$type": "Bookmark",
@@ -50,41 +46,28 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "launchSettings.json",
-              "DocumentMoniker": "C:\\Users\\alima\\OneDrive\\Desktop\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\el7erafe.Web\\Properties\\launchSettings.json",
-              "RelativeDocumentMoniker": "el7erafe.Web\\Properties\\launchSettings.json",
-              "ToolTip": "C:\\Users\\alima\\OneDrive\\Desktop\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\el7erafe.Web\\Properties\\launchSettings.json",
-              "RelativeToolTip": "el7erafe.Web\\Properties\\launchSettings.json",
-              "ViewState": "AgIAABgAAAAAAAAAAAAAAAcAAAAfAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-10-07T17:25:08.677Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "DomainLayer",
-              "DocumentMoniker": "C:\\Users\\alima\\OneDrive\\Desktop\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Core\\DomainLayer\\DomainLayer.csproj",
-              "RelativeDocumentMoniker": "Core\\DomainLayer\\DomainLayer.csproj",
-              "ToolTip": "C:\\Users\\alima\\OneDrive\\Desktop\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Core\\DomainLayer\\DomainLayer.csproj",
-              "RelativeToolTip": "Core\\DomainLayer\\DomainLayer.csproj",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-10-07T17:06:12.219Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "C:\\Users\\alima\\OneDrive\\Desktop\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\el7erafe.Web\\appsettings.json",
-              "RelativeDocumentMoniker": "el7erafe.Web\\appsettings.json",
-              "ToolTip": "C:\\Users\\alima\\OneDrive\\Desktop\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\el7erafe.Web\\appsettings.json",
-              "RelativeToolTip": "el7erafe.Web\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAFAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-10-07T16:53:56.95Z",
+              "Title": "PersistanceServicesRegistration.cs",
+              "DocumentMoniker": "C:\\Users\\alima\\OneDrive\\Desktop\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\PersistanceServicesRegistration.cs",
+              "RelativeDocumentMoniker": "Infrastructure\\Persistance\\PersistanceServicesRegistration.cs",
+              "ToolTip": "C:\\Users\\alima\\OneDrive\\Desktop\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\PersistanceServicesRegistration.cs",
+              "RelativeToolTip": "Infrastructure\\Persistance\\PersistanceServicesRegistration.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAwAAAAwAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-07T19:10:39.569Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ApplicationDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\alima\\OneDrive\\Desktop\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\Databases\\ApplicationDbContext.cs",
+              "RelativeDocumentMoniker": "Infrastructure\\Persistance\\Databases\\ApplicationDbContext.cs",
+              "ToolTip": "C:\\Users\\alima\\OneDrive\\Desktop\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\Databases\\ApplicationDbContext.cs",
+              "RelativeToolTip": "Infrastructure\\Persistance\\Databases\\ApplicationDbContext.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-07T18:06:48.017Z",
               "EditorCaption": ""
             },
             {
@@ -95,7 +78,7 @@
               "RelativeDocumentMoniker": "el7erafe.Web\\Program.cs",
               "ToolTip": "C:\\Users\\alima\\OneDrive\\Desktop\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\el7erafe.Web\\Program.cs",
               "RelativeToolTip": "el7erafe.Web\\Program.cs",
-              "ViewState": "AgIAAA0AAAAAAAAAAAAcwBoAAAAjAAAAAAAAAA==",
+              "ViewState": "AgIAAAQAAAAAAAAAAAAgwBQAAABAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-10-07T16:47:09.603Z",
               "EditorCaption": ""

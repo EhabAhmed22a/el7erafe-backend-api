@@ -1,3 +1,4 @@
+using Persistance;
 
 namespace el7erafe.Web
 {
@@ -16,6 +17,8 @@ namespace el7erafe.Web
             builder.Services.AddSwaggerGen(options => 
                 options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "api.xml"))
             );
+
+            builder.Services.AddServices(builder.Configuration);
 
             var app = builder.Build();
 
