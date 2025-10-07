@@ -7,7 +7,7 @@ namespace Persistance
 {
     public static class PersistanceServicesRegistration
     {
-        public static IServiceCollection AddServices(this IServiceCollection services,
+        public static IServiceCollection AddPersistanceServices(this IServiceCollection services,
             IConfiguration configuration)
         {
             services.AddDbContext<ApplicationDbContext>(options =>
