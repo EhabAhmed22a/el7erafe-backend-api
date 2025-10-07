@@ -1,10 +1,11 @@
+using el7erafe.Web.Extensions;
 using Persistance;
 
 namespace el7erafe.Web
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,8 @@ namespace el7erafe.Web
             builder.Services.AddPersistanceServices(builder.Configuration);
 
             var app = builder.Build();
+
+            await app.SeedDatabaseAsync();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
