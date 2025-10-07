@@ -18,7 +18,7 @@ namespace el7erafe.Web
                 options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "api.xml"))
             );
 
-            builder.Services.AddServices(builder.Configuration);
+            builder.Services.AddPersistanceServices(builder.Configuration);
 
             var app = builder.Build();
 

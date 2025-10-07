@@ -14,4 +14,8 @@
     <ProjectReference Include="..\..\Core\Service\Service.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Databases\Configurations\" />
+  </ItemGroup>
+
 </Project>
