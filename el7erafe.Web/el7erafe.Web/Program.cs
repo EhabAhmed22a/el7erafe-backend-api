@@ -12,6 +12,10 @@ namespace el7erafe.Web
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen(options => 
+                options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "api.xml"))
+            );
 
             var app = builder.Build();
 
@@ -19,11 +23,13 @@ namespace el7erafe.Web
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
+                app.UseSwagger();
+                app.UseSwaggerUI();
             }
 
             app.UseHttpsRedirection();
 
-            app.UseAuthorization();
+            //app.UseAuthorization();
 
 
             app.MapControllers();
