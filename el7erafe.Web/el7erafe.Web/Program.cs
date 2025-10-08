@@ -1,4 +1,5 @@
 using el7erafe.Web.Extensions;
+using el7erafe.Web.Mapper;
 using Persistance;
 
 namespace el7erafe.Web
@@ -12,13 +13,16 @@ namespace el7erafe.Web
             // Add services to the container.
 
             builder.Services.AddControllers();
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+
+            #region Swagger Setup
             builder.Services.AddOpenApi();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(options => 
                 options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "api.xml"))
             );
+            #endregion
 
+            //builder.Services.AddAutoMapper(typeof(MapperProfile));
             builder.Services.AddPersistanceServices(builder.Configuration);
 
             var app = builder.Build();
