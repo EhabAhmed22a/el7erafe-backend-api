@@ -6,6 +6,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Persistance.Databases;
 using Persistance.Repositories;
+using Service;
+using ServiceAbstraction;
 
 namespace Persistance
 {
@@ -24,6 +26,7 @@ namespace Persistance
 
             services.AddScoped<IDataSeeding, DataSeeding>();
             services.AddScoped<ITechnicianRepository, TechnicianRepository>();
+            services.AddScoped<ITechAuthenticationService, TechAuthenticationService>();
 
             return services;
         }
