@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Persistance.Databases;
+using Persistance.Repositories;
 
 namespace Persistance
 {
@@ -22,6 +23,7 @@ namespace Persistance
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
             services.AddScoped<IDataSeeding, DataSeeding>();
+            services.AddScoped<ITechnicianRepository, TechnicianRepository>();
 
             return services;
         }
