@@ -32,11 +32,7 @@ namespace el7erafe.Web.CustomMiddleWares
 
         private static async Task HandleExceptionAsync(HttpContext httpContext, Exception ex)
         {
-            var Response = new ErrorToReturn()
-            {
-                StatusCode = httpContext.Response.StatusCode,
-                ErrorMessage = ex.Message
-            };
+            var Response = new ErrorToReturn();
 
             //Set Status Code For Response
             httpContext.Response.StatusCode = ex switch
@@ -47,8 +43,8 @@ namespace el7erafe.Web.CustomMiddleWares
                 _ => StatusCodes.Status500InternalServerError
             };
 
-            //Response Object
-            
+            Response.StatusCode = httpContext.Response.StatusCode;
+            Response.ErrorMessage = ex.Message;
 
             //Return Object As Json 
             await httpContext.Response.WriteAsJsonAsync(Response);

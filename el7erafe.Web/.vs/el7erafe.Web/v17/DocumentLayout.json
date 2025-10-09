@@ -5,6 +5,10 @@
     {
       "AbsoluteMoniker": "D:0:0:{A18D7880-C082-4DAC-98E3-128D28A3689F}|Core\\Service\\Service.csproj|d:\\grad project\\el7erafe-backend-api\\el7erafe.web\\core\\service\\techauthenticationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{A18D7880-C082-4DAC-98E3-128D28A3689F}|Core\\Service\\Service.csproj|solutionrelative:core\\service\\techauthenticationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{244E192D-DD09-4AEC-B826-0B4079BAF1FE}|el7erafe.Web\\el7erafe.Web.csproj|d:\\grad project\\el7erafe-backend-api\\el7erafe.web\\el7erafe.web\\custommiddlewares\\customexceptionhandlermiddleware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{244E192D-DD09-4AEC-B826-0B4079BAF1FE}|el7erafe.Web\\el7erafe.Web.csproj|solutionrelative:el7erafe.web\\custommiddlewares\\customexceptionhandlermiddleware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -14,8 +18,21 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 1,
           "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "CustomExceptionHandlerMiddleWare.cs",
+              "DocumentMoniker": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\el7erafe.Web\\CustomMiddleWares\\CustomExceptionHandlerMiddleWare.cs",
+              "RelativeDocumentMoniker": "el7erafe.Web\\CustomMiddleWares\\CustomExceptionHandlerMiddleWare.cs",
+              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\el7erafe.Web\\CustomMiddleWares\\CustomExceptionHandlerMiddleWare.cs",
+              "RelativeToolTip": "el7erafe.Web\\CustomMiddleWares\\CustomExceptionHandlerMiddleWare.cs",
+              "ViewState": "AgIAAB8AAAAAAAAAAADwvyMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-09T12:56:21.004Z",
+              "EditorCaption": ""
+            },
             {
               "$type": "Document",
               "DocumentIndex": 0,
@@ -24,7 +41,7 @@
               "RelativeDocumentMoniker": "Core\\Service\\TechAuthenticationService.cs",
               "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Core\\Service\\TechAuthenticationService.cs",
               "RelativeToolTip": "Core\\Service\\TechAuthenticationService.cs",
-              "ViewState": "AgIAAAYAAAAAAAAAAAAAABEAAAAMAAAAAAAAAA==",
+              "ViewState": "AgIAAC4AAAAAAAAAAAAQwD0AAAAtAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-10-09T12:36:43.776Z",
               "EditorCaption": ""
