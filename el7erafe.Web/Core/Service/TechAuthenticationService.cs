@@ -14,7 +14,8 @@ namespace Service
         public async Task<TechDTO> techLoginAsync(TechLoginDTO techLoginDTO)
         {
             // Find user by phone number
-            var user = await _userManager.FindByIdAsync(techLoginDTO.PhoneNumber);
+            var user = await _userManager.Users
+            .FirstOrDefaultAsync(u => u.PhoneNumber == techLoginDTO.PhoneNumber);
 
             if (user is null)
                 throw new TechNotFoundException(techLoginDTO.PhoneNumber);
