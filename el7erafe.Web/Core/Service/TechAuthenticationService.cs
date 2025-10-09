@@ -1,6 +1,7 @@
 ﻿using DomainLayer.Contracts;
 using DomainLayer.Exceptions;
 using DomainLayer.Models.IdentityModule;
+using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ServiceAbstraction;

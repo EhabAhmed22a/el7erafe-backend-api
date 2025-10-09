@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DomainLayer.Models.IdentityModule
+namespace DomainLayer.Models.IdentityModule.Enums
 {
     public enum UserTypeEnum
     {

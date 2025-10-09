@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using DomainLayer.Models.IdentityModule.Enums;
+using Microsoft.AspNetCore.Identity;
 
 namespace DomainLayer.Models.IdentityModule
 {

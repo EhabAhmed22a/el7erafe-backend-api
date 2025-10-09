@@ -1,5 +1,6 @@
 ﻿using DomainLayer.Contracts;
 using DomainLayer.Models.IdentityModule;
+using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.EntityFrameworkCore;
 using Persistance.Databases;
 

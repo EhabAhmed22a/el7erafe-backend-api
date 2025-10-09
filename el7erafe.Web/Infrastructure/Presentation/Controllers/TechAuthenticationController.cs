@@ -9,14 +9,14 @@ namespace Presentation.Controllers
     public class TechAuthenticationController(ITechAuthenticationService _techAuthenticationService) : ControllerBase
     {
         //Login
-        [HttpPost("Login")]
+        [HttpPost("Technician/Login")]
         public async Task<ActionResult<TechDTO>> Login(TechLoginDTO techLoginDTO)
         {
             var User = await _techAuthenticationService.techLoginAsync(techLoginDTO);
             return Ok(User);
         }
 
-        [HttpPost("Register")]
+        [HttpPost("Technician/Register")]
         public async Task<ActionResult<TechDTO>> Register(TechRegisterDTO techRegisterDTO)
         {
             var User = await _techAuthenticationService.techRegisterAsync(techRegisterDTO);

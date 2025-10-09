@@ -3,12 +3,24 @@
   "WorkspaceRootPath": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{104DF479-D252-4EF7-9CA0-00CDAE90726D}|Infrastructure\\Presentation\\Presentation.csproj|d:\\grad project\\el7erafe-backend-api\\el7erafe.web\\infrastructure\\presentation\\controllers\\techauthenticationcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{104DF479-D252-4EF7-9CA0-00CDAE90726D}|Infrastructure\\Presentation\\Presentation.csproj|solutionrelative:infrastructure\\presentation\\controllers\\techauthenticationcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{A18D7880-C082-4DAC-98E3-128D28A3689F}|Core\\Service\\Service.csproj|d:\\grad project\\el7erafe-backend-api\\el7erafe.web\\core\\service\\techauthenticationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{A18D7880-C082-4DAC-98E3-128D28A3689F}|Core\\Service\\Service.csproj|solutionrelative:core\\service\\techauthenticationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{244E192D-DD09-4AEC-B826-0B4079BAF1FE}|el7erafe.Web\\el7erafe.Web.csproj|d:\\grad project\\el7erafe-backend-api\\el7erafe.web\\el7erafe.web\\custommiddlewares\\customexceptionhandlermiddleware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{244E192D-DD09-4AEC-B826-0B4079BAF1FE}|el7erafe.Web\\el7erafe.Web.csproj|solutionrelative:el7erafe.web\\custommiddlewares\\customexceptionhandlermiddleware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{F51139DB-A380-4263-BB23-9BEDF5796734}|Infrastructure\\Persistance\\Persistance.csproj|d:\\grad project\\el7erafe-backend-api\\el7erafe.web\\infrastructure\\persistance\\persistanceservicesregistration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F51139DB-A380-4263-BB23-9BEDF5796734}|Infrastructure\\Persistance\\Persistance.csproj|solutionrelative:infrastructure\\persistance\\persistanceservicesregistration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{244E192D-DD09-4AEC-B826-0B4079BAF1FE}|el7erafe.Web\\el7erafe.Web.csproj|d:\\grad project\\el7erafe-backend-api\\el7erafe.web\\el7erafe.web\\extensions\\databaseseed.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{244E192D-DD09-4AEC-B826-0B4079BAF1FE}|el7erafe.Web\\el7erafe.Web.csproj|solutionrelative:el7erafe.web\\extensions\\databaseseed.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{128B4B71-1272-4EC4-8FBF-75CBC0704B02}|Core\\DomainLayer\\DomainLayer.csproj|d:\\grad project\\el7erafe-backend-api\\el7erafe.web\\core\\domainlayer\\models\\identitymodule\\enums\\usertypeenum.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{128B4B71-1272-4EC4-8FBF-75CBC0704B02}|Core\\DomainLayer\\DomainLayer.csproj|solutionrelative:core\\domainlayer\\models\\identitymodule\\enums\\usertypeenum.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -18,32 +30,71 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "CustomExceptionHandlerMiddleWare.cs",
-              "DocumentMoniker": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\el7erafe.Web\\CustomMiddleWares\\CustomExceptionHandlerMiddleWare.cs",
-              "RelativeDocumentMoniker": "el7erafe.Web\\CustomMiddleWares\\CustomExceptionHandlerMiddleWare.cs",
-              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\el7erafe.Web\\CustomMiddleWares\\CustomExceptionHandlerMiddleWare.cs",
-              "RelativeToolTip": "el7erafe.Web\\CustomMiddleWares\\CustomExceptionHandlerMiddleWare.cs",
-              "ViewState": "AgIAAB8AAAAAAAAAAADwvyMAAAAAAAAAAAAAAA==",
+              "DocumentIndex": 0,
+              "Title": "TechAuthenticationController.cs",
+              "DocumentMoniker": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Presentation\\Controllers\\TechAuthenticationController.cs",
+              "RelativeDocumentMoniker": "Infrastructure\\Presentation\\Controllers\\TechAuthenticationController.cs",
+              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Presentation\\Controllers\\TechAuthenticationController.cs",
+              "RelativeToolTip": "Infrastructure\\Presentation\\Controllers\\TechAuthenticationController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAeAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-09T12:56:21.004Z",
+              "WhenOpened": "2025-10-09T15:26:07.274Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 3,
+              "Title": "DatabaseSeed.cs",
+              "DocumentMoniker": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\el7erafe.Web\\Extensions\\DatabaseSeed.cs",
+              "RelativeDocumentMoniker": "el7erafe.Web\\Extensions\\DatabaseSeed.cs",
+              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\el7erafe.Web\\Extensions\\DatabaseSeed.cs",
+              "RelativeToolTip": "el7erafe.Web\\Extensions\\DatabaseSeed.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAYAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-09T15:24:09.643Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "UserTypeEnum.cs",
+              "DocumentMoniker": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Core\\DomainLayer\\Models\\IdentityModule\\Enums\\UserTypeEnum.cs",
+              "RelativeDocumentMoniker": "Core\\DomainLayer\\Models\\IdentityModule\\Enums\\UserTypeEnum.cs",
+              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Core\\DomainLayer\\Models\\IdentityModule\\Enums\\UserTypeEnum.cs*",
+              "RelativeToolTip": "Core\\DomainLayer\\Models\\IdentityModule\\Enums\\UserTypeEnum.cs*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-09T15:23:26.793Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "PersistanceServicesRegistration.cs",
+              "DocumentMoniker": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\PersistanceServicesRegistration.cs",
+              "RelativeDocumentMoniker": "Infrastructure\\Persistance\\PersistanceServicesRegistration.cs",
+              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\PersistanceServicesRegistration.cs",
+              "RelativeToolTip": "Infrastructure\\Persistance\\PersistanceServicesRegistration.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAABgAAABCAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-09T15:22:32.028Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "TechAuthenticationService.cs",
               "DocumentMoniker": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Core\\Service\\TechAuthenticationService.cs",
               "RelativeDocumentMoniker": "Core\\Service\\TechAuthenticationService.cs",
-              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Core\\Service\\TechAuthenticationService.cs",
-              "RelativeToolTip": "Core\\Service\\TechAuthenticationService.cs",
-              "ViewState": "AgIAAC4AAAAAAAAAAAAQwD0AAAAtAAAAAAAAAA==",
+              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Core\\Service\\TechAuthenticationService.cs*",
+              "RelativeToolTip": "Core\\Service\\TechAuthenticationService.cs*",
+              "ViewState": "AgIAADcAAAAAAAAAAAAYwA0AAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-09T12:36:43.776Z",
+              "WhenOpened": "2025-10-09T15:21:01.118Z",
               "EditorCaption": ""
             }
           ]
