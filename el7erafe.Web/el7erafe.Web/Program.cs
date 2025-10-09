@@ -1,7 +1,9 @@
 using el7erafe.Web.CustomMiddleWares;
 using el7erafe.Web.Extensions;
 using el7erafe.Web.Mapper;
+using Microsoft.Extensions.DependencyInjection;
 using Persistance;
+using Serilog;
 
 namespace el7erafe.Web
 {
@@ -11,9 +13,13 @@ namespace el7erafe.Web
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            #region Add services to the container.
-
             builder.Services.AddControllers();
+
+            #region Add services to the container.
+            builder.Services.AddPersistanceServices(builder.Configuration);
+            #endregion
+
+            builder.Services.AddAutoMapper(typeof(MapperProfile));
 
             #region Swagger Setup
             builder.Services.AddOpenApi();
@@ -23,8 +29,15 @@ namespace el7erafe.Web
             );
             #endregion
 
-            //builder.Services.AddAutoMapper(typeof(MapperProfile));
-            builder.Services.AddPersistanceServices(builder.Configuration); 
+            #region Serilog Setup
+            builder.Host.UseSerilog((context, services, 
+                loggerConfiguration) =>
+            {
+                loggerConfiguration.ReadFrom.Configuration(context.Configuration)
+                .ReadFrom.Services(services)
+                .Enrich.FromLogContext()
+                .Enrich.WithProperty("Application", "el7erafe");
+            });
             #endregion
 
             var app = builder.Build();

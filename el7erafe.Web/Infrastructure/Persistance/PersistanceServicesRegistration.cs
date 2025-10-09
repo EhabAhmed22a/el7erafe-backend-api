@@ -20,12 +20,21 @@ namespace Persistance
                     options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"))
                 );
 
-            services.AddIdentityCore<ApplicationUser>()
+            services.AddIdentityCore<ApplicationUser>(options =>
+            {
+                options.Password.RequireNonAlphanumeric = true;
+                options.Password.RequireDigit = true;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireUppercase = true;
+                options.Password.RequiredLength = 10;
+            })
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
             services.AddScoped<IDataSeeding, DataSeeding>();
             services.AddScoped<ITechnicianRepository, TechnicianRepository>();
+            services.AddScoped<IClientRepository, ClientRepository>();
+            services.AddScoped<IClientAuthenticationService, ClientAuthenticationService>();
             services.AddScoped<ITechAuthenticationService, TechAuthenticationService>();
 
             return services;

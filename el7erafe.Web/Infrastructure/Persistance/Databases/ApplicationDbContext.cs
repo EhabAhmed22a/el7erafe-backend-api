@@ -13,6 +13,7 @@ namespace Persistance.Databases
             base.OnModelCreating(builder);
             builder.Entity<ApplicationUser>().ToTable("Users");
             builder.Entity<Technician>().ToTable("Technicians");
+            builder.Entity<Client>().ToTable("Clients");
             builder.Entity<IdentityRole>().ToTable("Roles");
             builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles");
             builder.Ignore<IdentityUserClaim<string>>();
