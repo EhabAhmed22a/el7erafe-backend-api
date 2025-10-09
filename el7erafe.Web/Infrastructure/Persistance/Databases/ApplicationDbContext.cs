@@ -12,6 +12,16 @@ namespace Persistance.Databases
         {
             base.OnModelCreating(builder);
             builder.Entity<ApplicationUser>().ToTable("Users");
+            builder.Entity<Technician>().ToTable("Technicians");
+
+            // One-to-one relationship configuration
+            builder.Entity<Technician>()
+                .HasOne(t => t.User)
+                .WithOne(u => u.Technician)
+                .HasForeignKey<Technician>(t => t.UserId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
+
             builder.Entity<IdentityRole>().ToTable("Roles");
             builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles");
             builder.Ignore<IdentityUserClaim<string>>();
