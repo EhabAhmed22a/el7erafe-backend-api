@@ -3,24 +3,28 @@
   "WorkspaceRootPath": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\Identity\\Migrations\\20251009082648_ChangeRelationShipBetweenTechnicianAndUsersTables.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Infrastructure\\Persistance\\Identity\\Migrations\\20251009082648_ChangeRelationShipBetweenTechnicianAndUsersTables.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{104DF479-D252-4EF7-9CA0-00CDAE90726D}|Infrastructure\\Presentation\\Presentation.csproj|d:\\grad project\\el7erafe-backend-api\\el7erafe.web\\infrastructure\\presentation\\controllers\\techauthenticationcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{104DF479-D252-4EF7-9CA0-00CDAE90726D}|Infrastructure\\Presentation\\Presentation.csproj|solutionrelative:infrastructure\\presentation\\controllers\\techauthenticationcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{F51139DB-A380-4263-BB23-9BEDF5796734}|Infrastructure\\Persistance\\Persistance.csproj|d:\\grad project\\el7erafe-backend-api\\el7erafe.web\\infrastructure\\persistance\\databases\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{F51139DB-A380-4263-BB23-9BEDF5796734}|Infrastructure\\Persistance\\Persistance.csproj|solutionrelative:infrastructure\\persistance\\databases\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{F51139DB-A380-4263-BB23-9BEDF5796734}|Infrastructure\\Persistance\\Persistance.csproj|d:\\grad project\\el7erafe-backend-api\\el7erafe.web\\infrastructure\\persistance\\persistanceservicesregistration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F51139DB-A380-4263-BB23-9BEDF5796734}|Infrastructure\\Persistance\\Persistance.csproj|solutionrelative:infrastructure\\persistance\\persistanceservicesregistration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{128B4B71-1272-4EC4-8FBF-75CBC0704B02}|Core\\DomainLayer\\DomainLayer.csproj|d:\\grad project\\el7erafe-backend-api\\el7erafe.web\\core\\domainlayer\\models\\identitymodule\\technician.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{128B4B71-1272-4EC4-8FBF-75CBC0704B02}|Core\\DomainLayer\\DomainLayer.csproj|solutionrelative:core\\domainlayer\\models\\identitymodule\\technician.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{A18D7880-C082-4DAC-98E3-128D28A3689F}|Core\\Service\\Service.csproj|d:\\grad project\\el7erafe-backend-api\\el7erafe.web\\core\\service\\techauthenticationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A18D7880-C082-4DAC-98E3-128D28A3689F}|Core\\Service\\Service.csproj|solutionrelative:core\\service\\techauthenticationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{128B4B71-1272-4EC4-8FBF-75CBC0704B02}|Core\\DomainLayer\\DomainLayer.csproj|d:\\grad project\\el7erafe-backend-api\\el7erafe.web\\core\\domainlayer\\models\\identitymodule\\applicationuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{128B4B71-1272-4EC4-8FBF-75CBC0704B02}|Core\\DomainLayer\\DomainLayer.csproj|solutionrelative:core\\domainlayer\\models\\identitymodule\\applicationuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{F51139DB-A380-4263-BB23-9BEDF5796734}|Infrastructure\\Persistance\\Persistance.csproj|d:\\grad project\\el7erafe-backend-api\\el7erafe.web\\infrastructure\\persistance\\repositories\\technicianrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F51139DB-A380-4263-BB23-9BEDF5796734}|Infrastructure\\Persistance\\Persistance.csproj|solutionrelative:infrastructure\\persistance\\repositories\\technicianrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\Identity\\Migrations\\20251009081506_CreateTechnicianTable.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Infrastructure\\Persistance\\Identity\\Migrations\\20251009081506_CreateTechnicianTable.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{621F3267-3BB9-446C-AF68-19243BBE3732}|Shared\\Shared.csproj|d:\\grad project\\el7erafe-backend-api\\el7erafe.web\\shared\\datatransferobject\\technicianidentitydtos\\techdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{621F3267-3BB9-446C-AF68-19243BBE3732}|Shared\\Shared.csproj|solutionrelative:shared\\datatransferobject\\technicianidentitydtos\\techdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{128B4B71-1272-4EC4-8FBF-75CBC0704B02}|Core\\DomainLayer\\DomainLayer.csproj|d:\\grad project\\el7erafe-backend-api\\el7erafe.web\\core\\domainlayer\\contracts\\itechnicianrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{128B4B71-1272-4EC4-8FBF-75CBC0704B02}|Core\\DomainLayer\\DomainLayer.csproj|solutionrelative:core\\domainlayer\\contracts\\itechnicianrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -35,66 +39,79 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "20251009082648_ChangeRelationShipBetweenTechnicianAndUsersTables.cs",
-              "DocumentMoniker": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\Identity\\Migrations\\20251009082648_ChangeRelationShipBetweenTechnicianAndUsersTables.cs",
-              "RelativeDocumentMoniker": "Infrastructure\\Persistance\\Identity\\Migrations\\20251009082648_ChangeRelationShipBetweenTechnicianAndUsersTables.cs",
-              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\Identity\\Migrations\\20251009082648_ChangeRelationShipBetweenTechnicianAndUsersTables.cs",
-              "RelativeToolTip": "Infrastructure\\Persistance\\Identity\\Migrations\\20251009082648_ChangeRelationShipBetweenTechnicianAndUsersTables.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Title": "TechAuthenticationController.cs",
+              "DocumentMoniker": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Presentation\\Controllers\\TechAuthenticationController.cs",
+              "RelativeDocumentMoniker": "Infrastructure\\Presentation\\Controllers\\TechAuthenticationController.cs",
+              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Presentation\\Controllers\\TechAuthenticationController.cs*",
+              "RelativeToolTip": "Infrastructure\\Presentation\\Controllers\\TechAuthenticationController.cs*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-09T08:26:48.266Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "20251009081506_CreateTechnicianTable.cs",
-              "DocumentMoniker": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\Identity\\Migrations\\20251009081506_CreateTechnicianTable.cs",
-              "RelativeDocumentMoniker": "Infrastructure\\Persistance\\Identity\\Migrations\\20251009081506_CreateTechnicianTable.cs",
-              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\Identity\\Migrations\\20251009081506_CreateTechnicianTable.cs",
-              "RelativeToolTip": "Infrastructure\\Persistance\\Identity\\Migrations\\20251009081506_CreateTechnicianTable.cs",
-              "ViewState": "AgIAAB8AAAAAAAAAAAAQwAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-09T08:15:06.269Z",
+              "WhenOpened": "2025-10-09T11:19:56.937Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "ApplicationDbContext.cs",
-              "DocumentMoniker": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\Databases\\ApplicationDbContext.cs",
-              "RelativeDocumentMoniker": "Infrastructure\\Persistance\\Databases\\ApplicationDbContext.cs",
-              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\Databases\\ApplicationDbContext.cs",
-              "RelativeToolTip": "Infrastructure\\Persistance\\Databases\\ApplicationDbContext.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAAAyAAAAAAAAAA==",
+              "Title": "PersistanceServicesRegistration.cs",
+              "DocumentMoniker": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\PersistanceServicesRegistration.cs",
+              "RelativeDocumentMoniker": "Infrastructure\\Persistance\\PersistanceServicesRegistration.cs",
+              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\PersistanceServicesRegistration.cs",
+              "RelativeToolTip": "Infrastructure\\Persistance\\PersistanceServicesRegistration.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAAB4AAAAcAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-09T07:41:45.859Z",
+              "WhenOpened": "2025-10-09T11:17:06.42Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "TechDTO.cs",
+              "DocumentMoniker": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Shared\\DataTransferObject\\TechnicianIdentityDTOs\\TechDTO.cs",
+              "RelativeDocumentMoniker": "Shared\\DataTransferObject\\TechnicianIdentityDTOs\\TechDTO.cs",
+              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Shared\\DataTransferObject\\TechnicianIdentityDTOs\\TechDTO.cs",
+              "RelativeToolTip": "Shared\\DataTransferObject\\TechnicianIdentityDTOs\\TechDTO.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAuwA0AAAA2AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-09T10:34:54.495Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
-              "Title": "ApplicationUser.cs",
-              "DocumentMoniker": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Core\\DomainLayer\\Models\\IdentityModule\\ApplicationUser.cs",
-              "RelativeDocumentMoniker": "Core\\DomainLayer\\Models\\IdentityModule\\ApplicationUser.cs",
-              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Core\\DomainLayer\\Models\\IdentityModule\\ApplicationUser.cs",
-              "RelativeToolTip": "Core\\DomainLayer\\Models\\IdentityModule\\ApplicationUser.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAAAAAAAAAAAA==",
+              "Title": "TechnicianRepository.cs",
+              "DocumentMoniker": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\Repositories\\TechnicianRepository.cs",
+              "RelativeDocumentMoniker": "Infrastructure\\Persistance\\Repositories\\TechnicianRepository.cs",
+              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\Repositories\\TechnicianRepository.cs",
+              "RelativeToolTip": "Infrastructure\\Persistance\\Repositories\\TechnicianRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAABBAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-09T07:41:40.941Z",
+              "WhenOpened": "2025-10-09T10:26:29.795Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "Technician.cs",
-              "DocumentMoniker": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Core\\DomainLayer\\Models\\IdentityModule\\Technician.cs",
-              "RelativeDocumentMoniker": "Core\\DomainLayer\\Models\\IdentityModule\\Technician.cs",
-              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Core\\DomainLayer\\Models\\IdentityModule\\Technician.cs",
-              "RelativeToolTip": "Core\\DomainLayer\\Models\\IdentityModule\\Technician.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAAAAAAAAAAAA==",
+              "Title": "TechAuthenticationService.cs",
+              "DocumentMoniker": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Core\\Service\\TechAuthenticationService.cs",
+              "RelativeDocumentMoniker": "Core\\Service\\TechAuthenticationService.cs",
+              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Core\\Service\\TechAuthenticationService.cs",
+              "RelativeToolTip": "Core\\Service\\TechAuthenticationService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAsAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-08T22:54:19.438Z",
+              "WhenOpened": "2025-10-09T09:06:38.415Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "ITechnicianRepository.cs",
+              "DocumentMoniker": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Core\\DomainLayer\\Contracts\\ITechnicianRepository.cs",
+              "RelativeDocumentMoniker": "Core\\DomainLayer\\Contracts\\ITechnicianRepository.cs",
+              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Core\\DomainLayer\\Contracts\\ITechnicianRepository.cs",
+              "RelativeToolTip": "Core\\DomainLayer\\Contracts\\ITechnicianRepository.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAABQAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-09T10:24:59.809Z",
               "EditorCaption": ""
             }
           ]
