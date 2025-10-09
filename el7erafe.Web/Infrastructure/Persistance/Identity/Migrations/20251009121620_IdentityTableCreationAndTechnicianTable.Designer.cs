@@ -12,8 +12,8 @@ using Persistance.Databases;
 namespace Persistance.Identity.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251009081506_CreateTechnicianTable")]
-    partial class CreateTechnicianTable
+    [Migration("20251009121620_IdentityTableCreationAndTechnicianTable")]
+    partial class IdentityTableCreationAndTechnicianTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -50,14 +50,6 @@ namespace Service
             {
                 UserName = techRegisterDTO.PhoneNumber, // Or use Email if available
                 PhoneNumber = techRegisterDTO.PhoneNumber,
-                Email = null,
-                NormalizedEmail = null,
-                NormalizedUserName = techRegisterDTO.PhoneNumber.ToUpper(),
-                AccessFailedCount = 0,
-                LockoutEnabled = false,
-                LockoutEnd = null,
-                PhoneNumberConfirmed = false,
-                TwoFactorEnabled = false,
                 UserType = UserTypeEnum.Technician
             };
 
