@@ -1,6 +1,5 @@
 ﻿using DomainLayer.Exceptions;
 using Shared.ErrorModels;
-using System.Text.Json;
 
 namespace el7erafe.Web.CustomMiddleWares
 {

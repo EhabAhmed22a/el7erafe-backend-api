@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Persistance.Databases;
+
 namespace Persistance
 {
     public class DataSeeding(ApplicationDbContext _dbContext,

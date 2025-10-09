@@ -1,5 +1,4 @@
-﻿using DomainLayer.Models;
-using DomainLayer.Models.IdentityModule;
+﻿using DomainLayer.Models.IdentityModule;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
