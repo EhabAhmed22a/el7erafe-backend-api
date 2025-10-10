@@ -1,0 +1,61 @@
+
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "CI" ]
+  # pull_request:
+  #   branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 9.0.x
+      
+      - name: Restore dependencies
+        run: dotnet restore el7erafe.Web/el7erafe.Web.sln
+        
+      - name: Build
+        run: dotnet build el7erafe.Web/el7erafe.Web.sln --no-restore
+
+      - name: Install EF Core tools
+        run: dotnet tool install --global dotnet-ef
+      
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Run EF Migrations
+        run: dotnet ef database update --project el7erafe.Web/Infrastructure/Persistance/Persistance.csproj --startup-project el7erafe.Web/el7erafe.Web/el7erafe.Web.csproj
+        env:
+          ConnectionStrings__DefaultConnection: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
+        
+      - name: Publish
+        run: dotnet publish el7erafe.Web/el7erafe.Web/el7erafe.Web.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp --self-contained false
+        
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'el7rafe' # Replace with your app service name
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }} # Add a secret in your repository settings with the publish profile
+          package: '${{env.DOTNET_ROOT}}/myapp'
