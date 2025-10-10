@@ -3,54 +3,40 @@ using DomainLayer.Exceptions;
 using DomainLayer.Models.IdentityModule;
 using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
 
 namespace Service
 {
     public class TechAuthenticationService(UserManager<ApplicationUser> _userManager,
-        ITechnicianRepository _technicianRepository) : ITechAuthenticationService
+        ITechnicianRepository _technicianRepository,
+        ILogger<TechAuthenticationService> _logger) : ITechAuthenticationService
     {
-        public async Task<TechDTO> techLoginAsync(TechLoginDTO techLoginDTO)
-        {
-            // Find user by phone number
-            var user = await _userManager.Users
-            .FirstOrDefaultAsync(u => u.PhoneNumber == techLoginDTO.PhoneNumber);
-
-            if (user is null)
-                throw new TechNotFoundException(techLoginDTO.PhoneNumber);
-
-            // Check if user is a technician
-            if (user.UserType != UserTypeEnum.Technician)
-                throw new UnauthorizedTechException();
-
-            // Check password
-            var isPasswordValid = await _userManager.CheckPasswordAsync(user, techLoginDTO.Password);
-            if (!isPasswordValid)
-                throw new UnauthorizedTechException();
-
-            // Get technician profile
-            var technician = await _technicianRepository.GetByUserIdAsync(user.Id);
-            if (technician is null)
-                throw new TechNotFoundException(techLoginDTO.PhoneNumber);
-
-            // Return TechDTO
-            return new TechDTO
-            {
-                Name = technician.Name,
-                PhoneNumber = user.PhoneNumber,
-                Status = technician.Status.ToString(),
-                Token = "Token - TODO"
-            };
-        }
-
         public async Task<TechDTO> techRegisterAsync(TechRegisterDTO techRegisterDTO)
         {
+            _logger.LogInformation("[SERVICE] Checking phone number uniqueness: {Phone}", techRegisterDTO.PhoneNumber);
+            var phoneNumberFound = await _technicianRepository.ExistsAsync(techRegisterDTO.PhoneNumber);
+
+            if(phoneNumberFound)
+            {
+                _logger.LogWarning("[SERVICE] Duplicate phone number detected: {Phone}", techRegisterDTO.PhoneNumber);
+                throw new PhoneNumberAlreadyExists(techRegisterDTO.PhoneNumber);
+            }
+
+            _logger.LogInformation("[SERVICE] Checking National Id uniqueness: {NationalId}", techRegisterDTO.NationalId);
+            var NationalIdFound = await _technicianRepository.ExistsByNationalIdAsync(techRegisterDTO.NationalId);
+
+            if (NationalIdFound)
+            {
+                _logger.LogWarning("[SERVICE] Duplicate phone number detected: {Phone}", techRegisterDTO.PhoneNumber);
+                throw new NationalIdAlreadyExists(techRegisterDTO.NationalId);
+            }
+
             // Create User (TechRegisterDTO -> ApplicationUser)
             var user = new ApplicationUser()
             {
-                UserName = techRegisterDTO.PhoneNumber, // Or use Email if available
+                UserName = techRegisterDTO.PhoneNumber, 
                 PhoneNumber = techRegisterDTO.PhoneNumber,
                 UserType = UserTypeEnum.Technician
             };
@@ -59,6 +45,7 @@ namespace Service
 
             if (!result.Succeeded)
             {
+                _logger.LogError("[SERVICE] User creation failed for PhoneNumber: {PhoneNumber}", techRegisterDTO.PhoneNumber);
                 var errors = result.Errors.Select(e => e.Description).ToList();
                 throw new BadRequestException(errors);
             }
@@ -80,6 +67,8 @@ namespace Service
             // Assign the Technician role
             await _userManager.AddToRoleAsync(user, "Technician");
 
+            _logger.LogInformation("[SERVICE] Technician registration completed for: {PhoneNumber}", techRegisterDTO.PhoneNumber);
+
             // Return TechDTO (assuming TechDTO has Name and PhoneNumber)
             return new TechDTO
             {
@@ -87,7 +76,6 @@ namespace Service
                 PhoneNumber = user.PhoneNumber,
                 Status = technician.Status.ToString(),
                 Token = "Token - TODO"
-                // Add other properties as needed
             };
         }
     }
