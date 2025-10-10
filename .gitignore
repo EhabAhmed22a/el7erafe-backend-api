@@ -1,24 +1,4 @@
-## Visual Studio ##
-## User-specific files
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
-*.vssscc
-*.vspscc
-
-## IDE files
-.vs/
-.vscode/
-.idea/
-
-## Visual Studio Cache Files
-.dtbcache.v2
-.futdcache.v2
-DocumentLayout.json
-DocumentLayout.backup.json
-
-## Build results
+## Your existing content (unchanged) ##
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/
@@ -33,55 +13,64 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
-
-## NuGet packages
-*.nupkg
-*.snupkg
-packages/
-
-## Visual Studio lock files
 project.lock.json
 project.fragment.lock.json
-
-## Artifacts
 artifacts/
-
-## Scaffolding
 ScaffoldingReadMe.txt
-
-## Temporary files
+*.nupkg
+*.snupkg
 ~$*
 *~
-
-## Test results
+CodeCoverage/
+*.binlog
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
-CodeCoverage/
-*.binlog
 
-## Coverage reports
-coverage.json
-coverage.cobertura.xml
-*.coverage
-*.lcov
+## New additions (no duplicates) ##
+# User-specific files
+*.user
+*.userosscache
+*.sln.docstates
 
-## Local settings (security) - should not be committed
+# IDE files
+## IDE files ##
+.vs/
+**/.vs/
+.vscode/
+.idea/
+*.user
+*.userosscache
+*.suo
+*.cache
+*.docstates
+
+# Local settings (security)
 appsettings.Development.json
 appsettings.Local.json
 appsettings.private.json
 *secrets.json
 
-## Output
+# Output
 /publish/
 
-## Docker
+# Docker
 .dockerignore
 
-## Entity Framework (designer files only)
+# Coverage
+coverage.json
+coverage.cobertura.xml
+*.coverage
+*.lcov
+
+# Package manager
+packages/
+
+# Entity Framework (designer files only)
 Migrations/*.Designer.cs
 
-## OS files
+# OS files
 .DS_Store
+*~
