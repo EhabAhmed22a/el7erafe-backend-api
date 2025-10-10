@@ -50,7 +50,7 @@ namespace Service
             // Create User (TechRegisterDTO -> ApplicationUser)
             var user = new ApplicationUser()
             {
-                UserName = techRegisterDTO.PhoneNumber, // Or use Email if available
+                UserName = techRegisterDTO.PhoneNumber,
                 PhoneNumber = techRegisterDTO.PhoneNumber,
                 UserType = UserTypeEnum.Technician
             };
@@ -77,17 +77,14 @@ namespace Service
 
             await _technicianRepository.CreateAsync(technician);
 
-            // Assign the Technician role
             await _userManager.AddToRoleAsync(user, "Technician");
 
-            // Return TechDTO (assuming TechDTO has Name and PhoneNumber)
             return new TechDTO
             {
                 Name = technician.Name,
                 PhoneNumber = user.PhoneNumber,
                 Status = technician.Status.ToString(),
                 Token = "Token - TODO"
-                // Add other properties as needed
             };
         }
     }

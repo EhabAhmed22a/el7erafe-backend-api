@@ -41,7 +41,7 @@ namespace el7erafe.Web
             }
 
             app.UseHttpsRedirection();
-
+            app.UseStaticFiles();
             //app.UseAuthorization();
 
 
