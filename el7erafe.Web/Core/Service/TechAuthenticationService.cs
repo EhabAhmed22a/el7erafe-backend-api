@@ -4,20 +4,32 @@ using DomainLayer.Models.IdentityModule;
 using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
+using Shared.DataTransferObject.ClientIdentityDTOs;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
 
 namespace Service
 {
     public class TechAuthenticationService(UserManager<ApplicationUser> _userManager,
-        ITechnicianRepository _technicianRepository) : ITechAuthenticationService
+        ITechnicianRepository _technicianRepository,
+        ILogger<TechAuthenticationService> _logger) : ITechAuthenticationService
     {
         public async Task<TechDTO> techRegisterAsync(TechRegisterDTO techRegisterDTO)
         {
+            _logger.LogInformation("[SERVICE] Checking phone number uniqueness: {Phone}", techRegisterDTO.PhoneNumber);
+            var phoneNumberFound = await _technicianRepository.ExistsAsync(techRegisterDTO.PhoneNumber);
+
+            if(phoneNumberFound)
+            {
+                _logger.LogWarning("[SERVICE] Duplicate phone number detected: {Phone}", techRegisterDTO.PhoneNumber);
+                throw new PhoneNumberAlreadyExists(techRegisterDTO.PhoneNumber);
+            }
+
             // Create User (TechRegisterDTO -> ApplicationUser)
             var user = new ApplicationUser()
             {
-                UserName = techRegisterDTO.PhoneNumber, // Or use Email if available
+                UserName = techRegisterDTO.PhoneNumber, 
                 PhoneNumber = techRegisterDTO.PhoneNumber,
                 UserType = UserTypeEnum.Technician
             };
@@ -26,6 +38,7 @@ namespace Service
 
             if (!result.Succeeded)
             {
+                _logger.LogError("[SERVICE] User creation failed for PhoneNumber: {PhoneNumber}", techRegisterDTO.PhoneNumber);
                 var errors = result.Errors.Select(e => e.Description).ToList();
                 throw new BadRequestException(errors);
             }
@@ -47,6 +60,8 @@ namespace Service
             // Assign the Technician role
             await _userManager.AddToRoleAsync(user, "Technician");
 
+            _logger.LogInformation("[SERVICE] Technician registration completed for: {PhoneNumber}", techRegisterDTO.PhoneNumber);
+
             // Return TechDTO (assuming TechDTO has Name and PhoneNumber)
             return new TechDTO
             {
@@ -54,7 +69,6 @@ namespace Service
                 PhoneNumber = user.PhoneNumber,
                 Status = technician.Status.ToString(),
                 Token = "Token - TODO"
-                // Add other properties as needed
             };
         }
     }
