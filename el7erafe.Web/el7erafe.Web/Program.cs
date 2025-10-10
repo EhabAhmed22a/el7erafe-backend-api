@@ -46,12 +46,11 @@ namespace el7erafe.Web
 
             #region Configure the HTTP request pipeline.
             app.UseMiddleware<CustomExceptionHandlerMiddleWare>();
-            if (app.Environment.IsDevelopment())
-            {
+            
                 app.MapOpenApi();
                 app.UseSwagger();
                 app.UseSwaggerUI();
-            }
+            
 
             app.UseHttpsRedirection();
 
