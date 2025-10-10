@@ -3,7 +3,6 @@ using DomainLayer.Models.IdentityModule;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
 using Persistance.Databases;
 
 namespace Persistance.Repositories

@@ -1,7 +1,6 @@
 using el7erafe.Web.CustomMiddleWares;
 using el7erafe.Web.Extensions;
 using el7erafe.Web.Mapper;
-using Microsoft.Extensions.DependencyInjection;
 using Persistance;
 using Serilog;
 

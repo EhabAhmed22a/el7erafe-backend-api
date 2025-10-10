@@ -1,5 +1,4 @@
-﻿
-using DomainLayer.Contracts;
+﻿using DomainLayer.Contracts;
 using DomainLayer.Exceptions;
 using DomainLayer.Models.IdentityModule;
 using DomainLayer.Models.IdentityModule.Enums;
