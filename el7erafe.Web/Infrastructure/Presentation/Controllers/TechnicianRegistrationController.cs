@@ -10,7 +10,7 @@ namespace Presentation.Controllers
     public class TechnicianRegistrationController(ITechAuthenticationService _techAuthenticationService,
         ILogger<TechnicianRegistrationController> _logger) : ControllerBase
     {
-        [HttpPost("regiser/technician")]
+        [HttpPost("register/technician")]
         public async Task<ActionResult<TechDTO>> Register(TechRegisterDTO techRegisterDTO)
         {
             _logger.LogInformation("[API] Registering Technician with phone: {Phone}", techRegisterDTO.PhoneNumber);
