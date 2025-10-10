@@ -27,7 +27,7 @@ namespace Shared.DataTransferObject.TechnicianIdentityDTOs
         public string NationalIdBackURL { get; set; } = default!;
 
         [Required(ErrorMessage = "Criminal Record image URL is required")]
-        public string CriminalRecordURL { get; set; } = default!; 
+        public string CriminalRecordURL { get; set; } = default!;
 
     }
 }

@@ -20,7 +20,7 @@ namespace el7erafe.Web.CustomMiddleWares
             try
             {
                 await _next.Invoke(httpContext);
-                //await HandleNotFoundEndPointAsync(httpContext);
+                await HandleNotFoundEndPointAsync(httpContext);
 
             }
             catch (Exception ex)
