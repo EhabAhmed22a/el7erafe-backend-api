@@ -33,6 +33,8 @@ namespace Service
                 throw new EmailAlreadyExists(clientRegisterDTO.Email);
             }
 
+
+
             var user = new ApplicationUser
             {
                 UserName = clientRegisterDTO.PhoneNumber,

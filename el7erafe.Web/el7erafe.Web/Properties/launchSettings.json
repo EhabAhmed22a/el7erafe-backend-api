@@ -8,7 +8,8 @@
         "launchUrl": "swagger",
         "applicationUrl": "http://localhost:5270",
         "environmentVariables": {
-            "ASPNETCORE_ENVIRONMENT": "Development"
+            "ASPNETCORE_ENVIRONMENT": "Development",
+            "GMAIL_APP_PASSWORD": "el7erafe$123_Z"
         }
     },
     "https": {
@@ -17,9 +18,10 @@
         "launchBrowser": true,
       "launchUrl": "swagger",
       "applicationUrl": "https://localhost:7227;http://localhost:5270",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+        "environmentVariables": {
+            "ASPNETCORE_ENVIRONMENT": "Development",
+            "GMAIL_APP_PASSWORD": "el7erafe$123_Z"
+        }
     }
   }
 }

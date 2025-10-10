@@ -3,6 +3,8 @@ using el7erafe.Web.Extensions;
 using el7erafe.Web.Mapper;
 using Persistance;
 using Serilog;
+using Service.Email;
+using ServiceAbstraction;
 
 namespace el7erafe.Web
 {
@@ -16,6 +18,11 @@ namespace el7erafe.Web
 
             #region Add services to the container.
             builder.Services.AddPersistanceServices(builder.Configuration);
+            #endregion
+
+            # region Email Services
+            builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("gmail"));
+            builder.Services.AddScoped<IEmailService, EmailService>();
             #endregion
 
             builder.Services.AddAutoMapper(typeof(MapperProfile));
