@@ -4,8 +4,6 @@ namespace ServiceAbstraction
 {
     public interface IClientAuthenticationService
     {
-        Task<ClientDTO> RegisterClientAsync(ClientRegisterDTO client);
-        Task<ClientDTO> LoginClientAsync(ClientLoginDTO client);
-        Task LogoutAsync();
+        Task<ClientDTO> RegisterClientAsync(ClientRegisterDTO clientRegisterDTO);
     }
 }

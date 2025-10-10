@@ -15,9 +15,7 @@ namespace el7erafe.Web.Mapper
         /// </summary>
         public MapperProfile()
         {
-            CreateMap<ApplicationUser, ClientRegisterDTO>().ReverseMap();
-            CreateMap<ApplicationUser, ClientLoginDTO>().ReverseMap();
-            CreateMap<ApplicationUser, ClientDTO>().ReverseMap();
+            
         }
     }
 }

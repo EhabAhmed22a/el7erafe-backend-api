@@ -11,6 +11,6 @@ namespace DomainLayer.Contracts
         Task<bool> UpdateAsync(Client client);
         Task<bool> DeleteAsync(int id);
         Task<bool> ExistsAsync(int id);
-        Task<bool> ExistsAsync(string userId);
+        Task<bool> ExistsAsync(string phoneNumber);
     }
 }

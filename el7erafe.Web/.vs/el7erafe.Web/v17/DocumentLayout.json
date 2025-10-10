@@ -3,12 +3,16 @@
   "WorkspaceRootPath": "C:\\Users\\alima\\OneDrive\\Desktop\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{F51139DB-A380-4263-BB23-9BEDF5796734}|Infrastructure\\Persistance\\Persistance.csproj|c:\\users\\alima\\onedrive\\desktop\\grad project\\el7erafe-backend-api\\el7erafe.web\\infrastructure\\persistance\\repositories\\clientrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{F51139DB-A380-4263-BB23-9BEDF5796734}|Infrastructure\\Persistance\\Persistance.csproj|solutionrelative:infrastructure\\persistance\\repositories\\clientrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{104DF479-D252-4EF7-9CA0-00CDAE90726D}|Infrastructure\\Presentation\\Presentation.csproj|c:\\users\\alima\\onedrive\\desktop\\grad project\\el7erafe-backend-api\\el7erafe.web\\infrastructure\\presentation\\controllers\\clientregistrationcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{104DF479-D252-4EF7-9CA0-00CDAE90726D}|Infrastructure\\Presentation\\Presentation.csproj|solutionrelative:infrastructure\\presentation\\controllers\\clientregistrationcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{128B4B71-1272-4EC4-8FBF-75CBC0704B02}|Core\\DomainLayer\\DomainLayer.csproj|c:\\users\\alima\\onedrive\\desktop\\grad project\\el7erafe-backend-api\\el7erafe.web\\core\\domainlayer\\models\\identitymodule\\client.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{128B4B71-1272-4EC4-8FBF-75CBC0704B02}|Core\\DomainLayer\\DomainLayer.csproj|solutionrelative:core\\domainlayer\\models\\identitymodule\\client.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{A18D7880-C082-4DAC-98E3-128D28A3689F}|Core\\Service\\Service.csproj|c:\\users\\alima\\onedrive\\desktop\\grad project\\el7erafe-backend-api\\el7erafe.web\\core\\service\\clientauthenticationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A18D7880-C082-4DAC-98E3-128D28A3689F}|Core\\Service\\Service.csproj|solutionrelative:core\\service\\clientauthenticationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F51139DB-A380-4263-BB23-9BEDF5796734}|Infrastructure\\Persistance\\Persistance.csproj|c:\\users\\alima\\onedrive\\desktop\\grad project\\el7erafe-backend-api\\el7erafe.web\\infrastructure\\persistance\\repositories\\clientrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F51139DB-A380-4263-BB23-9BEDF5796734}|Infrastructure\\Persistance\\Persistance.csproj|solutionrelative:infrastructure\\persistance\\repositories\\clientrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -18,7 +22,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 7,
           "Children": [
             {
               "$type": "Bookmark",
@@ -42,28 +46,41 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
+              "Title": "ClientAuthenticationService.cs",
+              "DocumentMoniker": "C:\\Users\\alima\\OneDrive\\Desktop\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Core\\Service\\ClientAuthenticationService.cs",
+              "RelativeDocumentMoniker": "Core\\Service\\ClientAuthenticationService.cs",
+              "ToolTip": "C:\\Users\\alima\\OneDrive\\Desktop\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Core\\Service\\ClientAuthenticationService.cs",
+              "RelativeToolTip": "Core\\Service\\ClientAuthenticationService.cs",
+              "ViewState": "AgIAACgAAAAAAAAAAAAQwDYAAABzAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-10T12:04:12.588Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
               "Title": "ClientRepository.cs",
               "DocumentMoniker": "C:\\Users\\alima\\OneDrive\\Desktop\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\Repositories\\ClientRepository.cs",
               "RelativeDocumentMoniker": "Infrastructure\\Persistance\\Repositories\\ClientRepository.cs",
               "ToolTip": "C:\\Users\\alima\\OneDrive\\Desktop\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\Repositories\\ClientRepository.cs",
               "RelativeToolTip": "Infrastructure\\Persistance\\Repositories\\ClientRepository.cs",
-              "ViewState": "AgIAAAwAAAAAAAAAAAAkwHIAAAAJAAAAAAAAAA==",
+              "ViewState": "AgIAAEoAAAAAAAAAAAAmwFcAAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-09T16:17:01.121Z",
+              "WhenOpened": "2025-10-10T12:01:59.613Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "Client.cs",
-              "DocumentMoniker": "C:\\Users\\alima\\OneDrive\\Desktop\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Core\\DomainLayer\\Models\\IdentityModule\\Client.cs",
-              "RelativeDocumentMoniker": "Core\\DomainLayer\\Models\\IdentityModule\\Client.cs",
-              "ToolTip": "C:\\Users\\alima\\OneDrive\\Desktop\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Core\\DomainLayer\\Models\\IdentityModule\\Client.cs",
-              "RelativeToolTip": "Core\\DomainLayer\\Models\\IdentityModule\\Client.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "DocumentIndex": 0,
+              "Title": "ClientRegistrationController.cs",
+              "DocumentMoniker": "C:\\Users\\alima\\OneDrive\\Desktop\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Presentation\\Controllers\\ClientRegistrationController.cs",
+              "RelativeDocumentMoniker": "Infrastructure\\Presentation\\Controllers\\ClientRegistrationController.cs",
+              "ToolTip": "C:\\Users\\alima\\OneDrive\\Desktop\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Presentation\\Controllers\\ClientRegistrationController.cs",
+              "RelativeToolTip": "Infrastructure\\Presentation\\Controllers\\ClientRegistrationController.cs",
+              "ViewState": "AgIAAAcAAAAAAAAAAAAtwBMAAABeAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-09T16:12:34.555Z",
+              "WhenOpened": "2025-10-10T11:12:45.613Z",
               "EditorCaption": ""
             }
           ]
