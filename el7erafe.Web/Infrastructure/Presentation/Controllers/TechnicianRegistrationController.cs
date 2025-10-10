@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
-using Shared.DataTransferObject.ClientIdentityDTOs;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
 
 namespace Presentation.Controllers
@@ -9,7 +8,7 @@ namespace Presentation.Controllers
     [ApiController]
     [Route("api/auth")]
     public class TechnicianRegistrationController(ITechAuthenticationService _techAuthenticationService,
-        ILogger _logger) : ControllerBase
+        ILogger<TechnicianRegistrationController> _logger) : ControllerBase
     {
         [HttpPost("regiser/technician")]
         public async Task<ActionResult<TechDTO>> Register(TechRegisterDTO techRegisterDTO)

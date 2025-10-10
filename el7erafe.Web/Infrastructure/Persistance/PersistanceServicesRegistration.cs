@@ -31,6 +31,8 @@ namespace Persistance
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
+
+
             services.AddScoped<IDataSeeding, DataSeeding>();
             services.AddScoped<ITechnicianRepository, TechnicianRepository>();
             services.AddScoped<IClientRepository, ClientRepository>();
