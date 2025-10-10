@@ -21,11 +21,6 @@ namespace Persistance.Repositories
             var client = await context.Set<Client>()
                         .Include(c => c.User)
                         .FirstOrDefaultAsync(c => c.Id == id);
-
-            if (client is not null)
-            {
-                return client;
-            }
             return client;
         }
 
@@ -34,11 +29,6 @@ namespace Persistance.Repositories
             var client = await context.Set<Client>()
                         .Include(c => c.User)
                         .FirstOrDefaultAsync(c => c.UserId == userId);
-
-            if(client is not null)
-            {
-                return client;
-            }
             return client;
         }
 
@@ -47,11 +37,6 @@ namespace Persistance.Repositories
             var clients = await context.Set<Client>()
                 .Include(c => c.User)
                 .ToListAsync();
-                
-            if(clients.Any())
-            {
-                return clients;
-            }
             return clients;
         }
 
