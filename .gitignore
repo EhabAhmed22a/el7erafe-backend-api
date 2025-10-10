@@ -1,5 +1,24 @@
 ## Visual Studio ##
-## Your existing content (unchanged) ##
+## User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.vssscc
+*.vspscc
+
+## IDE files
+.vs/
+.vscode/
+.idea/
+
+## Visual Studio Cache Files
+.dtbcache.v2
+.futdcache.v2
+DocumentLayout.json
+DocumentLayout.backup.json
+
+## Build results
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/
@@ -14,70 +33,55 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
-project.lock.json
-project.fragment.lock.json
-artifacts/
-ScaffoldingReadMe.txt
+
+## NuGet packages
 *.nupkg
 *.snupkg
+packages/
+
+## Visual Studio lock files
+project.lock.json
+project.fragment.lock.json
+
+## Artifacts
+artifacts/
+
+## Scaffolding
+ScaffoldingReadMe.txt
+
+## Temporary files
 ~$*
 *~
-CodeCoverage/
-*.binlog
+
+## Test results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+CodeCoverage/
+*.binlog
 
-## New additions (no duplicates) ##
-# User-specific files
-*.user
-*.userosscache
-*.sln.docstates
-
-# IDE files
-.vs/
-.vscode/
-.idea/
-
-# Local settings (security)
-appsettings.Development.json
-appsettings.Local.json
-appsettings.private.json
-*secrets.json
-
-# Output
-/publish/
-
-# Docker
-.dockerignore
-
-# Coverage
+## Coverage reports
 coverage.json
 coverage.cobertura.xml
 *.coverage
 *.lcov
 
-# Package manager
-packages/
+## Local settings (security) - should not be committed
+appsettings.Development.json
+appsettings.Local.json
+appsettings.private.json
+*secrets.json
 
-# Entity Framework (designer files only)
+## Output
+/publish/
+
+## Docker
+.dockerignore
+
+## Entity Framework (designer files only)
 Migrations/*.Designer.cs
 
-# OS files
+## OS files
 .DS_Store
-*~
-
-## Visual Studio Cache Files ##
-.dtbcache.v2
-.futdcache.v2
-DocumentLayout.json
-
-## Visual Studio Solution User Options ##
-*.suo
-*.vssscc
-*.vspscc
-
-## Visual Studio Project Files ##
-*.csproj.user
