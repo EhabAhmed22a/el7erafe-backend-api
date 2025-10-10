@@ -18,7 +18,7 @@ namespace Presentation.Controllers
             var client = await service.RegisterClientAsync(clientRegisterDTO);
 
             logger.LogInformation("[API] Client registered successfully with Name: {ClientName}", client.Name);
-            return Ok(client);
+            return CreatedAtAction(nameof(Register), client);
         }
     }
 }
