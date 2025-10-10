@@ -24,6 +24,15 @@ namespace Service
                 throw new PhoneNumberAlreadyExists(clientRegisterDTO.PhoneNumber);
             }
 
+            logger.LogInformation("[SERVICE] Checking email uniqueness: {Email}", clientRegisterDTO.Email);
+            var userFound = await clientRepository.EmailExistsAsync(clientRegisterDTO.Email);
+
+            if(userFound)
+            {
+                logger.LogWarning("[SERVICE] Duplicate email detected: {Email}", clientRegisterDTO.Email);
+                throw new EmailAlreadyExists(clientRegisterDTO.Email);
+            }
+
             var user = new ApplicationUser
             {
                 UserName = clientRegisterDTO.PhoneNumber,
