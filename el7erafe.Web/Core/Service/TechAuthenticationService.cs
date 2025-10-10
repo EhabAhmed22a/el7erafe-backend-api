@@ -3,10 +3,8 @@ using DomainLayer.Exceptions;
 using DomainLayer.Models.IdentityModule;
 using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
-using Shared.DataTransferObject.ClientIdentityDTOs;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
 
 namespace Service
@@ -24,6 +22,15 @@ namespace Service
             {
                 _logger.LogWarning("[SERVICE] Duplicate phone number detected: {Phone}", techRegisterDTO.PhoneNumber);
                 throw new PhoneNumberAlreadyExists(techRegisterDTO.PhoneNumber);
+            }
+
+            _logger.LogInformation("[SERVICE] Checking National Id uniqueness: {NationalId}", techRegisterDTO.NationalId);
+            var NationalIdFound = await _technicianRepository.ExistsByNationalIdAsync(techRegisterDTO.NationalId);
+
+            if (NationalIdFound)
+            {
+                _logger.LogWarning("[SERVICE] Duplicate phone number detected: {Phone}", techRegisterDTO.PhoneNumber);
+                throw new NationalIdAlreadyExists(techRegisterDTO.NationalId);
             }
 
             // Create User (TechRegisterDTO -> ApplicationUser)

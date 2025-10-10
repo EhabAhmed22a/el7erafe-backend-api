@@ -40,7 +40,7 @@ namespace el7erafe.Web.CustomMiddleWares
                 NotFoundException => StatusCodes.Status404NotFound,
                 UnauthorizedException => StatusCodes.Status401Unauthorized,
                 BadRequestException badRequestException => GetBadRequestErrors(badRequestException, Response),
-                PhoneNumberAlreadyExists => StatusCodes.Status409Conflict,
+                AlreadyExistException => StatusCodes.Status409Conflict,
                 _ => StatusCodes.Status500InternalServerError
             };
 
