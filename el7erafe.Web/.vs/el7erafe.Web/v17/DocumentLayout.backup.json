@@ -6,39 +6,7 @@
     {
       "Orientation": 0,
       "VerticalTabListWidth": 256,
-      "DocumentGroups": [
-        {
-          "DockedWidth": 200,
-          "SelectedChildIndex": 0,
-          "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "TechAuthenticationService.cs",
-              "DocumentMoniker": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Core\\Service\\TechAuthenticationService.cs",
-              "RelativeDocumentMoniker": "Core\\Service\\TechAuthenticationService.cs",
-              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Core\\Service\\TechAuthenticationService.cs",
-              "RelativeToolTip": "Core\\Service\\TechAuthenticationService.cs",
-              "ViewState": "AgIAAAUAAAAAAAAAAAAAAA0AAAAzAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-09T16:54:11.977Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "Program.cs",
-              "DocumentMoniker": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\el7erafe.Web\\Program.cs",
-              "RelativeDocumentMoniker": "el7erafe.Web\\Program.cs",
-              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\el7erafe.Web\\Program.cs",
-              "RelativeToolTip": "el7erafe.Web\\Program.cs",
-              "ViewState": "AgIAAA0AAAAAAAAAAAAQwCsAAAAhAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-09T16:44:41.592Z"
-            }
-          ]
-        }
-      ]
+      "DocumentGroups": []
     }
   ]
 }
