@@ -36,9 +36,16 @@ nunit-*.xml
 *.sln.docstates
 
 # IDE files
+## IDE files ##
 .vs/
+**/.vs/
 .vscode/
 .idea/
+*.user
+*.userosscache
+*.suo
+*.cache
+*.docstates
 
 # Local settings (security)
 appsettings.Development.json
