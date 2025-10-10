@@ -1,46 +1,18 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\",
+  "WorkspaceRootPath": "C:\\Users\\alima\\OneDrive\\Desktop\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{244E192D-DD09-4AEC-B826-0B4079BAF1FE}|el7erafe.Web\\el7erafe.Web.csproj|d:\\grad project\\el7erafe-backend-api\\el7erafe.web\\el7erafe.web\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{244E192D-DD09-4AEC-B826-0B4079BAF1FE}|el7erafe.Web\\el7erafe.Web.csproj|solutionrelative:el7erafe.web\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{104DF479-D252-4EF7-9CA0-00CDAE90726D}|Infrastructure\\Presentation\\Presentation.csproj|c:\\users\\alima\\onedrive\\desktop\\grad project\\el7erafe-backend-api\\el7erafe.web\\infrastructure\\presentation\\controllers\\clientregistrationcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{104DF479-D252-4EF7-9CA0-00CDAE90726D}|Infrastructure\\Presentation\\Presentation.csproj|solutionrelative:infrastructure\\presentation\\controllers\\clientregistrationcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{244E192D-DD09-4AEC-B826-0B4079BAF1FE}|el7erafe.Web\\el7erafe.Web.csproj|d:\\grad project\\el7erafe-backend-api\\el7erafe.web\\el7erafe.web\\extensions\\databaseseed.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{244E192D-DD09-4AEC-B826-0B4079BAF1FE}|el7erafe.Web\\el7erafe.Web.csproj|solutionrelative:el7erafe.web\\extensions\\databaseseed.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{A18D7880-C082-4DAC-98E3-128D28A3689F}|Core\\Service\\Service.csproj|c:\\users\\alima\\onedrive\\desktop\\grad project\\el7erafe-backend-api\\el7erafe.web\\core\\service\\clientauthenticationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A18D7880-C082-4DAC-98E3-128D28A3689F}|Core\\Service\\Service.csproj|solutionrelative:core\\service\\clientauthenticationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{F51139DB-A380-4263-BB23-9BEDF5796734}|Infrastructure\\Persistance\\Persistance.csproj|d:\\grad project\\el7erafe-backend-api\\el7erafe.web\\infrastructure\\persistance\\persistanceservicesregistration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{F51139DB-A380-4263-BB23-9BEDF5796734}|Infrastructure\\Persistance\\Persistance.csproj|solutionrelative:infrastructure\\persistance\\persistanceservicesregistration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{F51139DB-A380-4263-BB23-9BEDF5796734}|Infrastructure\\Persistance\\Persistance.csproj|d:\\grad project\\el7erafe-backend-api\\el7erafe.web\\infrastructure\\persistance\\dataseeding.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{F51139DB-A380-4263-BB23-9BEDF5796734}|Infrastructure\\Persistance\\Persistance.csproj|solutionrelative:infrastructure\\persistance\\dataseeding.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{128B4B71-1272-4EC4-8FBF-75CBC0704B02}|Core\\DomainLayer\\DomainLayer.csproj|d:\\grad project\\el7erafe-backend-api\\el7erafe.web\\core\\domainlayer\\contracts\\idataseeding.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{128B4B71-1272-4EC4-8FBF-75CBC0704B02}|Core\\DomainLayer\\DomainLayer.csproj|solutionrelative:core\\domainlayer\\contracts\\idataseeding.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{244E192D-DD09-4AEC-B826-0B4079BAF1FE}|el7erafe.Web\\el7erafe.Web.csproj|d:\\grad project\\el7erafe-backend-api\\el7erafe.web\\el7erafe.web\\el7erafe.web.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
-      "RelativeMoniker": "D:0:0:{244E192D-DD09-4AEC-B826-0B4079BAF1FE}|el7erafe.Web\\el7erafe.Web.csproj|solutionrelative:el7erafe.web\\el7erafe.web.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{F51139DB-A380-4263-BB23-9BEDF5796734}|Infrastructure\\Persistance\\Persistance.csproj|d:\\grad project\\el7erafe-backend-api\\el7erafe.web\\infrastructure\\persistance\\persistance.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
-      "RelativeMoniker": "D:0:0:{F51139DB-A380-4263-BB23-9BEDF5796734}|Infrastructure\\Persistance\\Persistance.csproj|solutionrelative:infrastructure\\persistance\\persistance.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{128B4B71-1272-4EC4-8FBF-75CBC0704B02}|Core\\DomainLayer\\DomainLayer.csproj|d:\\grad project\\el7erafe-backend-api\\el7erafe.web\\core\\domainlayer\\domainlayer.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
-      "RelativeMoniker": "D:0:0:{128B4B71-1272-4EC4-8FBF-75CBC0704B02}|Core\\DomainLayer\\DomainLayer.csproj|solutionrelative:core\\domainlayer\\domainlayer.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{F51139DB-A380-4263-BB23-9BEDF5796734}|Infrastructure\\Persistance\\Persistance.csproj|d:\\grad project\\el7erafe-backend-api\\el7erafe.web\\infrastructure\\persistance\\databases\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{F51139DB-A380-4263-BB23-9BEDF5796734}|Infrastructure\\Persistance\\Persistance.csproj|solutionrelative:infrastructure\\persistance\\databases\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\Identity\\Migrations\\20251007193606_IdentityTableCreations.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Infrastructure\\Persistance\\Identity\\Migrations\\20251007193606_IdentityTableCreations.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{F51139DB-A380-4263-BB23-9BEDF5796734}|Infrastructure\\Persistance\\Persistance.csproj|c:\\users\\alima\\onedrive\\desktop\\grad project\\el7erafe-backend-api\\el7erafe.web\\infrastructure\\persistance\\repositories\\clientrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F51139DB-A380-4263-BB23-9BEDF5796734}|Infrastructure\\Persistance\\Persistance.csproj|solutionrelative:infrastructure\\persistance\\repositories\\clientrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -53,133 +25,62 @@
           "SelectedChildIndex": 7,
           "Children": [
             {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{fbcae063-e2c0-4ab1-a516-996ea3dafb72}"
+            },
+            {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "DatabaseSeed.cs",
-              "DocumentMoniker": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\el7erafe.Web\\Extensions\\DatabaseSeed.cs",
-              "RelativeDocumentMoniker": "el7erafe.Web\\Extensions\\DatabaseSeed.cs",
-              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\el7erafe.Web\\Extensions\\DatabaseSeed.cs",
-              "RelativeToolTip": "el7erafe.Web\\Extensions\\DatabaseSeed.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
+              "Title": "ClientAuthenticationService.cs",
+              "DocumentMoniker": "C:\\Users\\alima\\OneDrive\\Desktop\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Core\\Service\\ClientAuthenticationService.cs",
+              "RelativeDocumentMoniker": "Core\\Service\\ClientAuthenticationService.cs",
+              "ToolTip": "C:\\Users\\alima\\OneDrive\\Desktop\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Core\\Service\\ClientAuthenticationService.cs",
+              "RelativeToolTip": "Core\\Service\\ClientAuthenticationService.cs",
+              "ViewState": "AgIAACgAAAAAAAAAAAAQwDYAAABzAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-07T20:19:51.377Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "el7erafe.Web",
-              "DocumentMoniker": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\el7erafe.Web\\el7erafe.Web.csproj",
-              "RelativeDocumentMoniker": "el7erafe.Web\\el7erafe.Web.csproj",
-              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\el7erafe.Web\\el7erafe.Web.csproj",
-              "RelativeToolTip": "el7erafe.Web\\el7erafe.Web.csproj",
-              "ViewState": "AgIAABUAAACA8ctPglEnwAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-10-07T20:17:45.886Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "DataSeeding.cs",
-              "DocumentMoniker": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\DataSeeding.cs",
-              "RelativeDocumentMoniker": "Infrastructure\\Persistance\\DataSeeding.cs",
-              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\DataSeeding.cs",
-              "RelativeToolTip": "Infrastructure\\Persistance\\DataSeeding.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAyAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-07T19:58:39.183Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "DomainLayer",
-              "DocumentMoniker": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Core\\DomainLayer\\DomainLayer.csproj",
-              "RelativeDocumentMoniker": "Core\\DomainLayer\\DomainLayer.csproj",
-              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Core\\DomainLayer\\DomainLayer.csproj",
-              "RelativeToolTip": "Core\\DomainLayer\\DomainLayer.csproj",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-10-07T19:54:21.454Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "IDataSeeding.cs",
-              "DocumentMoniker": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Core\\DomainLayer\\Contracts\\IDataSeeding.cs",
-              "RelativeDocumentMoniker": "Core\\DomainLayer\\Contracts\\IDataSeeding.cs",
-              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Core\\DomainLayer\\Contracts\\IDataSeeding.cs",
-              "RelativeToolTip": "Core\\DomainLayer\\Contracts\\IDataSeeding.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAuwAgAAAAKAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-07T19:55:21.036Z",
+              "WhenOpened": "2025-10-10T12:04:12.588Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "PersistanceServicesRegistration.cs",
-              "DocumentMoniker": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\PersistanceServicesRegistration.cs",
-              "RelativeDocumentMoniker": "Infrastructure\\Persistance\\PersistanceServicesRegistration.cs",
-              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\PersistanceServicesRegistration.cs",
-              "RelativeToolTip": "Infrastructure\\Persistance\\PersistanceServicesRegistration.cs",
-              "ViewState": "AgIAAAEAAAAAAAAAAAAcwBUAAAAAAAAAAAAAAA==",
+              "Title": "ClientRepository.cs",
+              "DocumentMoniker": "C:\\Users\\alima\\OneDrive\\Desktop\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\Repositories\\ClientRepository.cs",
+              "RelativeDocumentMoniker": "Infrastructure\\Persistance\\Repositories\\ClientRepository.cs",
+              "ToolTip": "C:\\Users\\alima\\OneDrive\\Desktop\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\Repositories\\ClientRepository.cs",
+              "RelativeToolTip": "Infrastructure\\Persistance\\Repositories\\ClientRepository.cs",
+              "ViewState": "AgIAAEoAAAAAAAAAAAAmwFcAAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-07T19:47:48.629Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "Persistance",
-              "DocumentMoniker": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\Persistance.csproj",
-              "RelativeDocumentMoniker": "Infrastructure\\Persistance\\Persistance.csproj",
-              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\Persistance.csproj",
-              "RelativeToolTip": "Infrastructure\\Persistance\\Persistance.csproj",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-10-07T19:37:20.946Z",
+              "WhenOpened": "2025-10-10T12:01:59.613Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "Program.cs",
-              "DocumentMoniker": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\el7erafe.Web\\Program.cs",
-              "RelativeDocumentMoniker": "el7erafe.Web\\Program.cs",
-              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\el7erafe.Web\\Program.cs",
-              "RelativeToolTip": "el7erafe.Web\\Program.cs",
-              "ViewState": "AgIAAAcAAAAAAAAAAAAzwCYAAAAAAAAAAAAAAA==",
+              "Title": "ClientRegistrationController.cs",
+              "DocumentMoniker": "C:\\Users\\alima\\OneDrive\\Desktop\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Presentation\\Controllers\\ClientRegistrationController.cs",
+              "RelativeDocumentMoniker": "Infrastructure\\Presentation\\Controllers\\ClientRegistrationController.cs",
+              "ToolTip": "C:\\Users\\alima\\OneDrive\\Desktop\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Presentation\\Controllers\\ClientRegistrationController.cs",
+              "RelativeToolTip": "Infrastructure\\Presentation\\Controllers\\ClientRegistrationController.cs",
+              "ViewState": "AgIAAAcAAAAAAAAAAAAtwBMAAABeAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-07T17:44:09.304Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "ApplicationDbContext.cs",
-              "DocumentMoniker": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\Databases\\ApplicationDbContext.cs",
-              "RelativeDocumentMoniker": "Infrastructure\\Persistance\\Databases\\ApplicationDbContext.cs",
-              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\Databases\\ApplicationDbContext.cs",
-              "RelativeToolTip": "Infrastructure\\Persistance\\Databases\\ApplicationDbContext.cs",
-              "ViewState": "AgIAAAYAAAAAAAAAAAAzwBUAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-07T19:35:13.96Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "20251007193606_IdentityTableCreations.cs",
-              "DocumentMoniker": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\Identity\\Migrations\\20251007193606_IdentityTableCreations.cs",
-              "RelativeDocumentMoniker": "Infrastructure\\Persistance\\Identity\\Migrations\\20251007193606_IdentityTableCreations.cs",
-              "ToolTip": "D:\\Grad Project\\el7erafe-backend-api\\el7erafe.Web\\Infrastructure\\Persistance\\Identity\\Migrations\\20251007193606_IdentityTableCreations.cs",
-              "RelativeToolTip": "Infrastructure\\Persistance\\Identity\\Migrations\\20251007193606_IdentityTableCreations.cs",
-              "ViewState": "AgIAAAgAAAAAAAAAAAAAwAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-07T19:36:06.704Z",
+              "WhenOpened": "2025-10-10T11:12:45.613Z",
               "EditorCaption": ""
             }
           ]
