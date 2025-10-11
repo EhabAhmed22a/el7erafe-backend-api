@@ -55,13 +55,13 @@ namespace Service
             {
                 Name = techRegisterDTO.Name,
                 NationalId = techRegisterDTO.NationalId,
-                NationalIdFrontURL = techRegisterDTO.NationalIdFrontURL,
-                NationalIdBackURL = techRegisterDTO.NationalIdBackURL,
-                CriminalHistoryURL = techRegisterDTO.CriminalRecordURL,
+                NationalIdFrontURL = $"/images/Technician/{Guid.NewGuid()}_{Path.GetFileName(techRegisterDTO.NationalIdFrontURL)}",
+                NationalIdBackURL = $"/images/Technician/{Guid.NewGuid()}_{Path.GetFileName(techRegisterDTO.NationalIdBackURL)}",
+                CriminalHistoryURL = $"/images/Technician/{Guid.NewGuid()}_{Path.GetFileName(techRegisterDTO.CriminalRecordURL)}",
                 UserId = user.Id,
                 Status = TechnicianStatus.Pending,
                 ServiceType = (TechnicianServiceType)techRegisterDTO.ServiceType
-            }; 
+            };
 
             await _technicianRepository.CreateAsync(technician);
 
