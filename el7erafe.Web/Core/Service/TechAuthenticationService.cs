@@ -59,8 +59,9 @@ namespace Service
                 NationalIdBackURL = techRegisterDTO.NationalIdBackURL,
                 CriminalHistoryURL = techRegisterDTO.CriminalRecordURL,
                 UserId = user.Id,
-                Status = TechnicianStatus.Pending
-            };
+                Status = TechnicianStatus.Pending,
+                ServiceType = (TechnicianServiceType)techRegisterDTO.ServiceType
+            }; 
 
             await _technicianRepository.CreateAsync(technician);
 
