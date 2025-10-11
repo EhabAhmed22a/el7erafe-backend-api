@@ -3,6 +3,7 @@ using DomainLayer.Exceptions;
 using DomainLayer.Models.IdentityModule;
 using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
@@ -11,7 +12,8 @@ namespace Service
 {
     public class TechAuthenticationService(UserManager<ApplicationUser> _userManager,
         ITechnicianRepository _technicianRepository,
-        ILogger<TechAuthenticationService> _logger) : ITechAuthenticationService
+        ILogger<TechAuthenticationService> _logger,
+        IConfiguration _configuration) : ITechAuthenticationService
     {
         public async Task<TechDTO> techRegisterAsync(TechRegisterDTO techRegisterDTO)
         {
@@ -69,13 +71,14 @@ namespace Service
 
             _logger.LogInformation("[SERVICE] Technician registration completed for: {PhoneNumber}", techRegisterDTO.PhoneNumber);
 
+            var CreateToken = new CreateToken(_userManager, _configuration); // Assuming IConfiguration is not needed here
             // Return TechDTO (assuming TechDTO has Name and PhoneNumber)
             return new TechDTO
             {
                 Name = technician.Name,
                 PhoneNumber = user.PhoneNumber,
                 Status = technician.Status.ToString(),
-                Token = "Token - TODO"
+                Token = await CreateToken.CreateTokenAsync(user)
             };
         }
     }
