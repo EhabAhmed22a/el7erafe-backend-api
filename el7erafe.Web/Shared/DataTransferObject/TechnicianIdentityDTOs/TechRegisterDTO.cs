@@ -20,14 +20,18 @@ namespace Shared.DataTransferObject.TechnicianIdentityDTOs
         [StringLength(14, MinimumLength = 14, ErrorMessage = "National ID must be exactly 14 digits")]
         public string NationalId { get; set; } = default!;
 
-        [Required(ErrorMessage = "National ID Front image URL is required")]
+        [Required(ErrorMessage = "National ID Front image is required")]
         public string NationalIdFrontURL { get; set; } = default!;
 
-        [Required(ErrorMessage = "National ID Back image URL is required")]
+        [Required(ErrorMessage = "National ID Back image is required")]
         public string NationalIdBackURL { get; set; } = default!;
 
-        [Required(ErrorMessage = "Criminal Record image URL is required")]
+        [Required(ErrorMessage = "Criminal Record image is required")]
         public string CriminalRecordURL { get; set; } = default!;
+
+        [Required(ErrorMessage = "Service type is required")]
+        [Range(1, 3, ErrorMessage = "Service type must be: 1 for Carpenter, 2 for Plumber, or 3 for Electrician")]
+        public int ServiceType { get; set; }
 
     }
 }
