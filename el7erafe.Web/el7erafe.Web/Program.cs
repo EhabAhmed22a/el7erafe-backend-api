@@ -16,6 +16,7 @@ namespace el7erafe.Web
 
             #region Add services to the container.
             builder.Services.AddPersistanceServices(builder.Configuration);
+            builder.Services.AddJWTService(builder.Configuration);
             #endregion
 
             builder.Services.AddAutoMapper(typeof(MapperProfile));
@@ -51,12 +52,9 @@ namespace el7erafe.Web
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-
             app.UseHttpsRedirection();
-
-            //app.UseAuthorization();
-
-
+            app.UseAuthentication();
+            app.UseAuthorization();
             app.MapControllers(); 
             #endregion
 
