@@ -66,9 +66,12 @@ namespace Service
             await clientRepository.CreateAsync(client);
 
             var identifier = GetOtpIdentifier(user.Id);
-            var otpCode = await otpService.GenerateOtpAsync(identifier, user.Id);
+            var otpCode = await otpService.GenerateOtpAsync(identifier);
 
-            await emailService.SendOtpEmailAsync(user.Email, otpCode);
+            _ = Task.Run(async () =>
+            {
+                await emailService.SendOtpEmailAsync(user.Email, otpCode);
+            });
 
             logger.LogInformation("[Service] User created(unconfirmed) and OTP sent: {Email}"
             , clientRegisterDTO.Email);
@@ -91,9 +94,9 @@ namespace Service
                 throw new UserNotFoundException();
 
             var identifier = GetOtpIdentifier(user.Id);
-            var userId = await otpService.VerifyOtpAsync<string>(identifier, otpVerificationDTO.OtpCode);
+            var userId = await otpService.VerifyOtpAsync(identifier, otpVerificationDTO.OtpCode);
 
-            if (userId is null)
+            if (!userId)
             {
                 throw new InvalidOtpException();
             }

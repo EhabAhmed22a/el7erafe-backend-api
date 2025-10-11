@@ -3,7 +3,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
 
-namespace Service
+namespace Service.Email
 {
     public class OtpService : IOtpService
     {
@@ -16,30 +16,30 @@ namespace Service
             _cache = cache;
             _logger = logger;
         }
-        public Task<string> GenerateOtpAsync<T>(string identifier, T data)
+        public Task<string> GenerateOtpAsync(string identifier)
         {
             var otpCode = GenerateOtpCode();
             var cacheKey = GetCacheKey(identifier, otpCode);
 
-            _cache.Set(cacheKey, data, _otpExpiration);
+            _cache.Set(cacheKey, true, _otpExpiration);
             _logger.LogInformation("[OTP] Generated OTP for {Identifier}", identifier);
             return Task.FromResult(otpCode);
         }
 
-        public Task<T?> VerifyOtpAsync<T>(string identifier, string otpCode) where T:class
+        public Task<bool> VerifyOtpAsync(string identifier, string otpCode)
         {
             var cacheKey = GetCacheKey(identifier, otpCode);
 
-            if(!_cache.TryGetValue(cacheKey, out T? data))
+            if(!_cache.TryGetValue(cacheKey, out _))
             {
                 _logger.LogWarning("[OTP] Invalid OTP for {Identifier}", identifier);
-                return Task.FromResult<T?>(default);
+                return Task.FromResult(false);
             }
 
             _cache.Remove(cacheKey);
             _logger.LogInformation("[OTP] OTP verified for {Identifier}", identifier);
 
-            return Task.FromResult<T?>(data);
+            return Task.FromResult(true);
         }
 
         private string GenerateOtpCode()
