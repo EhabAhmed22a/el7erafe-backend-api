@@ -38,7 +38,8 @@ namespace Service
             {
                 UserName = techRegisterDTO.PhoneNumber, 
                 PhoneNumber = techRegisterDTO.PhoneNumber,
-                UserType = UserTypeEnum.Technician
+                UserType = UserTypeEnum.Technician,
+                EmailConfirmed = true
             };
 
             var result = await _userManager.CreateAsync(user, techRegisterDTO.Password);
