@@ -12,6 +12,7 @@ namespace DomainLayer.Models.IdentityModule
         public string CriminalHistoryURL { get; set; } = default!;
         public ApplicationUser User { get; set; } = default!;
         public string UserId { get; set; } = default!; //FK 
-        public TechnicianStatus Status { get; set; } 
+        public TechnicianStatus Status { get; set; }
+        public TechnicianServiceType ServiceType { get; set; }
     }
 }
