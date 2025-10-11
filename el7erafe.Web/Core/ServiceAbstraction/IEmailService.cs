@@ -3,6 +3,6 @@ namespace ServiceAbstraction
 {
     public interface IEmailService
     {
-        Task SendEmailVerificationAsync(string toEmail, string confirmationLink);
+        Task SendOtpEmailAsync(string email, string otpCode);
     }
 }

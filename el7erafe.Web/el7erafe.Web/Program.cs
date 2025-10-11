@@ -1,6 +1,7 @@
 using el7erafe.Web.CustomMiddleWares;
 using el7erafe.Web.Extensions;
 using el7erafe.Web.Mapper;
+using Microsoft.Extensions.Options;
 using Persistance;
 using Serilog;
 using Service.Email;
@@ -31,12 +32,25 @@ namespace el7erafe.Web
             builder.Services.AddOpenApi();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(options =>
-                options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "api.xml"))
+            {
+                var presentationXmlPath = Path.Combine(AppContext.BaseDirectory, "Presentation.xml");
+                if (File.Exists(presentationXmlPath))
+                {
+                    options.IncludeXmlComments(presentationXmlPath);
+                }
+
+                // Include Web XML
+                var webXmlPath = Path.Combine(AppContext.BaseDirectory, "api.xml");
+                if (File.Exists(webXmlPath))
+                {
+                    options.IncludeXmlComments(webXmlPath);
+                }
+            }
             );
             #endregion
 
             #region Serilog Setup
-            builder.Host.UseSerilog((context, services, 
+            builder.Host.UseSerilog((context, services,
                 loggerConfiguration) =>
             {
                 loggerConfiguration.ReadFrom.Configuration(context.Configuration)
@@ -64,7 +78,7 @@ namespace el7erafe.Web
             //app.UseAuthorization();
 
 
-            app.MapControllers(); 
+            app.MapControllers();
             #endregion
 
             app.Run();
