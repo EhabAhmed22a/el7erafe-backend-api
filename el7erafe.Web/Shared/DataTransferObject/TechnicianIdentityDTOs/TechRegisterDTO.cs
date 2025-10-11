@@ -29,5 +29,9 @@ namespace Shared.DataTransferObject.TechnicianIdentityDTOs
         [Required(ErrorMessage = "Criminal Record image URL is required")]
         public string CriminalRecordURL { get; set; } = default!;
 
+        [Required(ErrorMessage = "Service type is required")]
+        [Range(1, 3, ErrorMessage = "Service type must be: 1 for Carpenter, 2 for Plumber, or 3 for Electrician")]
+        public int ServiceType { get; set; }
+
     }
 }
