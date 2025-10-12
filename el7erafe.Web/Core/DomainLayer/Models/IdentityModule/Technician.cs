@@ -1,9 +1,4 @@
 ﻿using DomainLayer.Models.IdentityModule.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DomainLayer.Models.IdentityModule
 {
@@ -17,6 +12,7 @@ namespace DomainLayer.Models.IdentityModule
         public string CriminalHistoryURL { get; set; } = default!;
         public ApplicationUser User { get; set; } = default!;
         public string UserId { get; set; } = default!; //FK 
-        public TechnicianStatus Status { get; set; } 
+        public TechnicianStatus Status { get; set; }
+        public TechnicianServiceType ServiceType { get; set; }
     }
 }

@@ -20,7 +20,7 @@ namespace el7erafe.Web.CustomMiddleWares
             try
             {
                 await _next.Invoke(httpContext);
-                //await HandleNotFoundEndPointAsync(httpContext);
+                await HandleNotFoundEndPointAsync(httpContext);
 
             }
             catch (Exception ex)
@@ -40,7 +40,8 @@ namespace el7erafe.Web.CustomMiddleWares
                 NotFoundException => StatusCodes.Status404NotFound,
                 UnauthorizedException => StatusCodes.Status401Unauthorized,
                 BadRequestException badRequestException => GetBadRequestErrors(badRequestException, Response),
-                PhoneNumberAlreadyExists => StatusCodes.Status409Conflict,
+                AlreadyExistException => StatusCodes.Status409Conflict,
+                InvalidOtpException => StatusCodes.Status400BadRequest,
                 _ => StatusCodes.Status500InternalServerError
             };
 

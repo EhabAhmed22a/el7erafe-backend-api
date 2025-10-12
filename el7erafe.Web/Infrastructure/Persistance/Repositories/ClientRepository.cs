@@ -3,7 +3,6 @@ using DomainLayer.Models.IdentityModule;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
 using Persistance.Databases;
 
 namespace Persistance.Repositories
@@ -22,11 +21,6 @@ namespace Persistance.Repositories
             var client = await context.Set<Client>()
                         .Include(c => c.User)
                         .FirstOrDefaultAsync(c => c.Id == id);
-
-            if (client is not null)
-            {
-                return client;
-            }
             return client;
         }
 
@@ -35,11 +29,6 @@ namespace Persistance.Repositories
             var client = await context.Set<Client>()
                         .Include(c => c.User)
                         .FirstOrDefaultAsync(c => c.UserId == userId);
-
-            if(client is not null)
-            {
-                return client;
-            }
             return client;
         }
 
@@ -48,11 +37,6 @@ namespace Persistance.Repositories
             var clients = await context.Set<Client>()
                 .Include(c => c.User)
                 .ToListAsync();
-                
-            if(clients.Any())
-            {
-                return clients;
-            }
             return clients;
         }
 
@@ -98,6 +82,11 @@ namespace Persistance.Repositories
         public async Task<bool> ExistsAsync(string phoneNumber)
         {
             return await context.Set<Client>().AnyAsync(c => c.User.PhoneNumber == phoneNumber);
+        }
+
+        public async Task<bool> EmailExistsAsync(string email)
+        {
+            return await context.Set<Client>().AnyAsync(c => c.User.Email == email);
         }
     }
 }

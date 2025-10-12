@@ -1,9 +1,11 @@
 using el7erafe.Web.CustomMiddleWares;
 using el7erafe.Web.Extensions;
 using el7erafe.Web.Mapper;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Persistance;
 using Serilog;
+using Service.Email;
+using ServiceAbstraction;
 
 namespace el7erafe.Web
 {
@@ -19,18 +21,36 @@ namespace el7erafe.Web
             builder.Services.AddPersistanceServices(builder.Configuration);
             #endregion
 
+            # region Email Services
+            builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("gmail"));
+            builder.Services.AddScoped<IEmailService, EmailService>();
+            #endregion
+
             builder.Services.AddAutoMapper(typeof(MapperProfile));
 
             #region Swagger Setup
             builder.Services.AddOpenApi();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(options =>
-                options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "api.xml"))
+            {
+                var presentationXmlPath = Path.Combine(AppContext.BaseDirectory, "Presentation.xml");
+                if (File.Exists(presentationXmlPath))
+                {
+                    options.IncludeXmlComments(presentationXmlPath);
+                }
+
+                // Include Web XML
+                var webXmlPath = Path.Combine(AppContext.BaseDirectory, "api.xml");
+                if (File.Exists(webXmlPath))
+                {
+                    options.IncludeXmlComments(webXmlPath);
+                }
+            }
             );
             #endregion
 
             #region Serilog Setup
-            builder.Host.UseSerilog((context, services, 
+            builder.Host.UseSerilog((context, services,
                 loggerConfiguration) =>
             {
                 loggerConfiguration.ReadFrom.Configuration(context.Configuration)
@@ -57,7 +77,7 @@ namespace el7erafe.Web
             //app.UseAuthorization();
 
 
-            app.MapControllers(); 
+            app.MapControllers();
             #endregion
 
             app.Run();
