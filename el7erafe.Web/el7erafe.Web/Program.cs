@@ -1,5 +1,11 @@
+using el7erafe.Web.CustomMiddleWares;
 using el7erafe.Web.Extensions;
+using el7erafe.Web.Mapper;
+using Microsoft.Extensions.Options;
 using Persistance;
+using Serilog;
+using Service.Email;
+using ServiceAbstraction;
 
 namespace el7erafe.Web
 {
@@ -9,29 +15,65 @@ namespace el7erafe.Web
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-
             builder.Services.AddControllers();
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+
+            #region Add services to the container.
+            builder.Services.AddPersistanceServices(builder.Configuration);
+            #endregion
+
+            # region Email Services
+            builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("gmail"));
+            builder.Services.AddScoped<IEmailService, EmailService>();
+            #endregion
+
+            builder.Services.AddAutoMapper(typeof(MapperProfile));
+
+            #region Swagger Setup
             builder.Services.AddOpenApi();
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen(options => 
-                options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "api.xml"))
-            );
+            builder.Services.AddSwaggerGen(options =>
+            {
+                var presentationXmlPath = Path.Combine(AppContext.BaseDirectory, "Presentation.xml");
+                if (File.Exists(presentationXmlPath))
+                {
+                    options.IncludeXmlComments(presentationXmlPath);
+                }
 
-            builder.Services.AddPersistanceServices(builder.Configuration);
+                // Include Web XML
+                var webXmlPath = Path.Combine(AppContext.BaseDirectory, "api.xml");
+                if (File.Exists(webXmlPath))
+                {
+                    options.IncludeXmlComments(webXmlPath);
+                }
+            }
+            );
+            #endregion
+
+            #region Serilog Setup
+            builder.Host.UseSerilog((context, services,
+                loggerConfiguration) =>
+            {
+                loggerConfiguration.ReadFrom.Configuration(context.Configuration)
+                .ReadFrom.Services(services)
+                .Enrich.FromLogContext()
+                .Enrich.WithProperty("Application", "el7erafe");
+            });
+            #endregion
 
             var app = builder.Build();
 
             await app.SeedDatabaseAsync();
 
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
+            #region Configure the HTTP request pipeline.
+            app.UseMiddleware<CustomExceptionHandlerMiddleWare>();
+            
+                if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+            
 
             app.UseHttpsRedirection();
 
@@ -39,6 +81,7 @@ namespace el7erafe.Web
 
 
             app.MapControllers();
+            #endregion
 
             app.Run();
         }

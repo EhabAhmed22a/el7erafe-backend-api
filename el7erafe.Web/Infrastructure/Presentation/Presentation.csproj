@@ -3,11 +3,23 @@
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
+	<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	<DocumentationFile>Presentation.xml</DocumentationFile>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\ServiceAbstraction\ServiceAbstraction.csproj" />
   </ItemGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+	<Target Name="CopyXmlToWeb" AfterTargets="Build">
+		<Copy SourceFiles="$(OutputPath)Presentation.xml"
+			  DestinationFiles="$(SolutionDir)el7erafe.Web\el7erafe.Web\bin\Debug\net9.0\Presentation.xml"
+			  SkipUnchangedFiles="true" />
+	</Target>
 
 </Project>
