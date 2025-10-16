@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Shared.Validations;
 using System.ComponentModel.DataAnnotations;
 
 namespace Shared.DataTransferObject.TechnicianIdentityDTOs
