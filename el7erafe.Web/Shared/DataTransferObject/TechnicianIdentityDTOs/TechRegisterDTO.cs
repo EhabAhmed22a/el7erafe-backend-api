@@ -21,13 +21,16 @@ namespace Shared.DataTransferObject.TechnicianIdentityDTOs
         public string NationalId { get; set; } = default!;
 
         [Required(ErrorMessage = "National ID Front image is required")]
-        public string NationalIdFrontURL { get; set; } = default!;
+        [ValidateFile(1 * 1024 * 1024, new[] { ".png", ".jpg", ".jpeg" })]
+        public IFormFile NationalIdFront { get; set; } = default!;
 
         [Required(ErrorMessage = "National ID Back image is required")]
-        public string NationalIdBackURL { get; set; } = default!;
+        [ValidateFile(1 * 1024 * 1024, new[] { ".png", ".jpg", ".jpeg" })]
+        public IFormFile NationalIdBack { get; set; } = default!;
 
         [Required(ErrorMessage = "Criminal Record image is required")]
-        public string CriminalRecordURL { get; set; } = default!;
+        [ValidateFile(1 * 1024 * 1024, new[] { ".png", ".jpg", ".jpeg" })]
+        public IFormFile CriminalRecord { get; set; } = default!;
 
         [Required(ErrorMessage = "Service type is required")]
         [Range(1, 3, ErrorMessage = "Service type must be: 1 for Carpenter, 2 for Plumber, or 3 for Electrician")]
