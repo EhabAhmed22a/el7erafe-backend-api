@@ -2,6 +2,7 @@
 using DomainLayer.Exceptions;
 using DomainLayer.Models.IdentityModule;
 using DomainLayer.Models.IdentityModule.Enums;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
@@ -11,10 +12,12 @@ namespace Service
 {
     public class TechAuthenticationService(UserManager<ApplicationUser> _userManager,
         ITechnicianRepository _technicianRepository,
-        ILogger<TechAuthenticationService> _logger) : ITechAuthenticationService
+        ILogger<TechAuthenticationService> _logger,
+        ITechnicianFileService _fileService) : ITechAuthenticationService
     {
         public async Task<TechDTO> techRegisterAsync(TechRegisterDTO techRegisterDTO)
         {
+
             _logger.LogInformation("[SERVICE] Checking phone number uniqueness: {Phone}", techRegisterDTO.PhoneNumber);
             var phoneNumberFound = await _technicianRepository.ExistsAsync(techRegisterDTO.PhoneNumber);
 
@@ -33,11 +36,13 @@ namespace Service
                 throw new NationalIdAlreadyExists(techRegisterDTO.NationalId);
             }
 
+            var processedData = await _fileService.ProcessTechnicianFilesAsync(techRegisterDTO);
+
             // Create User (TechRegisterDTO -> ApplicationUser)
             var user = new ApplicationUser()
             {
-                UserName = techRegisterDTO.PhoneNumber, 
-                PhoneNumber = techRegisterDTO.PhoneNumber,
+                UserName = processedData.PhoneNumber, 
+                PhoneNumber = processedData.PhoneNumber,
                 UserType = UserTypeEnum.Technician,
                 EmailConfirmed = true
             };
@@ -54,11 +59,11 @@ namespace Service
             // Create Technician
             var technician = new Technician
             {
-                Name = techRegisterDTO.Name,
-                NationalId = techRegisterDTO.NationalId,
-                NationalIdFrontURL = $"/images/Technician/{Guid.NewGuid()}_{Path.GetFileName(techRegisterDTO.NationalIdFrontURL)}",
-                NationalIdBackURL = $"/images/Technician/{Guid.NewGuid()}_{Path.GetFileName(techRegisterDTO.NationalIdBackURL)}",
-                CriminalHistoryURL = $"/images/Technician/{Guid.NewGuid()}_{Path.GetFileName(techRegisterDTO.CriminalRecordURL)}",
+                Name = processedData.Name,
+                NationalId = processedData.NationalId,
+                NationalIdFrontURL = processedData.NationalIdFrontPath,
+                NationalIdBackURL = processedData.NationalIdBackPath,
+                CriminalHistoryURL = processedData.CriminalRecordPath,
                 UserId = user.Id,
                 Status = TechnicianStatus.Pending,
                 ServiceType = (TechnicianServiceType)techRegisterDTO.ServiceType

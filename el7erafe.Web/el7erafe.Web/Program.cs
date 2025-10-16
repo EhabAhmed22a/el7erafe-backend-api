@@ -1,6 +1,7 @@
 using el7erafe.Web.CustomMiddleWares;
 using el7erafe.Web.Extensions;
 using el7erafe.Web.Mapper;
+using el7erafe.Web.Services;
 using Microsoft.Extensions.Options;
 using Persistance;
 using Serilog;
@@ -19,6 +20,7 @@ namespace el7erafe.Web
 
             #region Add services to the container.
             builder.Services.AddPersistanceServices(builder.Configuration);
+            builder.Services.AddScoped<ITechnicianFileService, TechnicianFileService>();
             #endregion
 
             # region Email Services
