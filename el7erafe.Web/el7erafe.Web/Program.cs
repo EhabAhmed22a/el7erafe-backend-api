@@ -1,10 +1,9 @@
 using el7erafe.Web.CustomMiddleWares;
 using el7erafe.Web.Extensions;
 using el7erafe.Web.Mapper;
-using el7erafe.Web.Services;
-using Microsoft.Extensions.Options;
 using Persistance;
 using Serilog;
+using Service;
 using Service.Email;
 using ServiceAbstraction;
 
@@ -20,10 +19,10 @@ namespace el7erafe.Web
 
             #region Add services to the container.
             builder.Services.AddPersistanceServices(builder.Configuration);
-            builder.Services.AddScoped<ITechnicianFileService, TechnicianFileService>();
+            builder.Services.AddServiceLayerServices();
             #endregion
 
-            # region Email Services
+            #region Email Services
             builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("gmail"));
             builder.Services.AddScoped<IEmailService, EmailService>();
             #endregion
