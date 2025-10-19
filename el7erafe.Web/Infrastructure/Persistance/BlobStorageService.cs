@@ -43,7 +43,7 @@ namespace Persistance
                 }
             });
 
-            return blobClient.Uri.ToString();
+            return fileName;
         }
 
         public async Task DeleteFileAsync(string fileName, string containerName)

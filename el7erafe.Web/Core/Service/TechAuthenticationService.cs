@@ -54,7 +54,18 @@ namespace Service
             }
             _logger.LogInformation("[SERVICE] Uploading technician documents to secure cloud storage for: {PhoneNumber}", techRegisterDTO.PhoneNumber);
 
-            var processedData = await _fileService.ProcessTechnicianFilesAsync(techRegisterDTO);
+            TechRegisterToReturnDTO processedData ;
+
+            try
+            {
+                processedData = await _fileService.ProcessTechnicianFilesAsync(techRegisterDTO);
+            }
+            catch (Exception ex)
+            {
+                await _userManager.DeleteAsync(user);
+                throw new UnauthorizedBlobStorage();
+            }
+
             _logger.LogInformation("[SERVICE] All technician documents securely stored in cloud storage successfully for: {PhoneNumber}", techRegisterDTO.PhoneNumber);
 
             // Create Technician
