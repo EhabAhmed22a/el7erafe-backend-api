@@ -1,13 +1,13 @@
 ﻿using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+using DomainLayer.Contracts;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
-using static DomainLayer.Contracts.IBlobStorage;
 namespace Service
 {
     public class TechnicianFileService : ITechnicianFileService
@@ -16,11 +16,11 @@ namespace Service
         private readonly IConfiguration _configuration;
         private readonly ILogger<TechnicianFileService> _logger;
         private readonly IWebHostEnvironment _environment;
-        private readonly IBlobStorageService _blobStorageService;
+        private readonly IBlobStorageRepository _blobStorageService;
 
 
         public TechnicianFileService(
-            IBlobStorageService blobStorageService,
+            IBlobStorageRepository blobStorageService,
             IConfiguration configuration,
             ILogger<TechnicianFileService> logger,
             IWebHostEnvironment environment

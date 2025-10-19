@@ -1,17 +1,17 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using DomainLayer.Contracts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using static DomainLayer.Contracts.IBlobStorage;
 
 namespace Persistance
 {
-    public class BlobStorageService : IBlobStorageService
+    public class BlobStorageRepository : IBlobStorageRepository
     {
         private readonly BlobServiceClient _blobServiceClient;
         private readonly IConfiguration _configuration;
 
-        public BlobStorageService(IConfiguration configuration)
+        public BlobStorageRepository(IConfiguration configuration)
         {
             _configuration = configuration;
             var connectionString = _configuration.GetConnectionString("AzureBlobStorage");
