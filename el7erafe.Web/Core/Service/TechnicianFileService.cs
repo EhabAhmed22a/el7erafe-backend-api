@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using static DomainLayer.Contracts.IBlobStorage;
 using ServiceAbstraction;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
 namespace Service
@@ -16,13 +17,17 @@ namespace Service
         private readonly IConfiguration _configuration;
         private readonly ILogger<TechnicianFileService> _logger;
         private readonly IWebHostEnvironment _environment;
+        private readonly IBlobStorageService _blobStorageService;
 
 
         public TechnicianFileService(
+            IBlobStorageService blobStorageService,
             IConfiguration configuration, 
             ILogger<TechnicianFileService> logger,
-            IWebHostEnvironment environment)
+            IWebHostEnvironment environment
+            )
         {
+            _blobStorageService = blobStorageService;
             _configuration = configuration;
             _logger = logger;
             _environment = environment;
@@ -68,54 +73,40 @@ namespace Service
 
 
         public async Task<TechRegisterToReturnDTO> ProcessTechnicianFilesAsync(TechRegisterDTO techRegisterDTO)
-        {
-            // Save files to blob storage and get URLs
-            var nationalIdFrontUrl = await SaveFileToBlobAsync(techRegisterDTO.NationalIdFront, "nationalid_front");
-            var nationalIdBackUrl = await SaveFileToBlobAsync(techRegisterDTO.NationalIdBack, "nationalid_back");
-            var criminalRecordUrl = await SaveFileToBlobAsync(techRegisterDTO.CriminalRecord, "criminal_record");
+{
+    // Save files to blob storage and get URLs
+    var nationalIdFrontUrl = await _blobStorageService.UploadFileAsync(
+        techRegisterDTO.NationalIdFront,
+        "technician-documents",
+        $"nationalidfront{Guid.NewGuid()}"
+    );
 
-            // Return the processed DTO with blob URLs
-            return new TechRegisterToReturnDTO
-            {
-                Name = techRegisterDTO.Name,
-                PhoneNumber = techRegisterDTO.PhoneNumber,
-                Password = techRegisterDTO.Password,
-                NationalId = techRegisterDTO.NationalId,
-                NationalIdFrontPath = nationalIdFrontUrl, 
-                NationalIdBackPath = nationalIdBackUrl,
-                CriminalRecordPath = criminalRecordUrl,
-                ServiceType = techRegisterDTO.ServiceType
-            };
-        }
+    var nationalIdBackUrl = await _blobStorageService.UploadFileAsync(
+        techRegisterDTO.NationalIdBack,
+        "technician-documents",
+        $"nationalidback{Guid.NewGuid()}"
+    );
 
-        private async Task<string> SaveFileToBlobAsync(IFormFile file, string fileType)
-        {
-            // File validation is already done by ValidateFileAttribute
-            var fileExtension = Path.GetExtension(file.FileName);
-            var fileName = $"{fileType}_{Guid.NewGuid()}{fileExtension}";
+    var criminalRecordUrl = await _blobStorageService.UploadFileAsync(
+        techRegisterDTO.CriminalRecord,
+        "technician-documents",
+        $"criminalrecord{Guid.NewGuid()}"
+    );
 
-            // Get container client for technician documents
-            var containerClient = _blobServiceClient.GetBlobContainerClient("technician-documents");
+    // Return the processed DTO with blob URLs
+    return new TechRegisterToReturnDTO
+    {
+        Name = techRegisterDTO.Name,
+        PhoneNumber = techRegisterDTO.PhoneNumber,
+        Password = techRegisterDTO.Password,
+        NationalId = techRegisterDTO.NationalId,
+        NationalIdFrontPath = nationalIdFrontUrl,
+        NationalIdBackPath = nationalIdBackUrl,
+        CriminalRecordPath = criminalRecordUrl,
+        ServiceType = techRegisterDTO.ServiceType
+    };
+}
 
-            // Create container if it doesn't exist with public read access
-            // await containerClient.CreateIfNotExistsAsync(PublicAccessType.Blob);
-
-            // Get blob client
-            var blobClient = containerClient.GetBlobClient(fileName);
-
-            // Upload file to blob storage
-            using var stream = file.OpenReadStream();
-            await blobClient.UploadAsync(stream, new BlobUploadOptions
-            {
-                HttpHeaders = new BlobHttpHeaders
-                {
-                    ContentType = file.ContentType
-                }
-            });
-
-            // Return the public URL of the blob
-            return blobClient.Uri.ToString();
-        }
         public async Task<Stream> GetFileStreamAsync(string blobName)
         {
             try

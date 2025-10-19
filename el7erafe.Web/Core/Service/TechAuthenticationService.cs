@@ -2,7 +2,6 @@
 using DomainLayer.Exceptions;
 using DomainLayer.Models.IdentityModule;
 using DomainLayer.Models.IdentityModule.Enums;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
@@ -36,13 +35,11 @@ namespace Service
                 throw new NationalIdAlreadyExists(techRegisterDTO.NationalId);
             }
 
-            var processedData = await _fileService.ProcessTechnicianFilesAsync(techRegisterDTO);
-
             // Create User (TechRegisterDTO -> ApplicationUser)
             var user = new ApplicationUser()
             {
-                UserName = processedData.PhoneNumber, 
-                PhoneNumber = processedData.PhoneNumber,
+                UserName = techRegisterDTO.PhoneNumber, 
+                PhoneNumber = techRegisterDTO.PhoneNumber,
                 UserType = UserTypeEnum.Technician,
                 EmailConfirmed = true
             };
@@ -55,6 +52,10 @@ namespace Service
                 var errors = result.Errors.Select(e => e.Description).ToList();
                 throw new BadRequestException(errors);
             }
+            _logger.LogInformation("[SERVICE] Uploading technician documents to secure cloud storage for: {PhoneNumber}", techRegisterDTO.PhoneNumber);
+
+            var processedData = await _fileService.ProcessTechnicianFilesAsync(techRegisterDTO);
+            _logger.LogInformation("[SERVICE] All technician documents securely stored in cloud storage successfully for: {PhoneNumber}", techRegisterDTO.PhoneNumber);
 
             // Create Technician
             var technician = new Technician
@@ -71,12 +72,10 @@ namespace Service
 
             await _technicianRepository.CreateAsync(technician);
 
-            // Assign the Technician role
             await _userManager.AddToRoleAsync(user, "Technician");
 
             _logger.LogInformation("[SERVICE] Technician registration completed for: {PhoneNumber}", techRegisterDTO.PhoneNumber);
 
-            // Return TechDTO (assuming TechDTO has Name and PhoneNumber)
             return new TechDTO
             {
                 Name = technician.Name,

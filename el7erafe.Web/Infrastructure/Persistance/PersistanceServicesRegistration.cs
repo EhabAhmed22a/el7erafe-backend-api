@@ -9,6 +9,7 @@ using Persistance.Repositories;
 using Service;
 using Service.Email;
 using ServiceAbstraction;
+using static DomainLayer.Contracts.IBlobStorage;
 
 namespace Persistance
 {
@@ -41,6 +42,7 @@ namespace Persistance
             services.AddScoped<IOtpService, OtpService>();
             services.AddScoped<IClientAuthenticationService, ClientAuthenticationService>();
             services.AddScoped<ITechAuthenticationService, TechAuthenticationService>();
+            services.AddScoped<IBlobStorageService, BlobStorageService>();
 
             return services;
         }
