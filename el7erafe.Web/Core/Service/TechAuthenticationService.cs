@@ -54,6 +54,7 @@ namespace Service
             }
 
             var processedData = await _fileService.ProcessTechnicianFilesAsync(techRegisterDTO);
+            _logger.LogInformation("[SERVICE] Saved Technician Images successfully for PhoneNumber: {PhoneNumber}", processedData.PhoneNumber);
 
             // Create Technician
             var technician = new Technician

@@ -16,6 +16,7 @@ namespace Shared.DataTransferObject.TechnicianIdentityDTOs
         [StringLength(11, MinimumLength = 11, ErrorMessage = "Phone number must be exactly 11 digits")]
         public string PhoneNumber { get; set; } = default!;
 
+        [Required(ErrorMessage = "Password is required")]
         public string Password { get; set; } = default!;
 
         [Required(ErrorMessage = "National ID is required")]
