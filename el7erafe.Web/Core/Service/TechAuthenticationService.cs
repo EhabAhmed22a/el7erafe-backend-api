@@ -2,7 +2,6 @@
 using DomainLayer.Exceptions;
 using DomainLayer.Models.IdentityModule;
 using DomainLayer.Models.IdentityModule.Enums;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
@@ -36,13 +35,11 @@ namespace Service
                 throw new NationalIdAlreadyExists(techRegisterDTO.NationalId);
             }
 
-            var processedData = await _fileService.ProcessTechnicianFilesAsync(techRegisterDTO);
-
             // Create User (TechRegisterDTO -> ApplicationUser)
             var user = new ApplicationUser()
             {
-                UserName = processedData.PhoneNumber, 
-                PhoneNumber = processedData.PhoneNumber,
+                UserName = techRegisterDTO.PhoneNumber, 
+                PhoneNumber = techRegisterDTO.PhoneNumber,
                 UserType = UserTypeEnum.Technician,
                 EmailConfirmed = true
             };
@@ -55,6 +52,8 @@ namespace Service
                 var errors = result.Errors.Select(e => e.Description).ToList();
                 throw new BadRequestException(errors);
             }
+
+            var processedData = await _fileService.ProcessTechnicianFilesAsync(techRegisterDTO);
 
             // Create Technician
             var technician = new Technician
