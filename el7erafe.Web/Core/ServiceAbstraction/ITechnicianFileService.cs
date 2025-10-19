@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Shared.DataTransferObject.TechnicianIdentityDTOs;
+﻿using Shared.DataTransferObject.TechnicianIdentityDTOs;
 
 namespace ServiceAbstraction
 {
