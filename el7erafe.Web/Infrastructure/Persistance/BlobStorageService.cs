@@ -30,7 +30,6 @@ namespace Persistance
 
             // Get container client
             var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
-            // await containerClient.CreateIfNotExistsAsync(PublicAccessType.Blob);
 
             // Upload file
             var blobClient = containerClient.GetBlobClient(fileName);

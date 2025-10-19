@@ -1,14 +1,13 @@
 ﻿using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
-using static DomainLayer.Contracts.IBlobStorage;
 using ServiceAbstraction;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
+using static DomainLayer.Contracts.IBlobStorage;
 namespace Service
 {
     public class TechnicianFileService : ITechnicianFileService
@@ -22,7 +21,7 @@ namespace Service
 
         public TechnicianFileService(
             IBlobStorageService blobStorageService,
-            IConfiguration configuration, 
+            IConfiguration configuration,
             ILogger<TechnicianFileService> logger,
             IWebHostEnvironment environment
             )
@@ -46,7 +45,7 @@ namespace Service
                     {
                         throw new InvalidOperationException("AzureBlobStorage connection string is not configured for development environment.");
                     }
-                    
+
                     _logger.LogInformation("Using connection string for Blob Storage (Development)");
                     return new BlobServiceClient(connectionString);
                 }
@@ -73,39 +72,39 @@ namespace Service
 
 
         public async Task<TechRegisterToReturnDTO> ProcessTechnicianFilesAsync(TechRegisterDTO techRegisterDTO)
-{
-    // Save files to blob storage and get URLs
-    var nationalIdFrontUrl = await _blobStorageService.UploadFileAsync(
-        techRegisterDTO.NationalIdFront,
-        "technician-documents",
-        $"nationalidfront{Guid.NewGuid()}"
-    );
+        {
+            // Save files to blob storage and get URLs
+            var nationalIdFrontUrl = await _blobStorageService.UploadFileAsync(
+                techRegisterDTO.NationalIdFront,
+                "technician-documents",
+                $"nationalidfront{Guid.NewGuid()}"
+            );
 
-    var nationalIdBackUrl = await _blobStorageService.UploadFileAsync(
-        techRegisterDTO.NationalIdBack,
-        "technician-documents",
-        $"nationalidback{Guid.NewGuid()}"
-    );
+            var nationalIdBackUrl = await _blobStorageService.UploadFileAsync(
+                techRegisterDTO.NationalIdBack,
+                "technician-documents",
+                $"nationalidback{Guid.NewGuid()}"
+            );
 
-    var criminalRecordUrl = await _blobStorageService.UploadFileAsync(
-        techRegisterDTO.CriminalRecord,
-        "technician-documents",
-        $"criminalrecord{Guid.NewGuid()}"
-    );
+            var criminalRecordUrl = await _blobStorageService.UploadFileAsync(
+                techRegisterDTO.CriminalRecord,
+                "technician-documents",
+                $"criminalrecord{Guid.NewGuid()}"
+            );
 
-    // Return the processed DTO with blob URLs
-    return new TechRegisterToReturnDTO
-    {
-        Name = techRegisterDTO.Name,
-        PhoneNumber = techRegisterDTO.PhoneNumber,
-        Password = techRegisterDTO.Password,
-        NationalId = techRegisterDTO.NationalId,
-        NationalIdFrontPath = nationalIdFrontUrl,
-        NationalIdBackPath = nationalIdBackUrl,
-        CriminalRecordPath = criminalRecordUrl,
-        ServiceType = techRegisterDTO.ServiceType
-    };
-}
+            // Return the processed DTO with blob URLs
+            return new TechRegisterToReturnDTO
+            {
+                Name = techRegisterDTO.Name,
+                PhoneNumber = techRegisterDTO.PhoneNumber,
+                Password = techRegisterDTO.Password,
+                NationalId = techRegisterDTO.NationalId,
+                NationalIdFrontPath = nationalIdFrontUrl,
+                NationalIdBackPath = nationalIdBackUrl,
+                CriminalRecordPath = criminalRecordUrl,
+                ServiceType = techRegisterDTO.ServiceType
+            };
+        }
 
         public async Task<Stream> GetFileStreamAsync(string blobName)
         {
@@ -150,4 +149,4 @@ namespace Service
             }
         }
     }
-    }
+}
