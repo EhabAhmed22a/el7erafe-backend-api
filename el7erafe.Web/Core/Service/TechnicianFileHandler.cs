@@ -1,23 +1,71 @@
-﻿using Azure.Storage.Blobs;
+﻿using Azure.Identity;
+using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using ServiceAbstraction;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
-
 namespace Service
 {
     public class TechnicianFileService : ITechnicianFileService
     {
         private readonly BlobServiceClient _blobServiceClient;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<TechnicianFileService> _logger;
+        private readonly IWebHostEnvironment _environment;
 
-        public TechnicianFileService(IConfiguration configuration)
+
+        public TechnicianFileService(
+            IConfiguration configuration, 
+            ILogger<TechnicianFileService> logger,
+            IWebHostEnvironment environment)
         {
             _configuration = configuration;
-            var connectionString = _configuration.GetConnectionString("AzureBlobStorage");
-            _blobServiceClient = new BlobServiceClient(connectionString);
+            _logger = logger;
+            _environment = environment;
+            _blobServiceClient = CreateBlobServiceClient();
         }
+
+        private BlobServiceClient CreateBlobServiceClient()
+        {
+            try
+            {
+                if (_environment.IsDevelopment())
+                {
+                    // Use connection string for development
+                    var connectionString = _configuration.GetConnectionString("AzureBlobStorage");
+                    if (string.IsNullOrEmpty(connectionString))
+                    {
+                        throw new InvalidOperationException("AzureBlobStorage connection string is not configured for development environment.");
+                    }
+                    
+                    _logger.LogInformation("Using connection string for Blob Storage (Development)");
+                    return new BlobServiceClient(connectionString);
+                }
+                else
+                {
+                    // Use Managed Identity for production
+                    var storageAccountName = _configuration["AzureBlobStorage:AccountName"];
+                    if (string.IsNullOrEmpty(storageAccountName))
+                    {
+                        throw new InvalidOperationException("AzureBlobStorage AccountName is not configured for production environment.");
+                    }
+
+                    var blobUri = new Uri($"https://{storageAccountName}.blob.core.windows.net");
+                    _logger.LogInformation("Using Managed Identity for Blob Storage (Production)");
+                    return new BlobServiceClient(blobUri, new DefaultAzureCredential());
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to create BlobServiceClient");
+                throw;
+            }
+        }
+
 
         public async Task<TechRegisterToReturnDTO> ProcessTechnicianFilesAsync(TechRegisterDTO techRegisterDTO)
         {
@@ -50,7 +98,7 @@ namespace Service
             var containerClient = _blobServiceClient.GetBlobContainerClient("technician-documents");
 
             // Create container if it doesn't exist with public read access
-            await containerClient.CreateIfNotExistsAsync(PublicAccessType.Blob);
+            // await containerClient.CreateIfNotExistsAsync(PublicAccessType.Blob);
 
             // Get blob client
             var blobClient = containerClient.GetBlobClient(fileName);
@@ -68,5 +116,47 @@ namespace Service
             // Return the public URL of the blob
             return blobClient.Uri.ToString();
         }
+        public async Task<Stream> GetFileStreamAsync(string blobName)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(blobName))
+                    throw new ArgumentException("Blob name cannot be null or empty");
+
+                var containerClient = _blobServiceClient.GetBlobContainerClient("technician-documents");
+                var blobClient = containerClient.GetBlobClient(blobName);
+
+                if (!await blobClient.ExistsAsync())
+                    throw new FileNotFoundException($"File not found in blob storage: {blobName}");
+
+                return await blobClient.OpenReadAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving file stream for blob: {BlobName}", blobName);
+                throw;
+            }
+        }
+        public async Task<BlobProperties> GetFilePropertiesAsync(string blobName)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(blobName))
+                    throw new ArgumentException("Blob name cannot be null or empty");
+
+                var containerClient = _blobServiceClient.GetBlobContainerClient("technician-documents");
+                var blobClient = containerClient.GetBlobClient(blobName);
+
+                if (!await blobClient.ExistsAsync())
+                    throw new FileNotFoundException($"File not found in blob storage: {blobName}");
+
+                return await blobClient.GetPropertiesAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving file properties for blob: {BlobName}", blobName);
+                throw;
+            }
+        }
     }
-}
+    }
