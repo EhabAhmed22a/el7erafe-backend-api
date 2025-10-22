@@ -1,21 +1,31 @@
-﻿using Azure.Storage.Blobs;
+﻿using Azure.Identity;
+using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using DomainLayer.Contracts;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
 namespace Persistance
 {
     public class BlobStorageRepository : IBlobStorageRepository
     {
         private readonly BlobServiceClient _blobServiceClient;
-        private readonly IConfiguration _configuration;
 
-        public BlobStorageRepository(IConfiguration configuration)
+        public BlobStorageRepository(IConfiguration configuration, IWebHostEnvironment env)
         {
-            _configuration = configuration;
-            var connectionString = _configuration.GetConnectionString("AzureBlobStorage");
-            _blobServiceClient = new BlobServiceClient(connectionString);
+            if (env.IsDevelopment())
+            {
+                var connectionString = configuration.GetConnectionString("AzureBlobStorage");
+                _blobServiceClient = new BlobServiceClient(connectionString);
+            }
+            else
+            {
+                var accountName = configuration.GetValue<string>("AzureBlobStorage:AccountName");
+                var blobServiceUri = new Uri($"https://{accountName}.blob.core.windows.net");
+                _blobServiceClient = new BlobServiceClient(blobServiceUri, new DefaultAzureCredential());
+            }
         }
 
         public async Task<string> UploadFileAsync(IFormFile file, string containerName, string? customFileName = null)
@@ -31,7 +41,7 @@ namespace Persistance
             // Get container client
             var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
 
-            // Upload file
+            // Upload file1
             var blobClient = containerClient.GetBlobClient(fileName);
 
             using var stream = file.OpenReadStream();
