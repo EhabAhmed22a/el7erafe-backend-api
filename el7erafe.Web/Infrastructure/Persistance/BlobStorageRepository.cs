@@ -23,6 +23,7 @@ namespace Persistance
             else
             {
                 var accountName = configuration.GetValue<string>("AzureBlobStorage:AccountName");
+                Console.WriteLine($"Account Name: {accountName}");
                 var blobServiceUri = new Uri($"https://{accountName}.blob.core.windows.net");
                 _blobServiceClient = new BlobServiceClient(blobServiceUri, new DefaultAzureCredential());
             }
