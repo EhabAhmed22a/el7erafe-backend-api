@@ -60,7 +60,7 @@ namespace Service
             {
                 processedData = await _fileService.ProcessTechnicianFilesAsync(techRegisterDTO);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 await _userManager.DeleteAsync(user);
                 throw new UnauthorizedBlobStorage();
