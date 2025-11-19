@@ -12,9 +12,9 @@ namespace Service
 {
     public class TechAuthenticationService(UserManager<ApplicationUser> _userManager,
         ITechnicianRepository _technicianRepository,
+        ITechnicianFileService _fileService,
         ILogger<TechAuthenticationService> _logger,
         IConfiguration _configuration) : ITechAuthenticationService
-        ITechnicianFileService _fileService) : ITechAuthenticationService
     {
         public async Task<TechDTO> techRegisterAsync(TechRegisterDTO techRegisterDTO)
         {
