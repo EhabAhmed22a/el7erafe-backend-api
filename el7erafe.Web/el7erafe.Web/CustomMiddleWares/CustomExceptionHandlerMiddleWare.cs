@@ -41,6 +41,7 @@ namespace el7erafe.Web.CustomMiddleWares
                 UnauthorizedException => StatusCodes.Status401Unauthorized,
                 BadRequestException badRequestException => GetBadRequestErrors(badRequestException, Response),
                 AlreadyExistException => StatusCodes.Status409Conflict,
+                InvalidOtpException => StatusCodes.Status400BadRequest,
                 _ => StatusCodes.Status500InternalServerError
             };
 

@@ -3,6 +3,9 @@ using el7erafe.Web.Extensions;
 using el7erafe.Web.Mapper;
 using Persistance;
 using Serilog;
+using Service;
+using Service.Email;
+using ServiceAbstraction;
 
 namespace el7erafe.Web
 {
@@ -17,6 +20,12 @@ namespace el7erafe.Web
             #region Add services to the container.
             builder.Services.AddPersistanceServices(builder.Configuration);
             builder.Services.AddJWTService(builder.Configuration);
+            builder.Services.AddServiceLayerServices();
+            #endregion
+
+            #region Email Services
+            builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("gmail"));
+            builder.Services.AddScoped<IEmailService, EmailService>();
             #endregion
 
             builder.Services.AddAutoMapper(typeof(MapperProfile));
@@ -25,12 +34,25 @@ namespace el7erafe.Web
             builder.Services.AddOpenApi();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(options =>
-                options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "api.xml"))
+            {
+                var presentationXmlPath = Path.Combine(AppContext.BaseDirectory, "Presentation.xml");
+                if (File.Exists(presentationXmlPath))
+                {
+                    options.IncludeXmlComments(presentationXmlPath);
+                }
+
+                // Include Web XML
+                var webXmlPath = Path.Combine(AppContext.BaseDirectory, "api.xml");
+                if (File.Exists(webXmlPath))
+                {
+                    options.IncludeXmlComments(webXmlPath);
+                }
+            }
             );
             #endregion
 
             #region Serilog Setup
-            builder.Host.UseSerilog((context, services, 
+            builder.Host.UseSerilog((context, services,
                 loggerConfiguration) =>
             {
                 loggerConfiguration.ReadFrom.Configuration(context.Configuration)
@@ -46,7 +68,8 @@ namespace el7erafe.Web
 
             #region Configure the HTTP request pipeline.
             app.UseMiddleware<CustomExceptionHandlerMiddleWare>();
-            if (app.Environment.IsDevelopment())
+            
+                if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
                 app.UseSwagger();
@@ -56,6 +79,14 @@ namespace el7erafe.Web
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers(); 
+            
+
+            app.UseHttpsRedirection();
+
+            //app.UseAuthorization();
+
+
+            app.MapControllers();
             #endregion
 
             app.Run();

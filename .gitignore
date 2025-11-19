@@ -1,3 +1,4 @@
+## Visual Studio ##
 ## Your existing content (unchanged) ##
 [Dd]ebug/
 [Dd]ebugPublic/
@@ -74,3 +75,16 @@ Migrations/*.Designer.cs
 # OS files
 .DS_Store
 *~
+
+## Visual Studio Cache Files ##
+.dtbcache.v2
+.futdcache.v2
+DocumentLayout.json
+
+## Visual Studio Solution User Options ##
+*.suo
+*.vssscc
+*.vspscc
+
+## Visual Studio Project Files ##
+*.csproj.user

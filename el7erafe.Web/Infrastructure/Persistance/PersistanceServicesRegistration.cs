@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Persistance.Databases;
 using Persistance.Repositories;
 using Service;
+using Service.Email;
 using ServiceAbstraction;
 
 namespace Persistance
@@ -32,12 +33,15 @@ namespace Persistance
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
 
-
+            services.AddMemoryCache();
             services.AddScoped<IDataSeeding, DataSeeding>();
             services.AddScoped<ITechnicianRepository, TechnicianRepository>();
             services.AddScoped<IClientRepository, ClientRepository>();
+            services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<IOtpService, OtpService>();
             services.AddScoped<IClientAuthenticationService, ClientAuthenticationService>();
             services.AddScoped<ITechAuthenticationService, TechAuthenticationService>();
+            services.AddScoped<IBlobStorageRepository, BlobStorageRepository>();
 
             return services;
         }
