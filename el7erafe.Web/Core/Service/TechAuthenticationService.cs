@@ -11,10 +11,12 @@ namespace Service
 {
     public class TechAuthenticationService(UserManager<ApplicationUser> _userManager,
         ITechnicianRepository _technicianRepository,
-        ILogger<TechAuthenticationService> _logger) : ITechAuthenticationService
+        ILogger<TechAuthenticationService> _logger,
+        ITechnicianFileService _fileService) : ITechAuthenticationService
     {
         public async Task<TechDTO> techRegisterAsync(TechRegisterDTO techRegisterDTO)
         {
+
             _logger.LogInformation("[SERVICE] Checking phone number uniqueness: {Phone}", techRegisterDTO.PhoneNumber);
             var phoneNumberFound = await _technicianRepository.ExistsAsync(techRegisterDTO.PhoneNumber);
 
@@ -50,15 +52,30 @@ namespace Service
                 var errors = result.Errors.Select(e => e.Description).ToList();
                 throw new BadRequestException(errors);
             }
+            _logger.LogInformation("[SERVICE] Uploading technician documents to secure cloud storage for: {PhoneNumber}", techRegisterDTO.PhoneNumber);
+
+            TechRegisterToReturnDTO processedData ;
+
+            try
+            {
+                processedData = await _fileService.ProcessTechnicianFilesAsync(techRegisterDTO);
+            }
+            catch (Exception)
+            {
+                await _userManager.DeleteAsync(user);
+                throw new UnauthorizedBlobStorage();
+            }
+
+            _logger.LogInformation("[SERVICE] All technician documents securely stored in cloud storage successfully for: {PhoneNumber}", techRegisterDTO.PhoneNumber);
 
             // Create Technician
             var technician = new Technician
             {
-                Name = techRegisterDTO.Name,
-                NationalId = techRegisterDTO.NationalId,
-                NationalIdFrontURL = $"/images/Technician/{Guid.NewGuid()}_{Path.GetFileName(techRegisterDTO.NationalIdFrontURL)}",
-                NationalIdBackURL = $"/images/Technician/{Guid.NewGuid()}_{Path.GetFileName(techRegisterDTO.NationalIdBackURL)}",
-                CriminalHistoryURL = $"/images/Technician/{Guid.NewGuid()}_{Path.GetFileName(techRegisterDTO.CriminalRecordURL)}",
+                Name = processedData.Name,
+                NationalId = processedData.NationalId,
+                NationalIdFrontURL = processedData.NationalIdFrontPath,
+                NationalIdBackURL = processedData.NationalIdBackPath,
+                CriminalHistoryURL = processedData.CriminalRecordPath,
                 UserId = user.Id,
                 Status = TechnicianStatus.Pending,
                 ServiceType = (TechnicianServiceType)techRegisterDTO.ServiceType
@@ -66,12 +83,10 @@ namespace Service
 
             await _technicianRepository.CreateAsync(technician);
 
-            // Assign the Technician role
             await _userManager.AddToRoleAsync(user, "Technician");
 
             _logger.LogInformation("[SERVICE] Technician registration completed for: {PhoneNumber}", techRegisterDTO.PhoneNumber);
 
-            // Return TechDTO (assuming TechDTO has Name and PhoneNumber)
             return new TechDTO
             {
                 Name = technician.Name,

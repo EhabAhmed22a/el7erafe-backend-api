@@ -16,10 +16,10 @@
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
 
-	<Target Name="CopyXmlToWeb" AfterTargets="Build">
+	<!-- <Target Name="CopyXmlToWeb" AfterTargets="Build">
 		<Copy SourceFiles="$(OutputPath)Presentation.xml"
 			  DestinationFiles="$(SolutionDir)el7erafe.Web\el7erafe.Web\bin\Debug\net9.0\Presentation.xml"
 			  SkipUnchangedFiles="true" />
-	</Target>
+	</Target> -->
 
 </Project>

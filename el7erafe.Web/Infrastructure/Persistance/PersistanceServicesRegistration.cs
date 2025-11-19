@@ -41,6 +41,7 @@ namespace Persistance
             services.AddScoped<IOtpService, OtpService>();
             services.AddScoped<IClientAuthenticationService, ClientAuthenticationService>();
             services.AddScoped<ITechAuthenticationService, TechAuthenticationService>();
+            services.AddScoped<IBlobStorageRepository, BlobStorageRepository>();
 
             return services;
         }
