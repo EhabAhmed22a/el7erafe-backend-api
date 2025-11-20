@@ -1,4 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Http;
+using Shared.Validations;
+using System.ComponentModel.DataAnnotations;
+
 namespace Shared.DataTransferObject.TechnicianIdentityDTOs
 {
     public class TechRegisterDTO
@@ -13,6 +16,7 @@ namespace Shared.DataTransferObject.TechnicianIdentityDTOs
         [StringLength(11, MinimumLength = 11, ErrorMessage = "Phone number must be exactly 11 digits")]
         public string PhoneNumber { get; set; } = default!;
 
+        [Required(ErrorMessage = "Password is required")]
         public string Password { get; set; } = default!;
 
         [Required(ErrorMessage = "National ID is required")]
@@ -21,13 +25,16 @@ namespace Shared.DataTransferObject.TechnicianIdentityDTOs
         public string NationalId { get; set; } = default!;
 
         [Required(ErrorMessage = "National ID Front image is required")]
-        public string NationalIdFrontURL { get; set; } = default!;
+        [ValidateFile(1 * 1024 * 1024, new[] { ".png", ".jpg", ".jpeg" })]
+        public IFormFile NationalIdFront { get; set; } = default!;
 
         [Required(ErrorMessage = "National ID Back image is required")]
-        public string NationalIdBackURL { get; set; } = default!;
+        [ValidateFile(1 * 1024 * 1024, new[] { ".png", ".jpg", ".jpeg" })]
+        public IFormFile NationalIdBack { get; set; } = default!;
 
         [Required(ErrorMessage = "Criminal Record image is required")]
-        public string CriminalRecordURL { get; set; } = default!;
+        [ValidateFile(1 * 1024 * 1024, new[] { ".png", ".jpg", ".jpeg" })]
+        public IFormFile CriminalRecord { get; set; } = default!;
 
         [Required(ErrorMessage = "Service type is required")]
         [Range(1, 3, ErrorMessage = "Service type must be: 1 for Carpenter, 2 for Plumber, or 3 for Electrician")]

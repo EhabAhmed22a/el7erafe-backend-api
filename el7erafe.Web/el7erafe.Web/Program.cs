@@ -1,9 +1,9 @@
 using el7erafe.Web.CustomMiddleWares;
 using el7erafe.Web.Extensions;
 using el7erafe.Web.Mapper;
-using Microsoft.Extensions.Options;
 using Persistance;
 using Serilog;
+using Service;
 using Service.Email;
 using ServiceAbstraction;
 
@@ -19,9 +19,11 @@ namespace el7erafe.Web
 
             #region Add services to the container.
             builder.Services.AddPersistanceServices(builder.Configuration);
+            builder.Services.AddJWTService(builder.Configuration);
+            builder.Services.AddServiceLayerServices();
             #endregion
 
-            # region Email Services
+            #region Email Services
             builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("gmail"));
             builder.Services.AddScoped<IEmailService, EmailService>();
             #endregion
@@ -73,6 +75,10 @@ namespace el7erafe.Web
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+            app.UseHttpsRedirection();
+            app.UseAuthentication();
+            app.UseAuthorization();
+            app.MapControllers(); 
             
 
             app.UseHttpsRedirection();

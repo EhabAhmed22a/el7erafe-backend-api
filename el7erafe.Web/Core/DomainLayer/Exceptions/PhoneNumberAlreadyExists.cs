@@ -1,7 +1,7 @@
 ﻿
 namespace DomainLayer.Exceptions
 {
-    public sealed class PhoneNumberAlreadyExists(string phoneNumber): AlreadyExistException($"Phone Number '{phoneNumber}' is already registered.")
+    public sealed class PhoneNumberAlreadyExists(string phoneNumber): AlreadyExistException($"رقم الهاتف '{phoneNumber}' مسجل بالفعل.")
     {
     }
 }

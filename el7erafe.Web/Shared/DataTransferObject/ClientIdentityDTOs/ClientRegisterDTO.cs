@@ -5,18 +5,21 @@ namespace Shared.DataTransferObject.ClientIdentityDTOs
 {
     public class ClientRegisterDTO
     {
-        [Required(ErrorMessage = "Name is required")]
-        [StringLength(100, MinimumLength = 2,ErrorMessage = "Name must be between 2 and 100 characters")]
-        [RegularExpression(@"^[a-zA-Z\u0600-\u06FF\s]+$", ErrorMessage = "Name can only contain letters and spaces")]
+        [Required(ErrorMessage = "الاسم مطلوب")]
+        [StringLength(100, MinimumLength = 2, ErrorMessage = "الاسم يجب أن يكون بين ٢ و ١٠٠ حرف")]
+        [RegularExpression(@"^[a-zA-Z\u0600-\u06FF\s]+$", ErrorMessage = "الاسم يمكن أن يحتوي فقط على أحرف ومسافات")]
         public string Name { get; set; } = null!;
-        [Required(ErrorMessage = "Phone number is required")]
-        [RegularExpression(@"^01[0-2,5]{1}[0-9]{8}$", ErrorMessage = "Please enter a valid Egyptian phone number (11 digits starting with 010, 011, 012, or 015)")]
-        [StringLength(11, MinimumLength = 11, ErrorMessage = "Phone number must be exactly 11 digits")]
+
+        [Required(ErrorMessage = "رقم الهاتف مطلوب")]
+        [RegularExpression(@"^01[0-2,5]{1}[0-9]{8}$", ErrorMessage = "يرجى إدخال رقم هاتف مصري صحيح (١١ رقماً يبدأ ب ٠١٠، ٠١١، ٠١٢، أو ٠١٥)")]
+        [StringLength(11, MinimumLength = 11, ErrorMessage = "رقم الهاتف يجب أن يكون ١١ رقماً بالضبط")]
         public string PhoneNumber { get; set; } = null!;
-        [Required(ErrorMessage = "Email is required")]
-        [EmailAddress(ErrorMessage = "Please enter a valid email address")]
+
+        [Required(ErrorMessage = "البريد الإلكتروني مطلوب")]
+        [EmailAddress(ErrorMessage = "يرجى إدخال بريد إلكتروني صحيح")]
         public string Email { get; set; } = null!;
-        [Required(ErrorMessage = "Password is required")]
-        public string Password {  get; set; } = null!;
+
+        [Required(ErrorMessage = "كلمة المرور مطلوبة")]
+        public string Password { get; set; } = null!;
     }
 }
