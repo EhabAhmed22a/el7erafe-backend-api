@@ -53,5 +53,27 @@ namespace Presentation.Controllers
             var client = await service.VerifyOtpAndCompleteRegistrationAsync(otpVerificationDTO);
             return Ok(client);
         }
+
+        /// <summary>
+        /// Resends OTP to the user's email for registration completion.
+        /// </summary>
+        /// <remarks>
+        /// This endpoint resends OTP code to unverified email addresses for users who haven't completed registration.
+        /// The OTP can only be resent after 60 seconds have passed since the last OTP was sent.
+        /// If the email is already verified or an OTP was sent recently, appropriate errors will be returned.
+        /// </remarks>
+        /// <param name="resendOtpRequestDTO">Request containing the email address</param>
+        /// <returns>Returns OTP response with success status and message</returns>
+        /// <response code="200">Returns when OTP is resent successfully</response>
+        /// <response code="404">Returns when no user found with the provided email</response>
+        /// <response code="409">Returns when email is already verified</response>
+        /// <response code="429">Returns when OTP was sent recently (within 60 seconds)</response>
+        /// <response code="500">Returns when internal server error occurs</response>
+        [HttpPost("resend-otp")]
+        public async Task<ActionResult<OtpResponseDTO>> ResendOtp(ResendOtpRequestDTO resendOtpRequestDTO)
+        {
+            logger.LogInformation("[API] Resending OTP for: {Email}", resendOtpRequestDTO.Email);
+            return Ok(await service.ResendOtp(resendOtpRequestDTO));
+        }
     }
 }

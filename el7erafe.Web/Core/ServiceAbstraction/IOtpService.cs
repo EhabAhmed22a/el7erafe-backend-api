@@ -3,7 +3,8 @@ namespace ServiceAbstraction
 {
     public interface IOtpService
     {
-        Task<string> GenerateOtpAsync(string identifier);
-        Task<bool> VerifyOtpAsync(string identifier, string otpCode);
+        Task<string> GenerateOtp(string identifier);
+        Task<bool> VerifyOtp(string identifier, string otpCode);
+        Task<bool> CanResendOtp(string identifier);
     }
 }
