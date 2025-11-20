@@ -32,8 +32,13 @@ namespace Shared.DataTransferObject.TechnicianIdentityDTOs
         public IFormFile CriminalRecord { get; set; } = default!;
 
         [Required(ErrorMessage = "Service type is required")]
-        [Range(1, 3, ErrorMessage = "Service type must be: 1 for Carpenter, 2 for Plumber, or 3 for Electrician")]
-        public int ServiceType { get; set; }
+        public string ServiceType { get; set; } = default!;
+
+        [Required(ErrorMessage = "Governorate is required")]
+        public string GovernorateName { get; set; } = default!; 
+
+        [Required(ErrorMessage = "City is required")]
+        public string CityName { get; set; } = default!;
 
     }
 }

@@ -9,6 +9,9 @@ namespace Shared.DataTransferObject.TechnicianIdentityDTOs
         public string NationalIdFrontPath { get; set; } = default!;  
         public string NationalIdBackPath { get; set; } = default!;
         public string CriminalRecordPath { get; set; } = default!;
-        public int ServiceType { get; set; }
+        public string ServiceType { get; set; } = default!;
+        public string GovernorateName { get; set; } = default!;
+        public string CityName { get; set; } = default!;
+
     }
 }
