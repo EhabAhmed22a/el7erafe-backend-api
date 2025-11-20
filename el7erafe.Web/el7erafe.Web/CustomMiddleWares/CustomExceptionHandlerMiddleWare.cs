@@ -15,7 +15,7 @@ namespace el7erafe.Web.CustomMiddleWares
             _logger = logger;
         }
 
-        public async Task InvokeAsync(HttpContext httpContext) 
+        public async Task InvokeAsync(HttpContext httpContext)
         {
             try
             {
@@ -40,8 +40,9 @@ namespace el7erafe.Web.CustomMiddleWares
                 NotFoundException => StatusCodes.Status404NotFound,
                 UnauthorizedException => StatusCodes.Status401Unauthorized,
                 BadRequestException badRequestException => GetBadRequestErrors(badRequestException, Response),
-                AlreadyExistException => StatusCodes.Status409Conflict,
+                { } when ex is AlreadyExistException or EmailAlreadyVerified => StatusCodes.Status409Conflict,
                 InvalidOtpException => StatusCodes.Status400BadRequest,
+                OtpAlreadySent => StatusCodes.Status429TooManyRequests,
                 _ => StatusCodes.Status500InternalServerError
             };
 
@@ -54,7 +55,6 @@ namespace el7erafe.Web.CustomMiddleWares
 
         private static int GetBadRequestErrors(BadRequestException badRequestException, ErrorToReturn response)
         {
-            response.Errors = badRequestException.Errors;
             return StatusCodes.Status400BadRequest;
         }
 

@@ -81,7 +81,7 @@ namespace Service
             return new OtpResponseDTO
             {
                 Success = true,
-                Message = "OTP sent to your email. Please verify to complete registration so you can login successfully."
+                Message = "تم إرسال الرمز إلى بريدك الإلكتروني. يرجى التحقق لإكمال التسجيل حتى تتمكن من تسجيل الدخول بنجاح."
             };
         }
 
@@ -91,7 +91,7 @@ namespace Service
 
             var user = await userManager.FindByEmailAsync(otpVerificationDTO.Email);
             if (user is null)
-                throw new UserNotFoundException();
+                throw new UserNotFoundException("المستخدم غير موجود.");
 
             var identifier = GetOtpIdentifier(user.Id);
             var userId = await otpService.VerifyOtpAsync(identifier, otpVerificationDTO.OtpCode);
@@ -107,7 +107,7 @@ namespace Service
 
             var client = await clientRepository.GetByUserId(user.Id);
             if (client is null)
-                throw new UserNotFoundException();
+                throw new UserNotFoundException("المستخدم غير موجود.");
 
             logger.LogInformation("[Service] Registration completed with OTP verification: {Email}", otpVerificationDTO.Email);
 
@@ -118,6 +118,46 @@ namespace Service
                 Email = user.Email!,
                 Token = "token-ToDo",
                 RefreshToken = "refreshToken-ToDo"
+            };
+        }
+
+        public async Task<OtpResponseDTO> ResendOtp(ResendOtpRequestDTO resendOtpRequestDTO)
+        {
+            logger.LogInformation("[SERVICE] Checking if email is registered: {Email}", resendOtpRequestDTO.Email);
+            var emailFound = await userManager.FindByEmailAsync(resendOtpRequestDTO.Email);
+            if (emailFound is null)
+            {
+                logger.LogWarning("[SERVICE] Email not registered: {Email}", resendOtpRequestDTO.Email);
+                throw new UserNotFoundException("البريد الإلكتروني غير مسجل");
+            }
+
+            logger.LogInformation("[Service] Checking if email is already verified: {Email}", resendOtpRequestDTO.Email);
+            if (emailFound.EmailConfirmed)
+            {
+                logger.LogWarning("[Service] Email already verified: {Email}", resendOtpRequestDTO.Email);
+                throw new EmailAlreadyVerified("الحساب مفعل بالفعل. يرجى تسجيل الدخول");
+            }
+
+            var identifier = GetOtpIdentifier(emailFound.Id);
+            logger.LogInformation("[SERVICE] Checking if OTP was sent more than 60 seconds ago to: {Email}", resendOtpRequestDTO.Email);
+            if (!otpService.CanResendOtpAsync(identifier).Result)
+            {
+                logger.LogWarning("[SERVICE] OTP already sent recently for: {Email}", resendOtpRequestDTO.Email);
+                throw new OtpAlreadySent();
+            }
+
+            var otpCode = await otpService.GenerateOtpAsync(identifier);
+            _ = Task.Run(async () =>
+            await emailService.SendOtpEmailAsync(resendOtpRequestDTO.Email, otpCode)
+            );
+
+            logger.LogInformation("[Service] Resend OTP sent to: {Email}"
+            , resendOtpRequestDTO.Email);
+
+            return new OtpResponseDTO
+            {
+                Success = true,
+                Message = "تم إرسال الرمز إلى بريدك الإلكتروني."
             };
         }
 

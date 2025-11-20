@@ -37,7 +37,7 @@ namespace Presentation.Controllers
         /// Completes the client registration process by verifying the OTP and activating the user account.
         /// </summary>
         /// <remarks>
-        /// This endpoint verifies the OTP code (valid only for 3 minutes) sent to the user's email and activates the previously created user account.
+        /// This endpoint verifies the OTP code (valid only for 60 seconds) sent to the user's email and activates the previously created user account.
         /// Upon successful verification, the user's email is confirmed and they are assigned the Client role.
         /// </remarks>
         /// <param name="otpVerificationDTO">OTP verification data containing email and OTP code.</param>
@@ -52,6 +52,25 @@ namespace Presentation.Controllers
             logger.LogInformation("[API] Completing registration with OTP for: {Email}", otpVerificationDTO.Email);
             var client = await service.VerifyOtpAndCompleteRegistrationAsync(otpVerificationDTO);
             return Ok(client);
+        }
+
+        /// <summary>
+        /// Resends OTP to the user's email for registration completion.
+        /// </summary>
+        /// <remarks>
+        /// This endpoint resends OTP code to unverified email addresses for users who haven't completed registration.
+        /// </remarks>
+        /// <param name="resendOtpRequestDTO">Request containing the email address</param>
+        /// <returns>Returns OTP response with success status</returns>
+        /// <response code="200">Returns when OTP is resent successfully</response>
+        /// <response code="404">Returns when no user found with the provided email</response>
+        /// <response code="409">Returns when email is already verified</response>
+        /// <response code="500">Returns when internal server error occurs</response>
+        [HttpPost("resend-otp")]
+        public async Task<ActionResult<OtpResponseDTO>> ResendOtp(ResendOtpRequestDTO resendOtpRequestDTO)
+        {
+            logger.LogInformation("[API] Resending OTP for: {Email}", resendOtpRequestDTO.Email);
+            return Ok(await service.ResendOtp(resendOtpRequestDTO));
         }
     }
 }
