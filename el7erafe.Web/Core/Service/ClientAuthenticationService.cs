@@ -66,7 +66,7 @@ namespace Service
             await clientRepository.CreateAsync(client);
 
             var identifier = GetOtpIdentifier(user.Id);
-            var otpCode = await otpService.GenerateOtpAsync(identifier);
+            var otpCode = await otpService.GenerateOtp(identifier);
 
             _ = Task.Run(async () =>
             {
@@ -94,7 +94,7 @@ namespace Service
                 throw new UserNotFoundException("المستخدم غير موجود.");
 
             var identifier = GetOtpIdentifier(user.Id);
-            var userId = await otpService.VerifyOtpAsync(identifier, otpVerificationDTO.OtpCode);
+            var userId = await otpService.VerifyOtp(identifier, otpVerificationDTO.OtpCode);
 
             if (!userId)
             {
@@ -140,13 +140,13 @@ namespace Service
 
             var identifier = GetOtpIdentifier(emailFound.Id);
             logger.LogInformation("[SERVICE] Checking if OTP was sent more than 60 seconds ago to: {Email}", resendOtpRequestDTO.Email);
-            if (!otpService.CanResendOtpAsync(identifier).Result)
+            if (!otpService.CanResendOtp(identifier).Result)
             {
                 logger.LogWarning("[SERVICE] OTP already sent recently for: {Email}", resendOtpRequestDTO.Email);
                 throw new OtpAlreadySent();
             }
 
-            var otpCode = await otpService.GenerateOtpAsync(identifier);
+            var otpCode = await otpService.GenerateOtp(identifier);
             _ = Task.Run(async () =>
             await emailService.SendOtpEmailAsync(resendOtpRequestDTO.Email, otpCode)
             );
