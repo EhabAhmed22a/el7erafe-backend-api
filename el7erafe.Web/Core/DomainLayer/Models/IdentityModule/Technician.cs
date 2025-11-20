@@ -6,7 +6,6 @@ namespace DomainLayer.Models.IdentityModule
     {
         public int Id { get; set; }
         public string Name { get; set; } = default!;
-        public string NationalId { get; set; } = default!;
         public string NationalIdFrontURL { get; set; } = default!;
         public string NationalIdBackURL { get; set; } = default!;
         public string CriminalHistoryURL { get; set; } = default!;

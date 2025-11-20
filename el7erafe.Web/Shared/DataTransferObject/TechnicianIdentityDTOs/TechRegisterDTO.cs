@@ -19,11 +19,6 @@ namespace Shared.DataTransferObject.TechnicianIdentityDTOs
         [Required(ErrorMessage = "Password is required")]
         public string Password { get; set; } = default!;
 
-        [Required(ErrorMessage = "National ID is required")]
-        [RegularExpression(@"^[23]\d{13}$", ErrorMessage = "Please enter a valid National ID (14 digits starting with 2 or 3)")]
-        [StringLength(14, MinimumLength = 14, ErrorMessage = "National ID must be exactly 14 digits")]
-        public string NationalId { get; set; } = default!;
-
         [Required(ErrorMessage = "National ID Front image is required")]
         [ValidateFile(1 * 1024 * 1024, new[] { ".png", ".jpg", ".jpeg" })]
         public IFormFile NationalIdFront { get; set; } = default!;

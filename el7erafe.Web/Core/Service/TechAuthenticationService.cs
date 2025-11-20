@@ -28,15 +28,6 @@ namespace Service
                 throw new PhoneNumberAlreadyExists(techRegisterDTO.PhoneNumber);
             }
 
-            _logger.LogInformation("[SERVICE] Checking National Id uniqueness: {NationalId}", techRegisterDTO.NationalId);
-            var NationalIdFound = await _technicianRepository.ExistsByNationalIdAsync(techRegisterDTO.NationalId);
-
-            if (NationalIdFound)
-            {
-                _logger.LogWarning("[SERVICE] Duplicate phone number detected: {Phone}", techRegisterDTO.PhoneNumber);
-                throw new NationalIdAlreadyExists(techRegisterDTO.NationalId);
-            }
-
             // Create User (TechRegisterDTO -> ApplicationUser)
             var user = new ApplicationUser()
             {
@@ -74,7 +65,6 @@ namespace Service
             var technician = new Technician
             {
                 Name = processedData.Name,
-                NationalId = processedData.NationalId,
                 NationalIdFrontURL = processedData.NationalIdFrontPath,
                 NationalIdBackURL = processedData.NationalIdBackPath,
                 CriminalHistoryURL = processedData.CriminalRecordPath,

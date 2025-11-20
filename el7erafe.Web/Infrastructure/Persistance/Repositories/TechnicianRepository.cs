@@ -73,9 +73,5 @@ namespace Persistance.Repositories
         {
             return await _context.Set<Technician>().AnyAsync(t => t.User.PhoneNumber == phoneNumber);
         }
-        public async Task<bool> ExistsByNationalIdAsync(string nationalId)
-        {
-            return await _context.Set<Technician>().AnyAsync(t => t.NationalId == nationalId);
-        }
     }
 }
