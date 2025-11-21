@@ -74,6 +74,30 @@ namespace Persistance.Repositories
             return await _context.Set<Technician>().AnyAsync(t => t.User.PhoneNumber == phoneNumber);
         }
 
+        // New: get all governorates (includes cities)
+        public async Task<IEnumerable<Governorate>?> GetAllGovernoratesAsync()
+        {
+            return await _context.Set<Governorate>()
+                .Include(g => g.Cities)
+                .ToListAsync();
+        }
+
+        // New: get all cities (includes governorate)
+        async Task<IEnumerable<City>?> ITechnicianRepository.GetAllCitiesByIdAsync(int GovernorateId)
+        {
+            return await _context.Set<City>()
+                    .Include(c => c.Governorate)
+                    .Where(c => c.GovernorateId == GovernorateId)
+                    .ToListAsync();
+        }
+
+        // New: get all technician services
+        public async Task<IEnumerable<TechnicianService>?> GetAllServicesAsync()
+        {
+            return await _context.Set<TechnicianService>()
+                .ToListAsync();
+        }
+
         Task<Governorate?> ITechnicianRepository.GetGovernorateByNameAsync(string nameAr)
         {
             return _context.Set<Governorate>()
@@ -91,5 +115,7 @@ namespace Persistance.Repositories
             return _context.Set<TechnicianService>()
                 .FirstOrDefaultAsync(s => s.NameAr == nameAr);
         }
+
+
     }
 }
