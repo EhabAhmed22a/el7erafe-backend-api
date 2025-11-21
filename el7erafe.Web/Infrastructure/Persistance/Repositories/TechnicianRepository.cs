@@ -73,5 +73,23 @@ namespace Persistance.Repositories
         {
             return await _context.Set<Technician>().AnyAsync(t => t.User.PhoneNumber == phoneNumber);
         }
+
+        Task<Governorate?> ITechnicianRepository.GetGovernorateByNameAsync(string nameAr)
+        {
+            return _context.Set<Governorate>()
+                .FirstOrDefaultAsync(g => g.NameAr == nameAr);
+        }
+
+        Task<City?> ITechnicianRepository.GetCityByNameAsync(string nameAr, int governorateId)
+        {
+            return _context.Set<City>()
+               .FirstOrDefaultAsync(c => c.NameAr == nameAr && c.GovernorateId == governorateId);
+        }
+
+        Task<TechnicianService?> ITechnicianRepository.GetServiceByNameAsync(string nameAr)
+        {
+            return _context.Set<TechnicianService>()
+                .FirstOrDefaultAsync(s => s.NameAr == nameAr);
+        }
     }
 }

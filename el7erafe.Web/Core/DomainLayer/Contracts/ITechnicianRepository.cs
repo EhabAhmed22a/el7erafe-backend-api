@@ -14,6 +14,9 @@ namespace DomainLayer.Contracts
         Task<int> DeleteAsync(int id); //Delete technician
         Task<bool> ExistsAsync(int id); //Check if technician exists by id
         Task<bool> ExistsAsync(string phoneNumber); //Check if technician exists by phone number
+        Task<Governorate?> GetGovernorateByNameAsync(string nameAr);
+        Task<City?> GetCityByNameAsync(string nameAr, int governorateId);
+        Task<TechnicianService?> GetServiceByNameAsync(string nameAr);
 
     }
 }
