@@ -28,6 +28,18 @@ namespace Service
                 throw new PhoneNumberAlreadyExists(techRegisterDTO.PhoneNumber);
             }
 
+
+
+            var governorate = await _technicianRepository.GetGovernorateByNameAsync(techRegisterDTO.Governorate);
+
+            var city = await _technicianRepository.GetCityByNameAsync(techRegisterDTO.City, governorate.Id);
+
+            // **VALIDATE AND GET SERVICE DATA**
+            _logger.LogInformation("[SERVICE] Validating service for: {Phone}", techRegisterDTO.PhoneNumber);
+
+            var service = await _technicianRepository.GetServiceByNameAsync(techRegisterDTO.ServiceType);
+
+
             // Create User (TechRegisterDTO -> ApplicationUser)
             var user = new ApplicationUser()
             {

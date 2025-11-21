@@ -35,10 +35,10 @@ namespace Shared.DataTransferObject.TechnicianIdentityDTOs
         public string ServiceType { get; set; } = default!;
 
         [Required(ErrorMessage = "Governorate is required")]
-        public string GovernorateName { get; set; } = default!; 
+        public string Governorate { get; set; } = default!; 
 
         [Required(ErrorMessage = "City is required")]
-        public string CityName { get; set; } = default!;
+        public string City { get; set; } = default!;
 
     }
 }
