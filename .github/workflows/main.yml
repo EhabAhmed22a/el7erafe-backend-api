@@ -41,7 +41,7 @@ jobs:
         run: dotnet build el7erafe.Web/el7erafe.Web.sln --no-restore
 
       - name: Install EF Core tools
-        run: dotnet tool install --global dotnet-ef
+        run: dotnet tool install --global dotnet-ef --version 9.0.9
       
       
       - name: Azure login
