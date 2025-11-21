@@ -8,6 +8,5 @@ namespace DomainLayer.Exceptions
 {
     public class CityNotFoundException(string City) : NotFoundException($"The {City} is Not Found")
     {
-    {
     }
 }
