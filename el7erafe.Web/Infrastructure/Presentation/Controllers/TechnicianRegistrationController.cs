@@ -18,7 +18,7 @@ namespace Presentation.Controllers
             _logger.LogInformation("[API] Registering Technician with phone: {Phone}", techRegisterDTO.PhoneNumber);
             var technician = await _techAuthenticationService.techRegisterAsync(techRegisterDTO);
 
-            _logger.LogInformation("[API] Technician registered successfully with Name: {ClientName}", technician.Name);
+            _logger.LogInformation("[API] Technician registered successfully");
             return CreatedAtAction(nameof(Register), technician);
         }
     }

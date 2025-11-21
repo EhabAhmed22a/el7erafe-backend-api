@@ -112,10 +112,7 @@ namespace Service
             // Return TechDTO (assuming TechDTO has Name and PhoneNumber)
             return new TechDTO
             {
-                Name = technician.Name,
-                PhoneNumber = user.PhoneNumber,
-                Status = technician.Status.ToString(),
-                Token = await CreateToken.CreateTokenAsync(user)
+                tempToken = await CreateToken.CreateTokenAsync(user)
             };
         }
     }

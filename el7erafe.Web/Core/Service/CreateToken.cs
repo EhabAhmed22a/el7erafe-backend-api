@@ -30,7 +30,7 @@ namespace Service
                 issuer: _configuration.GetSection("JWTOptions")["Issuer"], 
                 audience: _configuration.GetSection("JWTOptions")["Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddHours(3),
+                expires: DateTime.Now.AddHours(72),
                 signingCredentials: Creds
                 );
             return new JwtSecurityTokenHandler().WriteToken(Token);
