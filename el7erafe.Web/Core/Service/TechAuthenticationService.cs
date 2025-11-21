@@ -168,15 +168,15 @@ namespace Service
 
                 case TechnicianStatus.Pending:
                     _logger.LogWarning("[SERVICE] Technician pending approval: {UserId}", userId);
-                    throw new CustomApplicationException("Technician account is pending admin approval", CustomStatusCodes.TechnicianPending);
+                    throw new TechnicianPendingException();
 
                 case TechnicianStatus.Rejected:
                     _logger.LogWarning("[SERVICE] Technician rejected: {UserId}", userId);
-                    throw new CustomApplicationException("Technician account has been rejected", CustomStatusCodes.TechnicianRejected);
+                    throw new TechnicianRejectedException();
 
                 default:
                     _logger.LogWarning("[SERVICE] Unknown technician status: {Status} for user: {UserId}", technician.Status, userId);
-                    throw new CustomApplicationException("Unknown technician status", CustomStatusCodes.TechnicianPending);
+                    throw new TechnicianPendingException();
             }
         }
     }
