@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization; // ← This is what you're missing
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
+using Shared.DataTransferObject;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
-using Microsoft.AspNetCore.Authorization; // ← This is what you're missing
+using System.Security.Claims;
 
 namespace Presentation.Controllers
 {
@@ -20,6 +22,23 @@ namespace Presentation.Controllers
 
             _logger.LogInformation("[API] Technician registered successfully");
             return CreatedAtAction(nameof(Register), technician);
+        }
+
+        [HttpGet("technician/check-approval")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        public async Task<ActionResult<UserDTO>> CheckApproval()
+        {
+            // Get user ID from claims
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(new { message = "Invalid token" });
+            }
+
+            _logger.LogInformation("[CONTROLLER] Checking approval for user: {UserId}", userId);
+            var result = await _techAuthenticationService.CheckTechnicianApprovalAsync(userId);
+
+            return Ok(result);
         }
     }
 }

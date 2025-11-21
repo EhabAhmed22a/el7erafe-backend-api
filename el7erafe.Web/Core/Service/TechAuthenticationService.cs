@@ -161,7 +161,7 @@ namespace Service
                     return new UserDTO
                     {
                         token = token,
-                        userId = technician.Id,
+                        userId = technician.UserId,
                         userName = technician.Name,
                         type = 'T'
                     };
