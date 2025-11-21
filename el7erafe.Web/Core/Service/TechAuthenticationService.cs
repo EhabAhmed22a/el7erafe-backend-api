@@ -31,13 +31,29 @@ namespace Service
 
 
             var governorate = await _technicianRepository.GetGovernorateByNameAsync(techRegisterDTO.Governorate);
+            if (governorate == null)
+            {
+                _logger.LogWarning("[SERVICE] Governorate not found: {Governorate}", techRegisterDTO.Governorate);
+                throw new GovernorateNotFoundException(techRegisterDTO.Governorate);
+            }
+
 
             var city = await _technicianRepository.GetCityByNameAsync(techRegisterDTO.City, governorate.Id);
+            if (city == null)
+            {
+                _logger.LogWarning("[SERVICE] City not found: {City} in Governorate: {Governorate}", techRegisterDTO.City, techRegisterDTO.Governorate);
+                throw new CityNotFoundException(techRegisterDTO.City);
+            }
 
             // **VALIDATE AND GET SERVICE DATA**
             _logger.LogInformation("[SERVICE] Validating service for: {Phone}", techRegisterDTO.PhoneNumber);
 
             var service = await _technicianRepository.GetServiceByNameAsync(techRegisterDTO.ServiceType);
+            if (service == null)
+            {
+                _logger.LogWarning("[SERVICE] Service not found: {ServiceType}", techRegisterDTO.ServiceType);
+                throw new ServiceNotFoundException(techRegisterDTO.ServiceType);
+            }
 
 
             // Create User (TechRegisterDTO -> ApplicationUser)
@@ -81,7 +97,9 @@ namespace Service
                 NationalIdBackURL = processedData.NationalIdBackPath,
                 CriminalHistoryURL = processedData.CriminalRecordPath,
                 UserId = user.Id,
-                Status = TechnicianStatus.Pending
+                Status = TechnicianStatus.Pending,
+                CityId = city.Id,
+                ServiceId = service.Id
             };
 
             await _technicianRepository.CreateAsync(technician);
