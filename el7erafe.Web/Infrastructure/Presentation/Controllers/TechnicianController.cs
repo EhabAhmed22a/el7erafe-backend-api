@@ -7,12 +7,12 @@ using Microsoft.AspNetCore.Authorization; // ← This is what you're missing
 namespace Presentation.Controllers
 {
     [ApiController]
-    [Route("api/auth")]
-    public class TechnicianRegistrationController(ITechAuthenticationService _techAuthenticationService,
-        ILogger<TechnicianRegistrationController> _logger) : ControllerBase
+    [Route("api")]
+    public class TechnicianController(ITechAuthenticationService _techAuthenticationService,
+        ILogger<TechnicianController> _logger) : ControllerBase
     {
         [AllowAnonymous] // ← This will now work
-        [HttpPost("register/technician")]
+        [HttpPost("auth/register/technician")]
         public async Task<ActionResult<TechDTO>> Register(TechRegisterDTO techRegisterDTO)
         {
             _logger.LogInformation("[API] Registering Technician with phone: {Phone}", techRegisterDTO.PhoneNumber);
