@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
+using Shared.DataTransferObject;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
 
 namespace Service
@@ -114,6 +115,69 @@ namespace Service
             {
                 tempToken = await CreateToken.CreateTokenAsync(user)
             };
+        }
+
+        // In TechAuthenticationService.cs
+        public async Task<UserDTO> CheckTechnicianApprovalAsync(string userId)
+        {
+            _logger.LogInformation("[SERVICE] Checking technician approval status for user: {UserId}", userId);
+
+            // Get user
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                _logger.LogWarning("[SERVICE] User not found: {UserId}", userId);
+                throw new UserNotFoundException("User not found");
+            }
+
+            // Check if user is a technician
+            var isTechnician = await _userManager.IsInRoleAsync(user, "Technician");
+            if (!isTechnician)
+            {
+                _logger.LogWarning("[SERVICE] User is not a technician: {UserId}", userId);
+                throw new TechNotFoundException(userId);
+            }
+
+            // Get technician record
+            var technician = await _technicianRepository.GetByUserIdAsync(userId);
+            if (technician == null)
+            {
+                _logger.LogWarning("[SERVICE] Technician record not found for user: {UserId}", userId);
+                throw new TechNotFoundException(userId);
+            }
+
+            _logger.LogInformation("[SERVICE] Technician status: {Status} for user: {UserId}", technician.Status, userId);
+
+            // Handle different statuses
+            switch (technician.Status)
+            {
+                case TechnicianStatus.Accepted:
+                    _logger.LogInformation("[SERVICE] Technician approved: {UserId}", userId);
+
+                    // Generate new token
+                    var createToken = new CreateToken(_userManager, _configuration);
+                    var token = await createToken.CreateTokenAsync(user);
+
+                    return new UserDTO
+                    {
+                        token = token,
+                        userId = technician.Id,
+                        userName = technician.Name,
+                        type = 'T'
+                    };
+
+                case TechnicianStatus.Pending:
+                    _logger.LogWarning("[SERVICE] Technician pending approval: {UserId}", userId);
+                    throw new CustomApplicationException("Technician account is pending admin approval", CustomStatusCodes.TechnicianPending);
+
+                case TechnicianStatus.Rejected:
+                    _logger.LogWarning("[SERVICE] Technician rejected: {UserId}", userId);
+                    throw new CustomApplicationException("Technician account has been rejected", CustomStatusCodes.TechnicianRejected);
+
+                default:
+                    _logger.LogWarning("[SERVICE] Unknown technician status: {Status} for user: {UserId}", technician.Status, userId);
+                    throw new CustomApplicationException("Unknown technician status", CustomStatusCodes.TechnicianPending);
+            }
         }
     }
 }

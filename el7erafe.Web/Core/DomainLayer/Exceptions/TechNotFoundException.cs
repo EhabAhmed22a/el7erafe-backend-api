@@ -1,7 +1,7 @@
 ﻿
 namespace DomainLayer.Exceptions
 {
-    public sealed class TechNotFoundException(string phone) : NotFoundException($"Technician With Phone Number {phone} is Not Found")
+    public sealed class TechNotFoundException(string TechId) : NotFoundException($"Technician With Id {TechId} is Not Found")
     {
     }
 }

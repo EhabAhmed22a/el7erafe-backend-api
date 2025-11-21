@@ -43,6 +43,8 @@ namespace el7erafe.Web.CustomMiddleWares
                 { } when ex is AlreadyExistException or EmailAlreadyVerified => StatusCodes.Status409Conflict,
                 InvalidOtpException => StatusCodes.Status400BadRequest,
                 OtpAlreadySent => StatusCodes.Status429TooManyRequests,
+                TechnicianPendingException => 460,
+                TechnicianRejectedException => 461,
                 _ => StatusCodes.Status500InternalServerError
             };
 
