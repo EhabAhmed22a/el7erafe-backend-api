@@ -14,6 +14,8 @@ namespace DomainLayer.Models.IdentityModule
         public TechnicianStatus Status { get; set; }
         public TechnicianServiceType ServiceType { get; set; }
         public int CityId { get; set; }            
-        public City City { get; set; } = default!; 
+        public City City { get; set; } = default!;
+        public int ServiceId { get; set; }
+        public TechnicianService Service { get; set; } = default!;
     }
 }

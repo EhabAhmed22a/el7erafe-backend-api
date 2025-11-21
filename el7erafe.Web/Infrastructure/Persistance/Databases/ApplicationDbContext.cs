@@ -18,6 +18,7 @@ namespace Persistance.Databases
             builder.Entity<IdentityRole>().ToTable("Roles");
             builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles");
             builder.Entity<Governorate>().ToTable("Governorates");
+            builder.Entity<TechnicianService>().ToTable("TechnicianServices");
             builder.Entity<City>().ToTable("Cities");
             builder.Ignore<IdentityUserClaim<string>>();
             builder.Ignore<IdentityUserToken<string>>();
