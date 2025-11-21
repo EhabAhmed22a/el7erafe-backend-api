@@ -12,7 +12,6 @@ namespace DomainLayer.Models.IdentityModule
         public ApplicationUser User { get; set; } = default!;
         public string UserId { get; set; } = default!; //FK 
         public TechnicianStatus Status { get; set; }
-        public TechnicianServiceType ServiceType { get; set; }
         public int CityId { get; set; }            
         public City City { get; set; } = default!;
         public int ServiceId { get; set; }
