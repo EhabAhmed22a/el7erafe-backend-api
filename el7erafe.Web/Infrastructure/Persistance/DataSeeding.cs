@@ -30,6 +30,14 @@ namespace Persistance
                     await _roleManager.CreateAsync(new IdentityRole("Admin"));
                     await _roleManager.CreateAsync(new IdentityRole("Technician"));
                 }
+                if (!await _dbContext.TechnicianServices.AnyAsync())
+                {
+                    _dbContext.TechnicianServices.AddRange(
+                        new TechnicianService { NameEn = "Plumber", NameAr = "سباك" },
+                        new TechnicianService { NameEn = "Electrical", NameAr = "كهربائي" },
+                        new TechnicianService { NameEn = "Carpenter", NameAr = "نجار" }
+                    );
+                }
 
                 // Save any role changes
                 await _dbContext.SaveChangesAsync();

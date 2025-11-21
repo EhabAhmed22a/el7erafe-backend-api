@@ -9,6 +9,8 @@ namespace Persistance.Databases
     {
         public DbSet<Governorate> Governorates { get; set; } = default!;
         public DbSet<City> Cities { get; set; } = default!;
+        public DbSet<TechnicianService> TechnicianServices { get; set; } = default!;
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
