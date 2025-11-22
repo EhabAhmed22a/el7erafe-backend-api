@@ -33,9 +33,9 @@ namespace Persistance
                 if (!await _dbContext.TechnicianServices.AnyAsync())
                 {
                     _dbContext.TechnicianServices.AddRange(
-                        new TechnicianService { NameEn = "Plumber", NameAr = "سباك" },
-                        new TechnicianService { NameEn = "Electrical", NameAr = "كهربائي" },
-                        new TechnicianService { NameEn = "Carpenter", NameAr = "نجار" }
+                        new TechnicianService { NameAr = "سباك" },
+                        new TechnicianService { NameAr = "كهربائي" },
+                        new TechnicianService { NameAr = "نجار" }
                     );
                 }
 
