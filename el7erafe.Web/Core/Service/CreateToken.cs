@@ -19,8 +19,7 @@ namespace Service
                 new(ClaimTypes.NameIdentifier , user.Id),
                 new(ClaimTypes.MobilePhone , user.PhoneNumber!),
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), // Unique ID
-                new("iat", DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString()),
-                new("salt", Guid.NewGuid().ToString())
+                new("iat", DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString()) 
             };
 
             var Roles = await _userManager.GetRolesAsync(user);
