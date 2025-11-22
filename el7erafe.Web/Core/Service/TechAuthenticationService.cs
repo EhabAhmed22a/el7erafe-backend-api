@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
-using Shared.DataTransferObject;
+using Shared.DataTransferObject.LoginDTOs;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
 
 namespace Service
@@ -113,7 +113,7 @@ namespace Service
             // Return TechDTO (assuming TechDTO has Name and PhoneNumber)
             return new TechDTO
             {
-                tempToken = await CreateToken.CreateTokenAsync(user)
+                tempToken = await CreateToken.CreateTokenAsync(user,tempToken:true)
             };
         }
 
@@ -156,7 +156,7 @@ namespace Service
 
                     // Generate new token
                     var createToken = new CreateToken(_userManager, _configuration);
-                    var token = await createToken.CreateTokenAsync(user);
+                    var token = await createToken.CreateTokenAsync(user,tempToken:false);
 
                     return new UserDTO
                     {

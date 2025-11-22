@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization; // ← This is what you're missing
+﻿using Microsoft.AspNetCore.Authorization; 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
-using Shared.DataTransferObject;
+using Shared.DataTransferObject.LoginDTOs;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
 using System.Security.Claims;
 

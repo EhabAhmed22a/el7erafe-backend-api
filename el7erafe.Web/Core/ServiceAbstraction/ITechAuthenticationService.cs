@@ -1,4 +1,4 @@
-﻿using Shared.DataTransferObject;
+﻿using Shared.DataTransferObject.LoginDTOs;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
 
 namespace ServiceAbstraction
