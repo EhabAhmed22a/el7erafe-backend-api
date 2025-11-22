@@ -24,7 +24,7 @@ namespace Persistance.Repositories
             return client;
         }
 
-        public async Task<Client?> GetByUserId(string userId)
+        public async Task<Client?> GetByUserIdAsync(string userId)
         {
             var client = await context.Set<Client>()
                         .Include(c => c.User)

@@ -3,9 +3,11 @@ using DomainLayer.Exceptions;
 using DomainLayer.Models.IdentityModule;
 using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
 using Shared.DataTransferObject.ClientIdentityDTOs;
+using Shared.DataTransferObject.LoginDTOs;
 using Shared.DataTransferObject.OtpDTOs;
 using static System.Net.WebRequestMethods;
 
@@ -14,10 +16,11 @@ namespace Service
     public class ClientAuthenticationService(UserManager<ApplicationUser> userManager,
         IClientRepository clientRepository,
         IEmailService emailService,
+        IConfiguration configuration,
         IOtpService otpService,
         ILogger<ClientAuthenticationService> logger) : IClientAuthenticationService
     {
-        public async Task<OtpResponseDTO> RegisterAndSendOtpAsync(ClientRegisterDTO clientRegisterDTO)
+        public async Task<OtpResponseDTO> RegisterAsync(ClientRegisterDTO clientRegisterDTO)
         {
             logger.LogInformation("[SERVICE] Checking phone number uniqueness: {Phone}", clientRegisterDTO.PhoneNumber);
             var phoneNumberFound = await clientRepository.ExistsAsync(clientRegisterDTO.PhoneNumber);
@@ -85,7 +88,7 @@ namespace Service
             };
         }
 
-        public async Task<ClientDTO> VerifyOtpAndCompleteRegistrationAsync(OtpVerificationDTO otpVerificationDTO)
+        public async Task<UserDTO> VerifyOtpAsync(OtpVerificationDTO otpVerificationDTO)
         {
             logger.LogInformation("[Service] Completing registration with OTP for: {Email}", otpVerificationDTO.Email);
 
@@ -105,19 +108,18 @@ namespace Service
             await userManager.UpdateAsync(user);
             await userManager.AddToRoleAsync(user, "Client");
 
-            var client = await clientRepository.GetByUserId(user.Id);
+            var client = await clientRepository.GetByUserIdAsync(user.Id);
             if (client is null)
                 throw new UserNotFoundException("المستخدم غير موجود.");
 
             logger.LogInformation("[Service] Registration completed with OTP verification: {Email}", otpVerificationDTO.Email);
-
-            return new ClientDTO
+            var token = await new CreateToken(userManager, configuration).CreateTokenAsync(user, tempToken: false);
+            return new UserDTO
             {
-                Name = client.Name,
-                PhoneNumber = user.PhoneNumber!,
-                Email = user.Email!,
-                Token = "token-ToDo",
-                RefreshToken = "refreshToken-ToDo"
+                token = token,
+                userId = client.UserId,
+                userName = client.Name,
+                type = 'C'
             };
         }
 
@@ -161,6 +163,6 @@ namespace Service
             };
         }
 
-        private static string GetOtpIdentifier(string userId) => $"registration_{userId}";
+        private string GetOtpIdentifier(string userId) => $"registration_{userId}";
     }
 }

@@ -1,12 +1,13 @@
 ﻿using Shared.DataTransferObject.ClientIdentityDTOs;
+using Shared.DataTransferObject.LoginDTOs;
 using Shared.DataTransferObject.OtpDTOs;
 
 namespace ServiceAbstraction
 {
     public interface IClientAuthenticationService
     {
-        Task<OtpResponseDTO> RegisterAndSendOtpAsync(ClientRegisterDTO clientRegisterDTO);
+        Task<OtpResponseDTO> RegisterAsync(ClientRegisterDTO clientRegisterDTO);
         Task<OtpResponseDTO> ResendOtp(ResendOtpRequestDTO resendOtpRequestDTO);
-        Task<ClientDTO> VerifyOtpAndCompleteRegistrationAsync(OtpVerificationDTO otpVerificationDTO);
+        Task<UserDTO> VerifyOtpAsync(OtpVerificationDTO otpVerificationDTO);
     }
 }
