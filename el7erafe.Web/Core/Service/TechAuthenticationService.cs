@@ -127,7 +127,7 @@ namespace Service
             if (user == null)
             {
                 _logger.LogWarning("[SERVICE] User not found: {UserId}", userId);
-                throw new UserNotFoundException("User not found");
+                throw new UserNotFoundException("المستخدم غير موجود");
             }
 
             // Check if user is a technician

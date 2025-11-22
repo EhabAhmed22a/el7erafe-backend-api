@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DomainLayer.Exceptions
 {
-    public class ServiceNotFoundException(string Service) : NotFoundException($"The {Service} is Not Found")
+    public class ServiceNotFoundException(string Service) : NotFoundException($"الحرفة '{Service}' غير موجودة")
     {
     }
 }

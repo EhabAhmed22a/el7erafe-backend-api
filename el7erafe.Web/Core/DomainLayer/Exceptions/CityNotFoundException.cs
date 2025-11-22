@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DomainLayer.Exceptions
 {
-    public class CityNotFoundException(string City) : NotFoundException($"The {City} is Not Found")
+    public class CityNotFoundException(string City) : NotFoundException($"المدينة '{City}' غير موجودة")
     {
     }
 }

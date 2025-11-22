@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DomainLayer.Exceptions
 {
-    public sealed class GovernorateNotFoundException(string Governorate) : NotFoundException($"The {Governorate} is Not Found")
+    public sealed class GovernorateNotFoundException(string Governorate) : NotFoundException($"المحافظة '{Governorate}' غير موجودة")
     {
     }
 }
