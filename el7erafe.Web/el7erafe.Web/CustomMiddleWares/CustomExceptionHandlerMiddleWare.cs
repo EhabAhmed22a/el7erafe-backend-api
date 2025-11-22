@@ -117,7 +117,7 @@ namespace el7erafe.Web.CustomMiddleWares
             var publicPaths = new[]
             {
                 "/api/auth/login",
-                "api/auth/register/client",
+                "/api/auth/register/client",
                 "/api/auth/register/technician",
                 "/api/public/services",
                 "/api/auth/verify-otp",
