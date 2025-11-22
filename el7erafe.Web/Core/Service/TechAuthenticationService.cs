@@ -96,7 +96,7 @@ namespace Service
                 Name = technician.Name,
                 PhoneNumber = user.PhoneNumber,
                 Status = technician.Status.ToString(),
-                Token = await CreateToken.CreateTokenAsync(user)
+                Token = await CreateToken.CreateTokenAsync(user, tempToken:true)
             };
         }
     }
