@@ -21,7 +21,7 @@ namespace Persistance
                     options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"))
                 );
 
-            services.AddIdentityCore<ApplicationUser>(options =>
+            services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
                 options.Password.RequireNonAlphanumeric = true;
                 options.Password.RequireDigit = true;
@@ -29,18 +29,14 @@ namespace Persistance
                 options.Password.RequireUppercase = true;
                 options.Password.RequiredLength = 10;
             })
-                .AddRoles<IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
 
 
             services.AddMemoryCache();
             services.AddScoped<IDataSeeding, DataSeeding>();
             services.AddScoped<ITechnicianRepository, TechnicianRepository>();
             services.AddScoped<IClientRepository, ClientRepository>();
-            services.AddScoped<IEmailService, EmailService>();
-            services.AddScoped<IOtpService, OtpService>();
-            services.AddScoped<IClientAuthenticationService, ClientAuthenticationService>();
-            services.AddScoped<ITechAuthenticationService, TechAuthenticationService>();
             services.AddScoped<IBlobStorageRepository, BlobStorageRepository>();
 
             return services;

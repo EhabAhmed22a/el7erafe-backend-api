@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
 using Shared.DataTransferObject.ClientIdentityDTOs;
+using Shared.DataTransferObject.LoginDTOs;
 using Shared.DataTransferObject.OtpDTOs;
 
 namespace Presentation.Controllers
@@ -29,7 +30,7 @@ namespace Presentation.Controllers
         public async Task<ActionResult<OtpResponseDTO>> RegisterClient(ClientRegisterDTO clientRegisterDTO)
         {
             logger.LogInformation("[API] Starting registration with OTP for: {Email}", clientRegisterDTO.Email);
-            var result = await service.RegisterAndSendOtpAsync(clientRegisterDTO);
+            var result = await service.RegisterAsync(clientRegisterDTO);
             return CreatedAtAction(nameof(RegisterClient), result);
         }
 
@@ -47,10 +48,10 @@ namespace Presentation.Controllers
         /// <response code="406">Returns when OTP is invalid or expired</response>
         /// <response code="500">Returns when internal server error occurs</response>
         [HttpPost("verify-otp")]
-        public async Task<ActionResult<ClientDTO>> VerifyOtp(OtpVerificationDTO otpVerificationDTO)
+        public async Task<ActionResult<UserDTO>> VerifyOtp(OtpVerificationDTO otpVerificationDTO)
         {
             logger.LogInformation("[API] Completing registration with OTP for: {Email}", otpVerificationDTO.Email);
-            var client = await service.VerifyOtpAndCompleteRegistrationAsync(otpVerificationDTO);
+            var client = await service.VerifyOtpAsync(otpVerificationDTO);
             return Ok(client);
         }
 

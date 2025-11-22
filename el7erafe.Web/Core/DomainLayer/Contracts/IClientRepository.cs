@@ -6,7 +6,7 @@ namespace DomainLayer.Contracts
     {
         Task<Client> CreateAsync(Client client);
         Task<Client?> GetByIdAsync(int id);
-        Task<Client?> GetByUserId(string userId);
+        Task<Client?> GetByUserIdAsync(string userId);
         Task<IEnumerable<Client>?> GetAllAsync();
         Task<bool> UpdateAsync(Client client);
         Task<bool> DeleteAsync(int id);

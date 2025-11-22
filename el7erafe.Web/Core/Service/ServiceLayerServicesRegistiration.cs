@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Service.Email;
 using ServiceAbstraction;
 
 namespace Service
@@ -9,6 +10,11 @@ namespace Service
         {
             services.AddScoped<ITechnicianFileService, TechnicianFileService>();
             services.AddScoped<ILookupService, LookupService>();
+            services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<IOtpService, OtpService>();
+            services.AddScoped<IClientAuthenticationService, ClientAuthenticationService>();
+            services.AddScoped<ITechAuthenticationService, TechAuthenticationService>();
+            services.AddScoped<ILoginService, LoginService>();
             return services;
         }
     }

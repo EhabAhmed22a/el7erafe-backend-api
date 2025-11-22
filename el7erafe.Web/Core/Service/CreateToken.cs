@@ -10,7 +10,9 @@ namespace Service
 {
     public class CreateToken(UserManager<ApplicationUser> _userManager, IConfiguration _configuration)
     {
-        public async Task<string> CreateTokenAsync(ApplicationUser user)
+        // for tempToken assign to true
+        // for token assign tempToken to false
+        public async Task<string> CreateTokenAsync(ApplicationUser user, bool tempToken)
         {
             var claims = new List<Claim>()
             {
@@ -26,14 +28,28 @@ namespace Service
             var Key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SecretKey));
             var Creds = new SigningCredentials(Key, SecurityAlgorithms.HmacSha256);
 
-            var Token = new JwtSecurityToken(
+            if(tempToken is true)
+            {
+                var Token = new JwtSecurityToken(
                 issuer: _configuration.GetSection("JWTOptions")["Issuer"], 
                 audience: _configuration.GetSection("JWTOptions")["Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddHours(72),
+                expires: DateTime.UtcNow.AddDays(1),
                 signingCredentials: Creds
                 );
-            return new JwtSecurityTokenHandler().WriteToken(Token);
+                return new JwtSecurityTokenHandler().WriteToken(Token);
+            }
+            else
+            {
+                var Token = new JwtSecurityToken(
+                issuer: _configuration.GetSection("JWTOptions")["Issuer"],
+                audience: _configuration.GetSection("JWTOptions")["Audience"],
+                claims: claims,
+                expires: DateTime.MaxValue,
+                signingCredentials: Creds
+                );
+                return new JwtSecurityTokenHandler().WriteToken(Token);
+            }
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿
 using System.ComponentModel.DataAnnotations;
 
-namespace Shared.DataTransferObject.ClientIdentityDTOs
+namespace Shared.DataTransferObject.OtpDTOs
 {
     public class ResendOtpRequestDTO
     {

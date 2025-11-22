@@ -34,7 +34,7 @@
             <response code="406">Returns when OTP is invalid or expired</response>
             <response code="500">Returns when internal server error occurs</response>
         </member>
-        <member name="M:Presentation.Controllers.ClientRegistrationController.ResendOtp(Shared.DataTransferObject.ClientIdentityDTOs.ResendOtpRequestDTO)">
+        <member name="M:Presentation.Controllers.ClientRegistrationController.ResendOtp(Shared.DataTransferObject.OtpDTOs.ResendOtpRequestDTO)">
             <summary>
             Resends OTP to the user's email for registration completion.
             </summary>
@@ -49,6 +49,23 @@
             <response code="404">Returns when no user found with the provided email</response>
             <response code="409">Returns when email is already verified</response>
             <response code="429">Returns when OTP was sent recently (within 60 seconds)</response>
+            <response code="500">Returns when internal server error occurs</response>
+        </member>
+        <member name="M:Presentation.Controllers.LoginController.Login(Shared.DataTransferObject.LoginDTOs.LoginDTO)">
+            <summary>
+            Authenticates a user and returns JWT token with user information.
+            </summary>
+            <remarks>
+            This endpoint handles user authentication for both clients and technicians.
+            Returns appropriate status codes for different authentication states.
+            </remarks>
+            <param name="loginDTO">Login credentials containing phone number and password</param>
+            <returns>Returns user data with JWT token on successful authentication</returns>
+            <response code="200">Returns when login is successful with user data and JWT token</response>
+            <response code="401">Returns when credentials are invalid</response>
+            <response code="452">Returns when client email is not verified</response>
+            <response code="460">Returns when technician account is pending admin approval</response>
+            <response code="461">Returns when technician account is rejected by admin</response>
             <response code="500">Returns when internal server error occurs</response>
         </member>
     </members>
