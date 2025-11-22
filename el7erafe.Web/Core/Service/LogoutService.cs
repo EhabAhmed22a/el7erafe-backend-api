@@ -30,7 +30,7 @@ namespace Service
                     return new LogoutResponseDto
                     {
                         Success = true,
-                        Message = "Logged out successfully",
+                        Message = "تم تسجيل الخروج بنجاح",
                         LogoutTime = DateTime.UtcNow
                     };
                 }
