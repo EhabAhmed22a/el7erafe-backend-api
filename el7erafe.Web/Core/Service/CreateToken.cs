@@ -17,39 +17,31 @@ namespace Service
             var claims = new List<Claim>()
             {
                 new(ClaimTypes.NameIdentifier , user.Id),
-                new(ClaimTypes.MobilePhone , user.PhoneNumber!) 
+                new(ClaimTypes.MobilePhone , user.PhoneNumber!),
+                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), // Unique ID
+                new("iat", DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString()) 
             };
 
             var Roles = await _userManager.GetRolesAsync(user);
             foreach (var role in Roles)
                 claims.Add(new Claim(ClaimTypes.Role, role));
 
-            var SecretKey = _configuration.GetSection("JWTOptions")["SecretKey"]; 
+            var SecretKey = _configuration.GetSection("JWTOptions")["SecretKey"];
             var Key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SecretKey));
             var Creds = new SigningCredentials(Key, SecurityAlgorithms.HmacSha256);
 
-            if(tempToken is true)
-            {
-                var Token = new JwtSecurityToken(
-                issuer: _configuration.GetSection("JWTOptions")["Issuer"], 
-                audience: _configuration.GetSection("JWTOptions")["Audience"],
-                claims: claims,
-                expires: DateTime.UtcNow.AddDays(1),
-                signingCredentials: Creds
-                );
-                return new JwtSecurityTokenHandler().WriteToken(Token);
-            }
-            else
-            {
-                var Token = new JwtSecurityToken(
+            var expiration = tempToken ?
+            DateTime.UtcNow.AddDays(1) :    // Temp tokens: 1 day
+            DateTime.UtcNow.AddDays(7);     // Regular tokens: 7 day
+
+            var Token = new JwtSecurityToken(
                 issuer: _configuration.GetSection("JWTOptions")["Issuer"],
                 audience: _configuration.GetSection("JWTOptions")["Audience"],
                 claims: claims,
-                expires: DateTime.MaxValue,
+                expires: expiration,
                 signingCredentials: Creds
-                );
-                return new JwtSecurityTokenHandler().WriteToken(Token);
-            }
+            );
+            return new JwtSecurityTokenHandler().WriteToken(Token);
         }
     }
 }
