@@ -102,6 +102,7 @@ namespace Service
             }
             else
             {
+                logger.LogInformation("[SERVICE] Retrieving technician details for user: {UserId}", user.Id);
                 var technician = await technicianRepository.GetByUserIdAsync(user.Id);
                 if (technician is null)
                 {
@@ -123,14 +124,6 @@ namespace Service
 
                 logger.LogInformation("[SERVICE] Technician status approved, proceeding with login for user: {UserId}",
                     user.Id);
-
-                logger.LogInformation("[SERVICE] Retrieving technician details for user: {UserId}", user.Id);
-
-                if (technician is null)
-                {
-                    logger.LogError("[SERVICE] Technician record not found for user: {UserId}", user.Id);
-                    throw new UnauthorizedUserException();
-                }
 
                 logger.LogInformation("[SERVICE] Generating token for technician: {TechnicianName}", technician.Name);
                 var token = await new CreateToken(userManager, configuration).CreateTokenAsync(user, tempToken: false);
