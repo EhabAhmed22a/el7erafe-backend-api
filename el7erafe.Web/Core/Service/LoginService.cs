@@ -102,13 +102,20 @@ namespace Service
             }
             else
             {
+                var technician = await technicianRepository.GetByUserIdAsync(user.Id);
+                if (technician is null)
+                {
+                    logger.LogError("[SERVICE] Technician record not found for user: {UserId}", user.Id);
+                    throw new UnauthorizedUserException();
+                }
+
                 logger.LogInformation("[SERVICE] Processing technician login flow for user: {UserId}", user.Id);
-                if (user.Technician!.Status == TechnicianStatus.Pending)
+                if (technician.Status == TechnicianStatus.Pending)
                 {
                     logger.LogWarning("[SERVICE] Technician login rejected - status Pending for user: {UserId}", user.Id);
                     throw new PendingTechnicianRequest();
                 }
-                else if (user.Technician.Status == TechnicianStatus.Rejected)
+                else if (technician.Status == TechnicianStatus.Rejected)
                 {
                     logger.LogWarning("[SERVICE] Technician login rejected - status Rejected for user: {UserId}", user.Id);
                     throw new RejectedTechnician();
@@ -118,7 +125,6 @@ namespace Service
                     user.Id);
 
                 logger.LogInformation("[SERVICE] Retrieving technician details for user: {UserId}", user.Id);
-                var technician = await technicianRepository.GetByUserIdAsync(user.Id);
 
                 if (technician is null)
                 {
