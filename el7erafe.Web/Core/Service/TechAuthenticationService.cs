@@ -168,15 +168,15 @@ namespace Service
 
                 case TechnicianStatus.Pending:
                     _logger.LogWarning("[SERVICE] Technician pending approval: {UserId}", userId);
-                    throw new TechnicianPendingException();
+                    throw new PendingTechnicianRequest();
 
                 case TechnicianStatus.Rejected:
                     _logger.LogWarning("[SERVICE] Technician rejected: {UserId}", userId);
-                    throw new TechnicianRejectedException();
+                    throw new RejectedTechnician();
 
                 default:
                     _logger.LogWarning("[SERVICE] Unknown technician status: {Status} for user: {UserId}", technician.Status, userId);
-                    throw new TechnicianPendingException();
+                    throw new PendingTechnicianRequest();
             }
         }
     }

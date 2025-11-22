@@ -46,8 +46,6 @@ namespace el7erafe.Web.CustomMiddleWares
                 PendingTechnicianRequest => 460,
                 RejectedTechnician => 461,
                 OtpAlreadySent => StatusCodes.Status429TooManyRequests,
-                TechnicianPendingException => 460,
-                TechnicianRejectedException => 461,
                 _ => StatusCodes.Status500InternalServerError
             };
 
