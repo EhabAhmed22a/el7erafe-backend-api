@@ -2,7 +2,7 @@
 
 namespace ServiceAbstraction
 {
-    public interface ILOgoutService
+    public interface ILogoutService
     {
         Task<LogoutResponseDto> LogoutAsync(string token);
     }
