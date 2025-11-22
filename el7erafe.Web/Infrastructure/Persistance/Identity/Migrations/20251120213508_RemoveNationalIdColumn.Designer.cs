@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Persistance.Databases;
 
@@ -11,9 +12,11 @@ using Persistance.Databases;
 namespace Persistance.Identity.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251120213508_RemoveNationalIdColumn")]
+    partial class RemoveNationalIdColumn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -93,32 +96,6 @@ namespace Persistance.Identity.Migrations
                     b.ToTable("Users", (string)null);
                 });
 
-            modelBuilder.Entity("DomainLayer.Models.IdentityModule.City", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("GovernorateId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("NameAr")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("NameEn")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GovernorateId");
-
-                    b.ToTable("Cities", (string)null);
-                });
-
             modelBuilder.Entity("DomainLayer.Models.IdentityModule.Client", b =>
                 {
                     b.Property<int>("Id")
@@ -143,27 +120,6 @@ namespace Persistance.Identity.Migrations
                     b.ToTable("Clients", (string)null);
                 });
 
-            modelBuilder.Entity("DomainLayer.Models.IdentityModule.Governorate", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("NameAr")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("NameEn")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Governorates", (string)null);
-                });
-
             modelBuilder.Entity("DomainLayer.Models.IdentityModule.Technician", b =>
                 {
                     b.Property<int>("Id")
@@ -171,9 +127,6 @@ namespace Persistance.Identity.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CityId")
-                        .HasColumnType("int");
 
                     b.Property<string>("CriminalHistoryURL")
                         .IsRequired()
@@ -191,7 +144,7 @@ namespace Persistance.Identity.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ServiceId")
+                    b.Property<int>("ServiceType")
                         .HasColumnType("int");
 
                     b.Property<int>("Status")
@@ -203,31 +156,10 @@ namespace Persistance.Identity.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CityId");
-
-                    b.HasIndex("ServiceId");
-
                     b.HasIndex("UserId")
                         .IsUnique();
 
                     b.ToTable("Technicians", (string)null);
-                });
-
-            modelBuilder.Entity("DomainLayer.Models.IdentityModule.TechnicianService", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("NameAr")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("TechnicianServices", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -272,17 +204,6 @@ namespace Persistance.Identity.Migrations
                     b.ToTable("UserRoles", (string)null);
                 });
 
-            modelBuilder.Entity("DomainLayer.Models.IdentityModule.City", b =>
-                {
-                    b.HasOne("DomainLayer.Models.IdentityModule.Governorate", "Governorate")
-                        .WithMany("Cities")
-                        .HasForeignKey("GovernorateId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Governorate");
-                });
-
             modelBuilder.Entity("DomainLayer.Models.IdentityModule.Client", b =>
                 {
                     b.HasOne("DomainLayer.Models.IdentityModule.ApplicationUser", "User")
@@ -296,27 +217,11 @@ namespace Persistance.Identity.Migrations
 
             modelBuilder.Entity("DomainLayer.Models.IdentityModule.Technician", b =>
                 {
-                    b.HasOne("DomainLayer.Models.IdentityModule.City", "City")
-                        .WithMany("Technicians")
-                        .HasForeignKey("CityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DomainLayer.Models.IdentityModule.TechnicianService", "Service")
-                        .WithMany("Technicians")
-                        .HasForeignKey("ServiceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("DomainLayer.Models.IdentityModule.ApplicationUser", "User")
                         .WithOne("Technician")
                         .HasForeignKey("DomainLayer.Models.IdentityModule.Technician", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("City");
-
-                    b.Navigation("Service");
 
                     b.Navigation("User");
                 });
@@ -341,21 +246,6 @@ namespace Persistance.Identity.Migrations
                     b.Navigation("Client");
 
                     b.Navigation("Technician");
-                });
-
-            modelBuilder.Entity("DomainLayer.Models.IdentityModule.City", b =>
-                {
-                    b.Navigation("Technicians");
-                });
-
-            modelBuilder.Entity("DomainLayer.Models.IdentityModule.Governorate", b =>
-                {
-                    b.Navigation("Cities");
-                });
-
-            modelBuilder.Entity("DomainLayer.Models.IdentityModule.TechnicianService", b =>
-                {
-                    b.Navigation("Technicians");
                 });
 #pragma warning restore 612, 618
         }

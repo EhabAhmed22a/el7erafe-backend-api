@@ -7,6 +7,10 @@ namespace Persistance.Databases
 {
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
     {
+        public DbSet<Governorate> Governorates { get; set; } = default!;
+        public DbSet<City> Cities { get; set; } = default!;
+        public DbSet<TechnicianService> TechnicianServices { get; set; } = default!;
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -15,6 +19,9 @@ namespace Persistance.Databases
             builder.Entity<Client>().ToTable("Clients");
             builder.Entity<IdentityRole>().ToTable("Roles");
             builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles");
+            builder.Entity<Governorate>().ToTable("Governorates");
+            builder.Entity<TechnicianService>().ToTable("TechnicianServices");
+            builder.Entity<City>().ToTable("Cities");
             builder.Ignore<IdentityUserClaim<string>>();
             builder.Ignore<IdentityUserToken<string>>();
             builder.Ignore<IdentityUserLogin<string>>();

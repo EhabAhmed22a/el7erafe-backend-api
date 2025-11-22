@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Persistance.Databases;
 
@@ -11,9 +12,11 @@ using Persistance.Databases;
 namespace Persistance.Identity.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251120221635_AddGovernorateAndCitiesTables")]
+    partial class AddGovernorateAndCitiesTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -116,7 +119,7 @@ namespace Persistance.Identity.Migrations
 
                     b.HasIndex("GovernorateId");
 
-                    b.ToTable("Cities", (string)null);
+                    b.ToTable("City");
                 });
 
             modelBuilder.Entity("DomainLayer.Models.IdentityModule.Client", b =>
@@ -161,7 +164,7 @@ namespace Persistance.Identity.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Governorates", (string)null);
+                    b.ToTable("Governorate");
                 });
 
             modelBuilder.Entity("DomainLayer.Models.IdentityModule.Technician", b =>
@@ -191,7 +194,7 @@ namespace Persistance.Identity.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ServiceId")
+                    b.Property<int>("ServiceType")
                         .HasColumnType("int");
 
                     b.Property<int>("Status")
@@ -205,29 +208,10 @@ namespace Persistance.Identity.Migrations
 
                     b.HasIndex("CityId");
 
-                    b.HasIndex("ServiceId");
-
                     b.HasIndex("UserId")
                         .IsUnique();
 
                     b.ToTable("Technicians", (string)null);
-                });
-
-            modelBuilder.Entity("DomainLayer.Models.IdentityModule.TechnicianService", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("NameAr")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("TechnicianServices", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -302,12 +286,6 @@ namespace Persistance.Identity.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("DomainLayer.Models.IdentityModule.TechnicianService", "Service")
-                        .WithMany("Technicians")
-                        .HasForeignKey("ServiceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("DomainLayer.Models.IdentityModule.ApplicationUser", "User")
                         .WithOne("Technician")
                         .HasForeignKey("DomainLayer.Models.IdentityModule.Technician", "UserId")
@@ -315,8 +293,6 @@ namespace Persistance.Identity.Migrations
                         .IsRequired();
 
                     b.Navigation("City");
-
-                    b.Navigation("Service");
 
                     b.Navigation("User");
                 });
@@ -351,11 +327,6 @@ namespace Persistance.Identity.Migrations
             modelBuilder.Entity("DomainLayer.Models.IdentityModule.Governorate", b =>
                 {
                     b.Navigation("Cities");
-                });
-
-            modelBuilder.Entity("DomainLayer.Models.IdentityModule.TechnicianService", b =>
-                {
-                    b.Navigation("Technicians");
                 });
 #pragma warning restore 612, 618
         }

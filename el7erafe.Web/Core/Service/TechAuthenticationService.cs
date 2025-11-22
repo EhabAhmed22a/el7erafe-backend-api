@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
+using Shared.DataTransferObject;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
 
 namespace Service
@@ -28,14 +29,33 @@ namespace Service
                 throw new PhoneNumberAlreadyExists(techRegisterDTO.PhoneNumber);
             }
 
-            _logger.LogInformation("[SERVICE] Checking National Id uniqueness: {NationalId}", techRegisterDTO.NationalId);
-            var NationalIdFound = await _technicianRepository.ExistsByNationalIdAsync(techRegisterDTO.NationalId);
 
-            if (NationalIdFound)
+
+            var governorate = await _technicianRepository.GetGovernorateByNameAsync(techRegisterDTO.Governorate);
+            if (governorate == null)
             {
-                _logger.LogWarning("[SERVICE] Duplicate phone number detected: {Phone}", techRegisterDTO.PhoneNumber);
-                throw new NationalIdAlreadyExists(techRegisterDTO.NationalId);
+                _logger.LogWarning("[SERVICE] Governorate not found: {Governorate}", techRegisterDTO.Governorate);
+                throw new GovernorateNotFoundException(techRegisterDTO.Governorate);
             }
+
+
+            var city = await _technicianRepository.GetCityByNameAsync(techRegisterDTO.City, governorate.Id);
+            if (city == null)
+            {
+                _logger.LogWarning("[SERVICE] City not found: {City} in Governorate: {Governorate}", techRegisterDTO.City, techRegisterDTO.Governorate);
+                throw new CityNotFoundException(techRegisterDTO.City);
+            }
+
+            // **VALIDATE AND GET SERVICE DATA**
+            _logger.LogInformation("[SERVICE] Validating service for: {Phone}", techRegisterDTO.PhoneNumber);
+
+            var service = await _technicianRepository.GetServiceByNameAsync(techRegisterDTO.ServiceType);
+            if (service == null)
+            {
+                _logger.LogWarning("[SERVICE] Service not found: {ServiceType}", techRegisterDTO.ServiceType);
+                throw new ServiceNotFoundException(techRegisterDTO.ServiceType);
+            }
+
 
             // Create User (TechRegisterDTO -> ApplicationUser)
             var user = new ApplicationUser()
@@ -74,13 +94,13 @@ namespace Service
             var technician = new Technician
             {
                 Name = processedData.Name,
-                NationalId = processedData.NationalId,
                 NationalIdFrontURL = processedData.NationalIdFrontPath,
                 NationalIdBackURL = processedData.NationalIdBackPath,
                 CriminalHistoryURL = processedData.CriminalRecordPath,
                 UserId = user.Id,
                 Status = TechnicianStatus.Pending,
-                ServiceType = (TechnicianServiceType)techRegisterDTO.ServiceType
+                CityId = city.Id,
+                ServiceId = service.Id
             };
 
             await _technicianRepository.CreateAsync(technician);
@@ -93,11 +113,71 @@ namespace Service
             // Return TechDTO (assuming TechDTO has Name and PhoneNumber)
             return new TechDTO
             {
-                Name = technician.Name,
-                PhoneNumber = user.PhoneNumber,
-                Status = technician.Status.ToString(),
-                Token = await CreateToken.CreateTokenAsync(user, tempToken:true)
+                tempToken = await CreateToken.CreateTokenAsync(user)
             };
+        }
+
+        // In TechAuthenticationService.cs
+        public async Task<UserDTO> CheckTechnicianApprovalAsync(string userId)
+        {
+            _logger.LogInformation("[SERVICE] Checking technician approval status for user: {UserId}", userId);
+
+            // Get user
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                _logger.LogWarning("[SERVICE] User not found: {UserId}", userId);
+                throw new UserNotFoundException("المستخدم غير موجود");
+            }
+
+            // Check if user is a technician
+            var isTechnician = await _userManager.IsInRoleAsync(user, "Technician");
+            if (!isTechnician)
+            {
+                _logger.LogWarning("[SERVICE] User is not a technician: {UserId}", userId);
+                throw new TechNotFoundException(userId);
+            }
+
+            // Get technician record
+            var technician = await _technicianRepository.GetByUserIdAsync(userId);
+            if (technician == null)
+            {
+                _logger.LogWarning("[SERVICE] Technician record not found for user: {UserId}", userId);
+                throw new TechNotFoundException(userId);
+            }
+
+            _logger.LogInformation("[SERVICE] Technician status: {Status} for user: {UserId}", technician.Status, userId);
+
+            // Handle different statuses
+            switch (technician.Status)
+            {
+                case TechnicianStatus.Accepted:
+                    _logger.LogInformation("[SERVICE] Technician approved: {UserId}", userId);
+
+                    // Generate new token
+                    var createToken = new CreateToken(_userManager, _configuration);
+                    var token = await createToken.CreateTokenAsync(user);
+
+                    return new UserDTO
+                    {
+                        token = token,
+                        userId = technician.UserId,
+                        userName = technician.Name,
+                        type = 'T'
+                    };
+
+                case TechnicianStatus.Pending:
+                    _logger.LogWarning("[SERVICE] Technician pending approval: {UserId}", userId);
+                    throw new TechnicianPendingException();
+
+                case TechnicianStatus.Rejected:
+                    _logger.LogWarning("[SERVICE] Technician rejected: {UserId}", userId);
+                    throw new TechnicianRejectedException();
+
+                default:
+                    _logger.LogWarning("[SERVICE] Unknown technician status: {Status} for user: {UserId}", technician.Status, userId);
+                    throw new TechnicianPendingException();
+            }
         }
     }
 }
