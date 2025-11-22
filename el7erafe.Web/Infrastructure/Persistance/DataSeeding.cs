@@ -10,7 +10,7 @@ namespace Persistance
     public class DataSeeding(ApplicationDbContext _dbContext,
         RoleManager<IdentityRole> _roleManager) : IDataSeeding
     {
-        private const string SeedFilePath = "\\data\\message.txt";
+        private const string SeedFilePath = "Data/message.txt";
 
         public async Task IdentityDataSeedingAsync()
         {
