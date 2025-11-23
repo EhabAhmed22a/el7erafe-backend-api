@@ -3,11 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
 using Shared.DataTransferObject.LoginDTOs;
+using Shared.DataTransferObject.OtpDTOs;
 
 namespace Presentation.Controllers
 {
     [ApiController]
-    [Route("api/auth/login")]
+    [Route("api/auth")]
     public class LoginController(ILoginService loginService, ILogger<LoginController> logger) : ControllerBase
     {
         /// <summary>
@@ -25,11 +26,18 @@ namespace Presentation.Controllers
         /// <response code="460">Returns when technician account is pending admin approval</response>
         /// <response code="461">Returns when technician account is rejected by admin</response>
         /// <response code="500">Returns when internal server error occurs</response>
-        [HttpPost]
+        [HttpPost("login")]
         public async Task<ActionResult<UserDTO>> Login(LoginDTO loginDTO)
         {
             logger.LogInformation("[API] Login attempt for: {PhoneNumber}", loginDTO.PhoneNumber);
             return Ok(await loginService.LoginAsync(loginDTO));
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<ActionResult<OtpResponseDTO>> ForgetPasswordAsync(ForgetPasswordDTO forgetPasswordDTO)
+        {
+            logger.LogInformation("[API] Forget Password attempt for: {Email}", forgetPasswordDTO.Email);
+            return Ok(await loginService.ForgetPasswordAsync(forgetPasswordDTO));
         }
     }
 }

@@ -19,7 +19,7 @@
             <response code="409">Returns when email or phone number already exists</response>
             <response code="500">Returns when internal server error occurs</response>
         </member>
-        <member name="M:Presentation.Controllers.ClientRegistrationController.VerifyOtp(Shared.DataTransferObject.OtpDTOs.OtpVerificationDTO)">
+        <member name="M:Presentation.Controllers.ClientRegistrationController.ConfirmEmail(Shared.DataTransferObject.OtpDTOs.OtpVerificationDTO)">
             <summary>
             Completes the client registration process by verifying the OTP and activating the user account.
             </summary>

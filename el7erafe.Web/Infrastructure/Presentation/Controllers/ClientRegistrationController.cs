@@ -47,11 +47,11 @@ namespace Presentation.Controllers
         /// <response code="404">Returns when no user found with the provided email</response>
         /// <response code="406">Returns when OTP is invalid or expired</response>
         /// <response code="500">Returns when internal server error occurs</response>
-        [HttpPost("verify-otp")]
-        public async Task<ActionResult<UserDTO>> VerifyOtp(OtpVerificationDTO otpVerificationDTO)
+        [HttpPost("confirm-email")]
+        public async Task<ActionResult<UserDTO>> ConfirmEmail(OtpVerificationDTO otpVerificationDTO)
         {
             logger.LogInformation("[API] Completing registration with OTP for: {Email}", otpVerificationDTO.Email);
-            var client = await service.VerifyOtpAsync(otpVerificationDTO);
+            var client = await service.ConfirmEmailAsync(otpVerificationDTO);
             return Ok(client);
         }
 
@@ -75,6 +75,13 @@ namespace Presentation.Controllers
         {
             logger.LogInformation("[API] Resending OTP for: {Email}", resendOtpRequestDTO.Email);
             return Ok(await service.ResendOtp(resendOtpRequestDTO));
+        }
+
+        [HttpPost("verify-otp")]
+        public async Task<ActionResult> VerifyOtp(OtpVerificationDTO otpVerificationDTO)
+        {
+            await service.VerifyOtpAsync(otpVerificationDTO);
+            return Ok();
         }
     }
 }

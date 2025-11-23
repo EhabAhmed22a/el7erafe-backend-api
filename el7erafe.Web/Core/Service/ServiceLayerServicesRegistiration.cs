@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Service.Email;
+using Service.Helpers;
 using ServiceAbstraction;
 
 namespace Service
@@ -15,6 +16,7 @@ namespace Service
             services.AddScoped<IClientAuthenticationService, ClientAuthenticationService>();
             services.AddScoped<ITechAuthenticationService, TechAuthenticationService>();
             services.AddScoped<ILoginService, LoginService>();
+            services.AddScoped<OtpHelper>();
             return services;
         }
     }
