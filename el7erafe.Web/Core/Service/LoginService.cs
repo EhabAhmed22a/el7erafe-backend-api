@@ -78,7 +78,7 @@ namespace Service
                 }
 
                 logger.LogInformation("[SERVICE] Generating token for client: {ClientName}", client.Name);
-                var token = await new CreateToken(userManager, configuration).CreateTokenAsync(user, tempToken: false);
+                var token = await new CreateToken(userManager, configuration).CreateTokenAsync(user, () => DateTime.UtcNow.AddDays(7));
 
                 logger.LogInformation("[SERVICE] Client login completed successfully: {ClientName} ({UserId})",
                     client.Name, user.Id);
@@ -105,7 +105,7 @@ namespace Service
                 if (technician.Status == TechnicianStatus.Pending)
                 {
                     logger.LogWarning("[SERVICE] Technician login rejected - status Pending for user: {UserId}", user.Id);
-                    throw new PendingTechnicianRequest(await new CreateToken(userManager, configuration).CreateTokenAsync(user, tempToken:true));
+                    throw new PendingTechnicianRequest(await new CreateToken(userManager, configuration).CreateTokenAsync(user, () => DateTime.UtcNow.AddDays(1)));
                 }
                 else if (technician.Status == TechnicianStatus.Rejected)
                 {
@@ -117,7 +117,7 @@ namespace Service
                     user.Id);
 
                 logger.LogInformation("[SERVICE] Generating token for technician: {TechnicianName}", technician.Name);
-                var token = await new CreateToken(userManager, configuration).CreateTokenAsync(user, tempToken: false);
+                var token = await new CreateToken(userManager, configuration).CreateTokenAsync(user, () => DateTime.UtcNow.AddDays(1));
 
                 logger.LogInformation("[SERVICE] Technician login completed successfully: {TechnicianName} ({UserId})",
                     technician.Name, user.Id);

@@ -114,7 +114,7 @@ namespace Service
                 throw new UserNotFoundException("المستخدم غير موجود.");
 
             logger.LogInformation("[Service] Registration completed with OTP verification: {Email}", otpVerificationDTO.Email);
-            var token = await new CreateToken(userManager, configuration).CreateTokenAsync(user, tempToken: false);
+            var token = await new CreateToken(userManager, configuration).CreateTokenAsync(user, () => DateTime.UtcNow.AddDays(1));
             return new UserDTO
             {
                 token = token,

@@ -23,7 +23,7 @@ namespace Service
             _logger.LogInformation("[SERVICE] Checking phone number uniqueness: {Phone}", techRegisterDTO.PhoneNumber);
             var phoneNumberFound = await _technicianRepository.ExistsAsync(techRegisterDTO.PhoneNumber);
 
-            if(phoneNumberFound)
+            if (phoneNumberFound)
             {
                 _logger.LogWarning("[SERVICE] Duplicate phone number detected: {Phone}", techRegisterDTO.PhoneNumber);
                 throw new PhoneNumberAlreadyExists(techRegisterDTO.PhoneNumber);
@@ -60,7 +60,7 @@ namespace Service
             // Create User (TechRegisterDTO -> ApplicationUser)
             var user = new ApplicationUser()
             {
-                UserName = techRegisterDTO.PhoneNumber, 
+                UserName = techRegisterDTO.PhoneNumber,
                 PhoneNumber = techRegisterDTO.PhoneNumber,
                 UserType = UserTypeEnum.Technician,
                 EmailConfirmed = true
@@ -76,7 +76,7 @@ namespace Service
             }
             _logger.LogInformation("[SERVICE] Uploading technician documents to secure cloud storage for: {PhoneNumber}", techRegisterDTO.PhoneNumber);
 
-            TechRegisterToReturnDTO processedData ;
+            TechRegisterToReturnDTO processedData;
 
             try
             {
@@ -113,7 +113,7 @@ namespace Service
             // Return TechDTO (assuming TechDTO has Name and PhoneNumber)
             return new TechDTO
             {
-                tempToken = await CreateToken.CreateTokenAsync(user,tempToken:true)
+                tempToken = await CreateToken.CreateTokenAsync(user, () => DateTime.UtcNow.AddDays(1))
             };
         }
 
@@ -156,7 +156,7 @@ namespace Service
 
                     // Generate new token
                     var createToken = new CreateToken(_userManager, _configuration);
-                    var token = await createToken.CreateTokenAsync(user,tempToken:false);
+                    var token = await createToken.CreateTokenAsync(user, () => DateTime.UtcNow.AddDays(7));
 
                     return new UserDTO
                     {
@@ -168,7 +168,7 @@ namespace Service
 
                 case TechnicianStatus.Pending:
                     _logger.LogWarning("[SERVICE] Technician pending approval: {UserId}", userId);
-                    throw new PendingTechnicianRequest(await new CreateToken(_userManager, _configuration).CreateTokenAsync(user, tempToken:true));
+                    throw new PendingTechnicianRequest(await new CreateToken(_userManager, _configuration).CreateTokenAsync(user, () => DateTime.UtcNow.AddDays(1)));
 
                 case TechnicianStatus.Rejected:
                     _logger.LogWarning("[SERVICE] Technician rejected: {UserId}", userId);
@@ -176,7 +176,7 @@ namespace Service
 
                 default:
                     _logger.LogWarning("[SERVICE] Unknown technician status: {Status} for user: {UserId}", technician.Status, userId);
-                    throw new PendingTechnicianRequest(await new CreateToken(_userManager, _configuration).CreateTokenAsync(user, tempToken: true));
+                    throw new PendingTechnicianRequest(await new CreateToken(_userManager, _configuration).CreateTokenAsync(user, () => DateTime.UtcNow.AddDays(1)));
             }
         }
     }

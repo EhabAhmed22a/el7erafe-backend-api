@@ -12,7 +12,7 @@ namespace Service
     {
         // for tempToken assign to true
         // for token assign tempToken to false
-        public async Task<string> CreateTokenAsync(ApplicationUser user, bool tempToken)
+        public async Task<string> CreateTokenAsync(ApplicationUser user, Func<DateTime> expiration)
         {
             var claims = new List<Claim>()
             {
@@ -30,15 +30,11 @@ namespace Service
             var Key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SecretKey));
             var Creds = new SigningCredentials(Key, SecurityAlgorithms.HmacSha256);
 
-            var expiration = tempToken ?
-            DateTime.UtcNow.AddDays(1) :    // Temp tokens: 1 day
-            DateTime.UtcNow.AddDays(7);     // Regular tokens: 7 day
-
             var Token = new JwtSecurityToken(
                 issuer: _configuration.GetSection("JWTOptions")["Issuer"],
                 audience: _configuration.GetSection("JWTOptions")["Audience"],
                 claims: claims,
-                expires: expiration,
+                expires: expiration(),
                 signingCredentials: Creds
             );
             return new JwtSecurityTokenHandler().WriteToken(Token);
