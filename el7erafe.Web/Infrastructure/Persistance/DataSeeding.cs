@@ -1,16 +1,18 @@
 ﻿using DomainLayer.Contracts;
 using DomainLayer.Models.IdentityModule;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using Persistance.Databases;
 using System.Text.Json;
 
 namespace Persistance
 {
-    public class DataSeeding(ApplicationDbContext _dbContext,
+    public class DataSeeding(ApplicationDbContext _dbContext,IWebHostEnvironment _webHostEnvironment,
         RoleManager<IdentityRole> _roleManager) : IDataSeeding
     {
-        private const string SeedFilePath = "data/message.txt";
+        private readonly string SeedFilePath = Path.Combine(_webHostEnvironment.ContentRootPath, "data/message.txt");
 
         public async Task IdentityDataSeedingAsync()
         {
