@@ -4,15 +4,16 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Persistance.Databases;
 using System.Text.Json;
 
 namespace Persistance
 {
-    public class DataSeeding(ApplicationDbContext _dbContext,IWebHostEnvironment _webHostEnvironment,
+    public class DataSeeding(ApplicationDbContext _dbContext,IWebHostEnvironment _webHostEnvironment, ILogger<DataSeeding> logger,
         RoleManager<IdentityRole> _roleManager) : IDataSeeding
     {
-        private readonly string SeedFilePath = Path.Combine(_webHostEnvironment.ContentRootPath, "data/message.txt");
+        private readonly string SeedFilePath = "data/message.txt";
 
         public async Task IdentityDataSeedingAsync()
         {
@@ -50,7 +51,7 @@ namespace Persistance
 
                 if (!File.Exists(SeedFilePath))
                 {
-                    Console.WriteLine($"Seed file not found: {SeedFilePath}");
+                    logger.LogInformation($"Seed file not found: {SeedFilePath}");
                     return;
                 }
 

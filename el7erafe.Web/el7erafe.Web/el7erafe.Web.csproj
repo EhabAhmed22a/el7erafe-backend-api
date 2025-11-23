@@ -20,6 +20,7 @@
     </PackageReference>
     <PackageReference Include="Serilog" Version="4.3.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+    <PackageReference Include="Serilog.Sinks.AzureApp" Version="3.1.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
   </ItemGroup>
 
@@ -27,5 +28,9 @@
     <ProjectReference Include="..\Infrastructure\Persistance\Persistance.csproj" />
     <ProjectReference Include="..\Infrastructure\Presentation\Presentation.csproj" />
   </ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="data\message.txt" />
+	</ItemGroup>
 
 </Project>
