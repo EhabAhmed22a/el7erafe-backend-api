@@ -73,9 +73,7 @@ namespace Presentation.Controllers
         public async Task<ActionResult> VerifyOtp(OtpVerificationDTO otpVerificationDTO)
         {
             logger.LogInformation("[API] OTP verification attempt for email: {Email}", otpVerificationDTO.Email);
-            await clientAuthenticationService.VerifyOtpAsync(otpVerificationDTO);
-            logger.LogInformation("[API] OTP verified successfully for email: {Email}", otpVerificationDTO.Email);
-            return Ok();
+            return Ok(await clientAuthenticationService.VerifyResetOtpAsync(otpVerificationDTO));
         }
     }
 }

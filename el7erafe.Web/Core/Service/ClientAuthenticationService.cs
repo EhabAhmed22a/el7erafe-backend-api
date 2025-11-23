@@ -170,5 +170,15 @@ namespace Service
                 throw new InvalidOtpException();
             }
         }
+
+        public async Task<ResetOTP> VerifyResetOtpAsync(OtpVerificationDTO otpVerificationDTO)
+        {
+            await VerifyOtpAsync(otpVerificationDTO);
+            logger.LogInformation("[SERVICE] Temp Token generated for reset password for user: {Email}", otpVerificationDTO.Email);
+            return new ResetOTP
+            {
+                tempToken = await new CreateToken(userManager, configuration).CreateTokenAsync(await userManager.FindByEmailAsync(otpVerificationDTO.Email), () => DateTime.UtcNow.AddMinutes(5))
+            };
+        }
     }
 }

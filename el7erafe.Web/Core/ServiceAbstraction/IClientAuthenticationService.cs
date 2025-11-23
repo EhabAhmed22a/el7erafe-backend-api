@@ -11,5 +11,6 @@ namespace ServiceAbstraction
         Task<OtpResponseDTO> ResendOtp(ResendOtpRequestDTO resendOtpRequestDTO);
         Task<UserDTO> ConfirmEmailAsync(OtpVerificationDTO otpVerificationDTO);
         Task VerifyOtpAsync(OtpVerificationDTO otpVerificationDTO);
+        Task<ResetOTP> VerifyResetOtpAsync(OtpVerificationDTO otpVerificationDTO);
     }
 }
