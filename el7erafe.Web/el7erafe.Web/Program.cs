@@ -17,6 +17,13 @@ namespace el7erafe.Web
 
             builder.Services.AddControllers();
 
+            #region Json Options
+            builder.Services.ConfigureHttpJsonOptions(options =>
+            {
+                options.SerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+            });
+            #endregion
+
             #region Add services to the container.
             builder.Services.AddPersistanceServices(builder.Configuration);
             builder.Services.AddJWTService(builder.Configuration);

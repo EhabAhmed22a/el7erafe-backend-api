@@ -1,0 +1,303 @@
+{
+  "governorates": [
+    {
+      "name_en": "Alexandria",
+      "name_ar": "الإسكندرية",
+      "cities": [
+        {"name_en": "Alexandria", "name_ar": "الإسكندرية"},
+        {"name_en": "Borg El Arab", "name_ar": "برج العرب"},
+        {"name_en": "New Borg El Arab", "name_ar": "برج العرب الجديدة"},
+        {"name_en": "Smouha", "name_ar": "سموحة"},
+        {"name_en": "Sidi Beshr", "name_ar": "سيدي بشر"},
+        {"name_en": "Agami", "name_ar": "العجمي"},
+        {"name_en": "Mandara", "name_ar": "المندرة"},
+        {"name_en": "Miami", "name_ar": "ميامي"},
+        {"name_en": "Montaza", "name_ar": "المنتزة"},
+        {"name_en": "Abu Qir", "name_ar": "أبو قير"}
+      ]
+    },
+    {
+      "name_en": "Aswan",
+      "name_ar": "أسوان",
+      "cities": [
+        {"name_en": "Aswan", "name_ar": "أسوان"},
+        {"name_en": "New Aswan", "name_ar": "أسوان الجديدة"},
+        {"name_en": "Kom Ombo", "name_ar": "كوم أمبو"},
+        {"name_en": "Edfu", "name_ar": "إدفو"},
+        {"name_en": "Abu Simbel", "name_ar": "أبو سمبل"}
+      ]
+    },
+    {
+      "name_en": "Asyut",
+      "name_ar": "أسيوط",
+      "cities": [
+        {"name_en": "Asyut", "name_ar": "أسيوط"},
+        {"name_en": "New Asyut", "name_ar": "أسيوط الجديدة"},
+        {"name_en": "Dairut", "name_ar": "ديروط"},
+        {"name_en": "Manfalut", "name_ar": "منفلوط"},
+        {"name_en": "Abnub", "name_ar": "أبنوب"},
+        {"name_en": "Abu Tig", "name_ar": "أبو تيج"}
+      ]
+    },
+    {
+      "name_en": "Beheira",
+      "name_ar": "البحيرة",
+      "cities": [
+        {"name_en": "Damanhur", "name_ar": "دمنهور"},
+        {"name_en": "Kafr El Dawwar", "name_ar": "كفر الدوار"},
+        {"name_en": "Rosetta", "name_ar": "رشيد"},
+        {"name_en": "Edko", "name_ar": "إدكو"},
+        {"name_en": "Wadi El Natrun", "name_ar": "وادي النطرون"}
+      ]
+    },
+    {
+      "name_en": "Beni Suef",
+      "name_ar": "بني سويف",
+      "cities": [
+        {"name_en": "Beni Suef", "name_ar": "بني سويف"},
+        {"name_en": "New Beni Suef", "name_ar": "بني سويف الجديدة"},
+        {"name_en": "Biba", "name_ar": "ببا"},
+        {"name_en": "El Fashn", "name_ar": "الفشن"},
+        {"name_en": "Nasser", "name_ar": "ناصر"}
+      ]
+    },
+    {
+      "name_en": "Cairo",
+      "name_ar": "القاهرة",
+      "cities": [
+        {"name_en": "Nasr City", "name_ar": "مدينة نصر"},
+        {"name_en": "Heliopolis", "name_ar": "مصر الجديدة"},
+        {"name_en": "Maadi", "name_ar": "المعادي"},
+        {"name_en": "Zamalek", "name_ar": "الزمالك"},
+        {"name_en": "Downtown", "name_ar": "وسط البلد"},
+        {"name_en": "New Cairo", "name_ar": "القاهرة الجديدة"},
+        {"name_en": "El Rehab", "name_ar": "الرحاب"},
+        {"name_en": "Madinaty", "name_ar": "مدينتي"},
+        {"name_en": "Badr City", "name_ar": "مدينة بدر"},
+        {"name_en": "El Shorouk", "name_ar": "الشروق"},
+        {"name_en": "Helwan", "name_ar": "حلوان"},
+        {"name_en": "Shubra", "name_ar": "شبرا"},
+        {"name_en": "Mokattam", "name_ar": "المقطم"}
+      ]
+    },
+    {
+      "name_en": "Dakahlia",
+      "name_ar": "الدقهلية",
+      "cities": [
+        {"name_en": "Mansoura", "name_ar": "المنصورة"},
+        {"name_en": "Talkha", "name_ar": "طلخا"},
+        {"name_en": "Mit Ghamr", "name_ar": "ميت غمر"},
+        {"name_en": "El Sinbillawin", "name_ar": "السنبلاوين"},
+        {"name_en": "Dikirnis", "name_ar": "دكرنس"}
+      ]
+    },
+    {
+      "name_en": "Damietta",
+      "name_ar": "دمياط",
+      "cities": [
+        {"name_en": "Damietta", "name_ar": "دمياط"},
+        {"name_en": "New Damietta", "name_ar": "دمياط الجديدة"},
+        {"name_en": "Ras El Bar", "name_ar": "رأس البر"},
+        {"name_en": "Faraskur", "name_ar": "فارسكور"}
+      ]
+    },
+    {
+      "name_en": "Faiyum",
+      "name_ar": "الفيوم",
+      "cities": [
+        {"name_en": "Faiyum", "name_ar": "الفيوم"},
+        {"name_en": "New Faiyum", "name_ar": "الفيوم الجديدة"},
+        {"name_en": "Sinnuris", "name_ar": "سنورس"},
+        {"name_en": "Tamiya", "name_ar": "طامية"},
+        {"name_en": "Ibsheway", "name_ar": "إبشواي"}
+      ]
+    },
+    {
+      "name_en": "Gharbia",
+      "name_ar": "الغربية",
+      "cities": [
+        {"name_en": "Tanta", "name_ar": "طنطا"},
+        {"name_en": "El Mahalla El Kubra", "name_ar": "المحلة الكبرى"},
+        {"name_en": "Kafr El Zayat", "name_ar": "كفر الزيات"},
+        {"name_en": "Zifta", "name_ar": "زفتى"},
+        {"name_en": "Samanoud", "name_ar": "سمنود"}
+      ]
+    },
+    {
+      "name_en": "Giza",
+      "name_ar": "الجيزة",
+      "cities": [
+        {"name_en": "Giza", "name_ar": "الجيزة"},
+        {"name_en": "6th of October", "name_ar": "السادس من أكتوبر"},
+        {"name_en": "Sheikh Zayed", "name_ar": "الشيخ زايد"},
+        {"name_en": "Haram", "name_ar": "الهرم"},
+        {"name_en": "Faisal", "name_ar": "فيصل"},
+        {"name_en": "Dokki", "name_ar": "الدقي"},
+        {"name_en": "Mohandessin", "name_ar": "المهندسين"},
+        {"name_en": "Imbaba", "name_ar": "إمبابة"},
+        {"name_en": "Hadayek El Ahram", "name_ar": "حدائق الأهرام"},
+        {"name_en": "Badrashin", "name_ar": "البدرشين"}
+      ]
+    },
+    {
+      "name_en": "Ismailia",
+      "name_ar": "الإسماعيلية",
+      "cities": [
+        {"name_en": "Ismailia", "name_ar": "الإسماعيلية"},
+        {"name_en": "Fayed", "name_ar": "فايد"},
+        {"name_en": "Qantara", "name_ar": "القنطرة"}
+      ]
+    },
+    {
+      "name_en": "Kafr El Sheikh",
+      "name_ar": "كفر الشيخ",
+      "cities": [
+        {"name_en": "Kafr El Sheikh", "name_ar": "كفر الشيخ"},
+        {"name_en": "Desouk", "name_ar": "دسوق"},
+        {"name_en": "Bella", "name_ar": "بيلا"},
+        {"name_en": "Baltim", "name_ar": "بلطيم"}
+      ]
+    },
+    {
+      "name_en": "Luxor",
+      "name_ar": "الأقصر",
+      "cities": [
+        {"name_en": "Luxor", "name_ar": "الأقصر"},
+        {"name_en": "New Luxor", "name_ar": "الأقصر الجديدة"},
+        {"name_en": "Esna", "name_ar": "إسنا"},
+        {"name_en": "Armant", "name_ar": "أرمنت"}
+      ]
+    },
+    {
+      "name_en": "Matrouh",
+      "name_ar": "مطروح",
+      "cities": [
+        {"name_en": "Marsa Matrouh", "name_ar": "مرسى مطروح"},
+        {"name_en": "Siwa", "name_ar": "سيوة"},
+        {"name_en": "El Alamein", "name_ar": "العلمين"},
+        {"name_en": "Sallum", "name_ar": "السلوم"}
+      ]
+    },
+    {
+      "name_en": "Minya",
+      "name_ar": "المنيا",
+      "cities": [
+        {"name_en": "Minya", "name_ar": "المنيا"},
+        {"name_en": "New Minya", "name_ar": "المنيا الجديدة"},
+        {"name_en": "Malawi", "name_ar": "ملوي"},
+        {"name_en": "Samalut", "name_ar": "سمالوط"},
+        {"name_en": "Beni Mazar", "name_ar": "بني مزار"}
+      ]
+    },
+    {
+      "name_en": "Monufia",
+      "name_ar": "المنوفية",
+      "cities": [
+        {"name_en": "Shibin El Kom", "name_ar": "شبين الكوم"},
+        {"name_en": "Sadat City", "name_ar": "مدينة السادات"},
+        {"name_en": "Menouf", "name_ar": "منوف"},
+        {"name_en": "Ashmoun", "name_ar": "أشمون"}
+      ]
+    },
+    {
+      "name_en": "New Valley",
+      "name_ar": "الوادي الجديد",
+      "cities": [
+        {"name_en": "Kharga", "name_ar": "الخارجة"},
+        {"name_en": "Dakhla", "name_ar": "الداخلة"},
+        {"name_en": "Farafra", "name_ar": "الفرافرة"}
+      ]
+    },
+    {
+      "name_en": "North Sinai",
+      "name_ar": "شمال سيناء",
+      "cities": [
+        {"name_en": "Arish", "name_ar": "العريش"},
+        {"name_en": "Rafah", "name_ar": "رفح"},
+        {"name_en": "Bir al-Abd", "name_ar": "بئر العبد"}
+      ]
+    },
+    {
+      "name_en": "Port Said",
+      "name_ar": "بورسعيد",
+      "cities": [
+        {"name_en": "Port Said", "name_ar": "بورسعيد"},
+        {"name_en": "Port Fuad", "name_ar": "بورفؤاد"}
+      ]
+    },
+    {
+      "name_en": "Qalyubia",
+      "name_ar": "القليوبية",
+      "cities": [
+        {"name_en": "Banha", "name_ar": "بنها"},
+        {"name_en": "Shubra El Kheima", "name_ar": "شبرا الخيمة"},
+        {"name_en": "Qalyub", "name_ar": "قليوب"},
+        {"name_en": "Obour", "name_ar": "العبور"},
+        {"name_en": "Khanka", "name_ar": "الخانكة"}
+      ]
+    },
+    {
+      "name_en": "Qena",
+      "name_ar": "قنا",
+      "cities": [
+        {"name_en": "Qena", "name_ar": "قنا"},
+        {"name_en": "New Qena", "name_ar": "قنا الجديدة"},
+        {"name_en": "Nag Hammadi", "name_ar": "نجع حمادي"},
+        {"name_en": "Qus", "name_ar": "قوص"},
+        {"name_en": "Dishna", "name_ar": "دشنا"}
+      ]
+    },
+    {
+      "name_en": "Red Sea",
+      "name_ar": "البحر الأحمر",
+      "cities": [
+        {"name_en": "Hurghada", "name_ar": "الغردقة"},
+        {"name_en": "El Gouna", "name_ar": "الجونة"},
+        {"name_en": "Safaga", "name_ar": "سفاجا"},
+        {"name_en": "Marsa Alam", "name_ar": "مرسى علم"},
+        {"name_en": "Qusair", "name_ar": "القصير"}
+      ]
+    },
+    {
+      "name_en": "Sharqia",
+      "name_ar": "الشرقية",
+      "cities": [
+        {"name_en": "Zagazig", "name_ar": "الزقازيق"},
+        {"name_en": "10th of Ramadan", "name_ar": "العاشر من رمضان"},
+        {"name_en": "Bilbeis", "name_ar": "بلبيس"},
+        {"name_en": "Minya El Qamh", "name_ar": "منيا القمح"},
+        {"name_en": "Faqous", "name_ar": "فاقوس"}
+      ]
+    },
+    {
+      "name_en": "Sohag",
+      "name_ar": "سوهاج",
+      "cities": [
+        {"name_en": "Sohag", "name_ar": "سوهاج"},
+        {"name_en": "New Sohag", "name_ar": "سوهاج الجديدة"},
+        {"name_en": "Akhmim", "name_ar": "أخميم"},
+        {"name_en": "Girga", "name_ar": "جرجا"},
+        {"name_en": "Tahta", "name_ar": "طهطا"}
+      ]
+    },
+    {
+      "name_en": "South Sinai",
+      "name_ar": "جنوب سيناء",
+      "cities": [
+        {"name_en": "Sharm El Sheikh", "name_ar": "شرم الشيخ"},
+        {"name_en": "Dahab", "name_ar": "دهب"},
+        {"name_en": "Nuweiba", "name_ar": "نويبع"},
+        {"name_en": "Taba", "name_ar": "طابا"},
+        {"name_en": "El Tor", "name_ar": "الطور"}
+      ]
+    },
+    {
+      "name_en": "Suez",
+      "name_ar": "السويس",
+      "cities": [
+        {"name_en": "Suez", "name_ar": "السويس"},
+        {"name_en": "Ain Sokhna", "name_ar": "العين السخنة"}
+      ]
+    }
+  ]
+}

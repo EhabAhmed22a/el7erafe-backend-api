@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="TableConfigurations\**" />
+    <EmbeddedResource Remove="TableConfigurations\**" />
+    <None Remove="TableConfigurations\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Azure.Identity" Version="1.17.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.9" />
   </ItemGroup>
@@ -17,7 +23,6 @@
 
   <ItemGroup>
     <Folder Include="Databases\Configurations\" />
-    <Folder Include="TableConfigurations\" />
   </ItemGroup>
 
 </Project>
