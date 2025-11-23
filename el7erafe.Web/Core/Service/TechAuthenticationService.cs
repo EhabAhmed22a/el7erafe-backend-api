@@ -168,7 +168,7 @@ namespace Service
 
                 case TechnicianStatus.Pending:
                     _logger.LogWarning("[SERVICE] Technician pending approval: {UserId}", userId);
-                    throw new PendingTechnicianRequest();
+                    throw new PendingTechnicianRequest(await new CreateToken(_userManager, _configuration).CreateTokenAsync(user, tempToken:true));
 
                 case TechnicianStatus.Rejected:
                     _logger.LogWarning("[SERVICE] Technician rejected: {UserId}", userId);
@@ -176,7 +176,7 @@ namespace Service
 
                 default:
                     _logger.LogWarning("[SERVICE] Unknown technician status: {Status} for user: {UserId}", technician.Status, userId);
-                    throw new PendingTechnicianRequest();
+                    throw new PendingTechnicianRequest(await new CreateToken(_userManager, _configuration).CreateTokenAsync(user, tempToken: true));
             }
         }
     }

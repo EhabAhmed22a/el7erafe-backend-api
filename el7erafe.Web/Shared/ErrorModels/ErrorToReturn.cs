@@ -5,5 +5,6 @@ namespace Shared.ErrorModels
     {
         public int StatusCode { get; set; }
         public string ErrorMessage { get; set; } = default!;
+        public string? tempToken { get; set; }
     }
 }

@@ -66,8 +66,9 @@ namespace el7erafe.Web.CustomMiddleWares
                 BadRequestException badRequestException => GetBadRequestErrors(badRequestException, Response),
                 { } when ex is AlreadyExistException or EmailAlreadyVerified => StatusCodes.Status409Conflict,
                 InvalidOtpException => StatusCodes.Status400BadRequest,
+                ForgotPasswordDisallowed => StatusCodes.Status403Forbidden,
                 UnverifiedClientLogin => 452,
-                PendingTechnicianRequest => 460,
+                PendingTechnicianRequest pendingTechnicianRequest => GetTempToken(pendingTechnicianRequest, Response),
                 RejectedTechnician => 461,
                 OtpAlreadySent => StatusCodes.Status429TooManyRequests,
                 _ => StatusCodes.Status500InternalServerError
@@ -78,6 +79,12 @@ namespace el7erafe.Web.CustomMiddleWares
 
             //Return Object As Json 
             await httpContext.Response.WriteAsJsonAsync(Response);
+        }
+
+        private static int GetTempToken(PendingTechnicianRequest pendingTechnicianRequest, ErrorToReturn response)
+        {
+            response.tempToken = pendingTechnicianRequest._tempToken;
+            return 460;
         }
 
         private static int GetBadRequestErrors(BadRequestException badRequestException, ErrorToReturn response)

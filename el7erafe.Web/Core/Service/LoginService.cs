@@ -7,9 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Service.Helpers;
 using ServiceAbstraction;
 using Shared.DataTransferObject.ClientIdentityDTOs;
 using Shared.DataTransferObject.LoginDTOs;
+using Shared.DataTransferObject.OtpDTOs;
 
 namespace Service
 {
@@ -17,8 +19,7 @@ namespace Service
         IConfiguration configuration,
         IClientRepository clientRepository,
         ITechnicianRepository technicianRepository,
-        IOtpService otpService,
-        IEmailService emailService,
+        OtpHelper otpHelper,
         ILogger<LoginService> logger) : ILoginService
     {
         public async Task<UserDTO> LoginAsync(LoginDTO loginDTO)
@@ -59,19 +60,9 @@ namespace Service
                 {
                     logger.LogWarning("[SERVICE] Client email not verified for user: {UserId}, sending OTP", user.Id);
 
-                    var identifier = GetOtpIdentifier(user.Id);
-                    var otpCode = await otpService.GenerateOtp(identifier);
+                    await otpHelper.SendOTP(user);
 
-                    logger.LogInformation("[SERVICE] OTP generated for client verification: {UserId}", user.Id);
-
-                    _ = Task.Run(async () =>
-                    {
-                        await emailService.SendOtpEmailAsync(user.Email!, otpCode);
-                    });
-
-                    logger.LogInformation("[SERVICE] OTP email sent to client: {Email}", user.Email);
                     logger.LogWarning("[SERVICE] Throwing UnverifiedClientLogin for user: {UserId}", user.Id);
-
                     throw new UnverifiedClientLogin();
                 }
 
@@ -114,7 +105,7 @@ namespace Service
                 if (technician.Status == TechnicianStatus.Pending)
                 {
                     logger.LogWarning("[SERVICE] Technician login rejected - status Pending for user: {UserId}", user.Id);
-                    throw new PendingTechnicianRequest();
+                    throw new PendingTechnicianRequest(await new CreateToken(userManager, configuration).CreateTokenAsync(user, tempToken:true));
                 }
                 else if (technician.Status == TechnicianStatus.Rejected)
                 {
@@ -141,6 +132,36 @@ namespace Service
             }
         }
 
-        private static string GetOtpIdentifier(string userId) => $"registration_{userId}";
+        public async Task<OtpResponseDTO> ForgetPasswordAsync(ForgetPasswordDTO forgetPasswordDTO)
+        {
+            logger.LogInformation("[SERVICE] Checking if email is registered: {Email}", forgetPasswordDTO.Email);
+            var user = await userManager.FindByEmailAsync(forgetPasswordDTO.Email);
+            if (user is null)
+            {
+                logger.LogWarning("[SERVICE] Email not registered: {Email}", forgetPasswordDTO.Email);
+                throw new UserNotFoundException("البريد الإلكتروني غير مسجل");
+            }
+
+            if (!otpHelper.CanResendOtp(user.Id).Result)
+            {
+                logger.LogWarning("[SERVICE] OTP already sent recently for: {Email}", user.Email);
+                throw new OtpAlreadySent();
+            }
+
+            if (!user.EmailConfirmed)
+            {
+                logger.LogWarning("[SERVICE] Client email not verified for user: {UserId}, sending OTP", user.Id);
+
+                await otpHelper.SendOTP(user);
+
+                logger.LogWarning("[SERVICE] Throwing ForgotPasswordDisallowed for user: {UserId}", user.Id);
+                throw new ForgotPasswordDisallowed();
+            }
+
+            return new OtpResponseDTO
+            {
+                Message = "تم إرسال رمز التحقق إلى بريدك الإلكتروني."
+            };
+        }
     }
 }
