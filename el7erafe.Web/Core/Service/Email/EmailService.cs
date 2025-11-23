@@ -110,7 +110,7 @@ namespace Service.Email
                 _logger.LogDebug("[SERVICE] Running in development environment");
                 try
                 {
-                    var imagePath = @"C:\Users\alima\OneDrive\Desktop\Grad Project\el7erafe-backend-api\el7erafe.Web\el7erafe.Web\wwwroot\email_msg.png";
+                    var imagePath = @"wwwroot\email_msg.png";
                     _logger.LogDebug("[SERVICE] Looking for image at development path: {ImagePath}", imagePath);
 
                     if (File.Exists(imagePath))

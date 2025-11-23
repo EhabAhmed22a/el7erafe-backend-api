@@ -7,6 +7,6 @@ namespace ServiceAbstraction
     public interface ILoginService
     {
         Task<UserDTO> LoginAsync(LoginDTO loginDTO);
-        Task<OtpResponseDTO> ForgetPasswordAsync(ForgetPasswordDTO forgetPasswordDTO);
+        Task<OtpResponseDTO> ForgetPasswordAsync(ResendOtpRequestDTO forgetPasswordDTO);
     }
 }

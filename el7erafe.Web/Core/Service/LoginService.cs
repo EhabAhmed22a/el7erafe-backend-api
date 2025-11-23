@@ -132,7 +132,7 @@ namespace Service
             }
         }
 
-        public async Task<OtpResponseDTO> ForgetPasswordAsync(ForgetPasswordDTO forgetPasswordDTO)
+        public async Task<OtpResponseDTO> ForgetPasswordAsync(ResendOtpRequestDTO forgetPasswordDTO)
         {
             logger.LogInformation("[SERVICE] Checking if email is registered: {Email}", forgetPasswordDTO.Email);
             var user = await userManager.FindByEmailAsync(forgetPasswordDTO.Email);
