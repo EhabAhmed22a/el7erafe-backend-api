@@ -17,6 +17,8 @@ namespace Service
             services.AddScoped<ITechAuthenticationService, TechAuthenticationService>();
             services.AddScoped<ILoginService, LoginService>();
             services.AddScoped<OtpHelper>();
+            services.AddScoped<ILogoutService, LogoutService>();
+            services.AddScoped<ITokenBlocklistService, TokenBlocklistService>();
             return services;
         }
     }
