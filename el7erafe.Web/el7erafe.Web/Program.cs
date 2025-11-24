@@ -80,7 +80,7 @@ namespace el7erafe.Web
 
                     loggerConfiguration.WriteTo.AzureBlobStorage(
                         blobServiceClient: blobServiceClient,
-                        storageContainerName: "logs",
+                        storageContainerName: "$logs",
                         storageFileName: "el7erafe-{yyyy-MM-dd}.log",
                         outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext} {Message:lj}{NewLine}{Exception}");
                 }
