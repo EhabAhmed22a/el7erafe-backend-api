@@ -55,6 +55,9 @@ jobs:
         run: dotnet ef database update --project el7erafe.Web/Infrastructure/Persistance/Persistance.csproj --startup-project el7erafe.Web/el7erafe.Web/el7erafe.Web.csproj
         env:
           ConnectionStrings__DefaultConnection: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
+          
+      - name: Check for message.txt
+        run: test -f el7erafe.Web/el7erafe.Web/data/message.txt || (echo "message.txt not found!" && exit 1)  
         
       - name: Publish
         run: dotnet publish el7erafe.Web/el7erafe.Web/el7erafe.Web.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp --self-contained false
