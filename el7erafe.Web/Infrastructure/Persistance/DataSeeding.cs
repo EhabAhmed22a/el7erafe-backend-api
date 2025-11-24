@@ -13,7 +13,7 @@ namespace Persistance
     public class DataSeeding(ApplicationDbContext _dbContext,IWebHostEnvironment _webHostEnvironment, ILogger<DataSeeding> logger,
         RoleManager<IdentityRole> _roleManager) : IDataSeeding
     {
-        private readonly string SeedFilePath = "data/message.txt";
+        private readonly string SeedFilePath = Path.Combine(_webHostEnvironment.ContentRootPath, "data/message.txt");
 
         public async Task IdentityDataSeedingAsync()
         {
