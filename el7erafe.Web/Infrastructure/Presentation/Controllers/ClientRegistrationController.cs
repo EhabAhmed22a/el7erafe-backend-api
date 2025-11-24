@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
 using Shared.DataTransferObject.ClientIdentityDTOs;
+using Shared.DataTransferObject.LoginDTOs;
 using Shared.DataTransferObject.OtpDTOs;
 
 namespace Presentation.Controllers
@@ -29,7 +30,7 @@ namespace Presentation.Controllers
         public async Task<ActionResult<OtpResponseDTO>> RegisterClient(ClientRegisterDTO clientRegisterDTO)
         {
             logger.LogInformation("[API] Starting registration with OTP for: {Email}", clientRegisterDTO.Email);
-            var result = await service.RegisterAndSendOtpAsync(clientRegisterDTO);
+            var result = await service.RegisterAsync(clientRegisterDTO);
             return CreatedAtAction(nameof(RegisterClient), result);
         }
 
@@ -45,12 +46,13 @@ namespace Presentation.Controllers
         /// <response code="200">Returns when OTP is verified successfully and user is activated</response>
         /// <response code="404">Returns when no user found with the provided email</response>
         /// <response code="406">Returns when OTP is invalid or expired</response>
+        /// <response code="409">Returns when email is already verified</response>
         /// <response code="500">Returns when internal server error occurs</response>
-        [HttpPost("verify-otp")]
-        public async Task<ActionResult<ClientDTO>> VerifyOtp(OtpVerificationDTO otpVerificationDTO)
+        [HttpPost("confirm-email")]
+        public async Task<ActionResult<UserDTO>> ConfirmEmail(OtpVerificationDTO otpVerificationDTO)
         {
             logger.LogInformation("[API] Completing registration with OTP for: {Email}", otpVerificationDTO.Email);
-            var client = await service.VerifyOtpAndCompleteRegistrationAsync(otpVerificationDTO);
+            var client = await service.ConfirmEmailAsync(otpVerificationDTO);
             return Ok(client);
         }
 
@@ -58,15 +60,14 @@ namespace Presentation.Controllers
         /// Resends OTP to the user's email for registration completion.
         /// </summary>
         /// <remarks>
-        /// This endpoint resends OTP code to unverified email addresses for users who haven't completed registration.
+        /// This endpoint resends OTP code to email addresses for users
         /// The OTP can only be resent after 60 seconds have passed since the last OTP was sent.
-        /// If the email is already verified or an OTP was sent recently, appropriate errors will be returned.
+        /// If an OTP was sent recently to an email, appropriate errors will be returned.
         /// </remarks>
         /// <param name="resendOtpRequestDTO">Request containing the email address</param>
         /// <returns>Returns OTP response with success status and message</returns>
         /// <response code="200">Returns when OTP is resent successfully</response>
         /// <response code="404">Returns when no user found with the provided email</response>
-        /// <response code="409">Returns when email is already verified</response>
         /// <response code="429">Returns when OTP was sent recently (within 60 seconds)</response>
         /// <response code="500">Returns when internal server error occurs</response>
         [HttpPost("resend-otp")]
@@ -74,6 +75,30 @@ namespace Presentation.Controllers
         {
             logger.LogInformation("[API] Resending OTP for: {Email}", resendOtpRequestDTO.Email);
             return Ok(await service.ResendOtp(resendOtpRequestDTO));
+        }
+
+        /// <summary>
+        /// Verifies the OTP code sent to the user's email for authentication.
+        /// </summary>
+        /// <remarks>
+        /// This endpoint validates the OTP code sent to the user's email address.
+        /// The OTP must be a 6-digit numeric code and is validated against the stored OTP for the user.
+        /// If the OTP is invalid or expired, an error will be returned.
+        /// Successful verification confirms the user's identity for the intended operation.
+        /// </remarks>
+        /// <param name="otpVerificationDTO">Request containing email and OTP code</param>
+        /// <returns>Returns success status upon successful OTP verification</returns>
+        /// <response code="200">Returns when OTP is verified successfully</response>
+        /// <response code="400">Returns when OTP code is invalid or expired</response>
+        /// <response code="404">Returns when no user found with the provided email</response>
+        /// <response code="500">Returns when internal server error occurs</response>
+        [HttpPost("verify-otp")]
+        public async Task<ActionResult> VerifyOtp(OtpVerificationDTO otpVerificationDTO)
+        {
+            logger.LogInformation("[API] OTP verification attempt for email: {Email}", otpVerificationDTO.Email);
+            await service.VerifyOtpAsync(otpVerificationDTO);
+            logger.LogInformation("[API] OTP verified successfully for email: {Email}", otpVerificationDTO.Email);
+            return Ok();
         }
     }
 }

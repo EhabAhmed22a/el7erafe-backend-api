@@ -3,9 +3,13 @@ using DomainLayer.Exceptions;
 using DomainLayer.Models.IdentityModule;
 using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Service.Helpers;
 using ServiceAbstraction;
 using Shared.DataTransferObject.ClientIdentityDTOs;
+using Shared.DataTransferObject.LoginDTOs;
 using Shared.DataTransferObject.OtpDTOs;
 using static System.Net.WebRequestMethods;
 
@@ -13,11 +17,11 @@ namespace Service
 {
     public class ClientAuthenticationService(UserManager<ApplicationUser> userManager,
         IClientRepository clientRepository,
-        IEmailService emailService,
-        IOtpService otpService,
+        IConfiguration configuration,
+        OtpHelper otpHelper,
         ILogger<ClientAuthenticationService> logger) : IClientAuthenticationService
     {
-        public async Task<OtpResponseDTO> RegisterAndSendOtpAsync(ClientRegisterDTO clientRegisterDTO)
+        public async Task<OtpResponseDTO> RegisterAsync(ClientRegisterDTO clientRegisterDTO)
         {
             logger.LogInformation("[SERVICE] Checking phone number uniqueness: {Phone}", clientRegisterDTO.PhoneNumber);
             var phoneNumberFound = await clientRepository.ExistsAsync(clientRegisterDTO.PhoneNumber);
@@ -65,13 +69,7 @@ namespace Service
 
             await clientRepository.CreateAsync(client);
 
-            var identifier = GetOtpIdentifier(user.Id);
-            var otpCode = await otpService.GenerateOtp(identifier);
-
-            _ = Task.Run(async () =>
-            {
-                await emailService.SendOtpEmailAsync(user.Email, otpCode);
-            });
+            await otpHelper.SendOTP(user);
 
             logger.LogInformation("[Service] User created(unconfirmed) and OTP sent: {Email}"
             , clientRegisterDTO.Email);
@@ -80,12 +78,11 @@ namespace Service
 
             return new OtpResponseDTO
             {
-                Success = true,
                 Message = "تم إرسال الرمز إلى بريدك الإلكتروني. يرجى التحقق لإكمال التسجيل حتى تتمكن من تسجيل الدخول بنجاح."
             };
         }
 
-        public async Task<ClientDTO> VerifyOtpAndCompleteRegistrationAsync(OtpVerificationDTO otpVerificationDTO)
+        public async Task<UserDTO> ConfirmEmailAsync(OtpVerificationDTO otpVerificationDTO)
         {
             logger.LogInformation("[Service] Completing registration with OTP for: {Email}", otpVerificationDTO.Email);
 
@@ -93,10 +90,17 @@ namespace Service
             if (user is null)
                 throw new UserNotFoundException("المستخدم غير موجود.");
 
-            var identifier = GetOtpIdentifier(user.Id);
-            var userId = await otpService.VerifyOtp(identifier, otpVerificationDTO.OtpCode);
+            logger.LogInformation("[Service] Checking if email is already verified: {Email}", otpVerificationDTO.Email);
+            if (user.EmailConfirmed)
+            {
+                logger.LogWarning("[Service] Email already verified: {Email}", otpVerificationDTO.Email);
+                throw new EmailAlreadyVerified("الحساب مفعل بالفعل. يرجى تسجيل الدخول");
+            }
 
-            if (!userId)
+            var identifier = otpHelper.GetOtpIdentifier(user.Id);
+            var result = await otpHelper.VerifyOtp(identifier, otpVerificationDTO.OtpCode);
+
+            if (!result)
             {
                 throw new InvalidOtpException();
             }
@@ -105,62 +109,76 @@ namespace Service
             await userManager.UpdateAsync(user);
             await userManager.AddToRoleAsync(user, "Client");
 
-            var client = await clientRepository.GetByUserId(user.Id);
+            var client = await clientRepository.GetByUserIdAsync(user.Id);
             if (client is null)
                 throw new UserNotFoundException("المستخدم غير موجود.");
 
             logger.LogInformation("[Service] Registration completed with OTP verification: {Email}", otpVerificationDTO.Email);
-
-            return new ClientDTO
+            var token = await new CreateToken(userManager, configuration).CreateTokenAsync(user, () => DateTime.UtcNow.AddDays(1));
+            return new UserDTO
             {
-                Name = client.Name,
-                PhoneNumber = user.PhoneNumber!,
-                Email = user.Email!,
-                Token = "token-ToDo",
-                RefreshToken = "refreshToken-ToDo"
+                token = token,
+                userId = client.UserId,
+                userName = client.Name,
+                type = 'C'
             };
         }
 
         public async Task<OtpResponseDTO> ResendOtp(ResendOtpRequestDTO resendOtpRequestDTO)
         {
             logger.LogInformation("[SERVICE] Checking if email is registered: {Email}", resendOtpRequestDTO.Email);
-            var emailFound = await userManager.FindByEmailAsync(resendOtpRequestDTO.Email);
-            if (emailFound is null)
+            var user = await userManager.FindByEmailAsync(resendOtpRequestDTO.Email);
+            if (user is null)
             {
                 logger.LogWarning("[SERVICE] Email not registered: {Email}", resendOtpRequestDTO.Email);
                 throw new UserNotFoundException("البريد الإلكتروني غير مسجل");
             }
 
-            logger.LogInformation("[Service] Checking if email is already verified: {Email}", resendOtpRequestDTO.Email);
-            if (emailFound.EmailConfirmed)
-            {
-                logger.LogWarning("[Service] Email already verified: {Email}", resendOtpRequestDTO.Email);
-                throw new EmailAlreadyVerified("الحساب مفعل بالفعل. يرجى تسجيل الدخول");
-            }
-
-            var identifier = GetOtpIdentifier(emailFound.Id);
+            var identifier = otpHelper.GetOtpIdentifier(user.Id);
             logger.LogInformation("[SERVICE] Checking if OTP was sent more than 60 seconds ago to: {Email}", resendOtpRequestDTO.Email);
-            if (!otpService.CanResendOtp(identifier).Result)
+            if (!otpHelper.CanResendOtp(identifier).Result)
             {
                 logger.LogWarning("[SERVICE] OTP already sent recently for: {Email}", resendOtpRequestDTO.Email);
                 throw new OtpAlreadySent();
             }
 
-            var otpCode = await otpService.GenerateOtp(identifier);
-            _ = Task.Run(async () =>
-            await emailService.SendOtpEmailAsync(resendOtpRequestDTO.Email, otpCode)
-            );
+            await otpHelper.SendOTP(user);
 
             logger.LogInformation("[Service] Resend OTP sent to: {Email}"
             , resendOtpRequestDTO.Email);
 
             return new OtpResponseDTO
             {
-                Success = true,
                 Message = "تم إرسال الرمز إلى بريدك الإلكتروني."
             };
         }
 
-        private static string GetOtpIdentifier(string userId) => $"registration_{userId}";
+        public async Task VerifyOtpAsync(OtpVerificationDTO otpVerificationDTO)
+        {
+            logger.LogInformation("[SERVICE] Checking if email is registered: {Email}", otpVerificationDTO.Email);
+            var user = await userManager.FindByEmailAsync(otpVerificationDTO.Email);
+            if (user is null)
+            {
+                logger.LogWarning("[SERVICE] Email not registered: {Email}", otpVerificationDTO.Email);
+                throw new UserNotFoundException("البريد الإلكتروني غير مسجل");
+            }
+            var identifier = otpHelper.GetOtpIdentifier(user.Id);
+            var result = await otpHelper.VerifyOtp(identifier, otpVerificationDTO.OtpCode);
+
+            if (!result)
+            {
+                throw new InvalidOtpException();
+            }
+        }
+
+        public async Task<ResetOTP> VerifyResetOtpAsync(OtpVerificationDTO otpVerificationDTO)
+        {
+            await VerifyOtpAsync(otpVerificationDTO);
+            logger.LogInformation("[SERVICE] Temp Token generated for reset password for user: {Email}", otpVerificationDTO.Email);
+            return new ResetOTP
+            {
+                tempToken = await new CreateToken(userManager, configuration).CreateTokenAsync(await userManager.FindByEmailAsync(otpVerificationDTO.Email), () => DateTime.UtcNow.AddMinutes(5))
+            };
+        }
     }
 }

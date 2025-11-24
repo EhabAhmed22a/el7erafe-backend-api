@@ -98,7 +98,6 @@ namespace Service
                 Name = techRegisterDTO.Name,
                 PhoneNumber = techRegisterDTO.PhoneNumber,
                 Password = techRegisterDTO.Password,
-                NationalId = techRegisterDTO.NationalId,
                 NationalIdFrontPath = nationalIdFrontUrl,
                 NationalIdBackPath = nationalIdBackUrl,
                 CriminalRecordPath = criminalRecordUrl,

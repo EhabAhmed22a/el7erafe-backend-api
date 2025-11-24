@@ -1,10 +1,12 @@
-﻿using Shared.DataTransferObject.TechnicianIdentityDTOs;
+﻿using Shared.DataTransferObject.LoginDTOs;
+using Shared.DataTransferObject.TechnicianIdentityDTOs;
 
 namespace ServiceAbstraction
 {
     public interface ITechAuthenticationService
     {
         Task<TechDTO> techRegisterAsync(TechRegisterDTO techRegisterDTO);
+        Task<UserDTO> CheckTechnicianApprovalAsync(string userId);
 
     }
 }
