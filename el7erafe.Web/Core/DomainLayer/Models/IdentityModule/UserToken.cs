@@ -1,5 +1,4 @@
-﻿
-using DomainLayer.Models.IdentityModule.Enums;
+﻿using DomainLayer.Models.IdentityModule.Enums;
 
 namespace DomainLayer.Models.IdentityModule
 {
@@ -9,8 +8,6 @@ namespace DomainLayer.Models.IdentityModule
         public string Token { get; set; } = default!;
         public TokenType Type { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        // Foreign Key
         public string UserId { get; set; } = default!;
         public ApplicationUser User { get; set; } = default!;
     }

@@ -9,51 +9,56 @@ namespace Persistance.Repositories
     public class UserTokenRepository(ApplicationDbContext _dbContext,
                        ILogger<UserTokenRepository> _logger) : IUserTokenRepository
     {
-        public Task CreateTokenAsync(UserToken userToken)
+        public async Task CreateUserTokenAsync(UserToken userToken)
         {
-            throw new NotImplementedException();
+            var existingToken = await GetUserTokenAsync(userToken.UserId);
+
+            if (existingToken != null)
+            {
+                existingToken.Token = userToken.Token;
+                existingToken.Type = userToken.Type;
+                existingToken.CreatedAt = DateTime.UtcNow;
+
+                _dbContext.UserTokens.Update(existingToken);
+                _logger.LogInformation("[REPO] Token updated for user {UserId}, type: {Type}",
+                    userToken.UserId, userToken.Type);
+            }
+            else
+            {
+                await _dbContext.UserTokens.AddAsync(userToken);
+                _logger.LogInformation("[REPO] Token created for user {UserId}, type: {Type}",
+                    userToken.UserId, userToken.Type);
+            }
+            await _dbContext.SaveChangesAsync();
         }
 
-        public Task DeleteTokenAsync(string token)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task DeleteUserTokenAsync(string userId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<UserToken> GetTokenAsync(string token)
+        public async Task<UserToken?> GetUserTokenAsync(string userId)
         {
             return await _dbContext.UserTokens
                 .Include(ut => ut.User)
-                .FirstOrDefaultAsync(ut => ut.Token == token);
+                .FirstOrDefaultAsync(ut => ut.UserId == userId);
         }
 
-        public Task<ApplicationUser> GetUserByTokenAsync(string token)
+        public async Task DeleteUserTokenAsync(string userId)
         {
-            throw new NotImplementedException();
+            var userToken = await GetUserTokenAsync(userId);
+            if (userToken != null)
+            {
+                _dbContext.UserTokens.Remove(userToken);
+                await _dbContext.SaveChangesAsync();
+                _logger.LogInformation("[REPO] Token deleted for user {UserId}", userId);
+            }
         }
 
-        public Task<UserToken> GetUserTokenAsync(string userId)
+
+        public async Task<bool> TokenExistsAsync(string token)
         {
-            throw new NotImplementedException();
+            return await _dbContext.UserTokens.AnyAsync(ut => ut.Token == token);
         }
 
-        public Task<bool> TokenExistsAsync(string token)
+        public async Task<bool> UserHasTokenAsync(string userId)
         {
-            throw new NotImplementedException();
-        }
-
-        public Task UpdateTokenAsync(UserToken userToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> UserHasTokenAsync(string userId)
-        {
-            throw new NotImplementedException();
+            return await _dbContext.UserTokens.AnyAsync(ut => ut.UserId == userId);
         }
     }
 }
