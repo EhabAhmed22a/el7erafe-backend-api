@@ -1,7 +1,9 @@
-﻿using DomainLayer.Exceptions;
+﻿using DomainLayer.Contracts;
+using DomainLayer.Exceptions;
+using DomainLayer.Models.IdentityModule.Enums;
+using ServiceAbstraction;
 using Shared.ErrorModels;
 using System.Text.Json;
-using ServiceAbstraction;
 
 namespace el7erafe.Web.CustomMiddleWares
 {
@@ -9,40 +11,43 @@ namespace el7erafe.Web.CustomMiddleWares
                    ILogger<CustomExceptionHandlerMiddleWare> _logger)
     {
 
-        public async Task InvokeAsync(HttpContext httpContext, ITokenBlocklistService tokenBlocklistService)
+        public async Task InvokeAsync(HttpContext httpContext, IUserTokenRepository tokenRepository)
         {
             try
             {
-                // === NEW AUTHENTICATION MIDDLEWARE LOGIC ===
                 // Skip token validation for public endpoints
                 if (!IsPublicEndpoint(httpContext.Request.Path))
                 {
-                    // Check if authorization header exists
                     var token = ExtractTokenFromHeader(httpContext);
                     if (!string.IsNullOrEmpty(token))
                     {
-                        // Check if token is revoked
-                        var isRevoked = await tokenBlocklistService.IsTokenRevokedAsync(token);
-                        if (isRevoked)
+                        // Check if token exists in database
+                        var tokenExists = await tokenRepository.TokenExistsAsync(token);
+                        if (!tokenExists)
                         {
-                            _logger.LogWarning("[AUTH] Attempt to use revoked token for endpoint: {Endpoint}", httpContext.Request.Path);
+                            _logger.LogWarning("[AUTH] Token not found in database: {Token}", token);
                             httpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                            await httpContext.Response.WriteAsJsonAsync(new ErrorToReturn
+                            await httpContext.Response.WriteAsJsonAsync(new
                             {
-                                StatusCode = StatusCodes.Status401Unauthorized,
-                                ErrorMessage = "Token has been revoked. Please login again."
+                                success = false,
+                                message = "انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى"
                             });
-                            return; // Stop further processing
+                            return;
                         }
-
-                        _logger.LogDebug("[AUTH] Token validation passed for endpoint: {Endpoint}", httpContext.Request.Path);
                     }
                     else
                     {
-                        _logger.LogDebug("[AUTH] No token found for endpoint: {Endpoint}", httpContext.Request.Path);
+                        // No token provided for protected endpoint
+                        _logger.LogWarning("[AUTH] No token provided for protected endpoint: {Endpoint}", httpContext.Request.Path);
+                        httpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        await httpContext.Response.WriteAsJsonAsync(new
+                        {
+                            success = false,
+                            message = "يرجى تسجيل الدخول للوصول إلى هذه الصفحة"
+                        });
+                        return;
                     }
                 }
-                // === END AUTHENTICATION MIDDLEWARE LOGIC ===
 
                 await _next.Invoke(httpContext);
                 await HandleNotFoundEndPointAsync(httpContext);
