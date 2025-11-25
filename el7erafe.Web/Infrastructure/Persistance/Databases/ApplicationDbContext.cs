@@ -11,6 +11,8 @@ namespace Persistance.Databases
         public DbSet<City> Cities { get; set; } = default!;
         public DbSet<TechnicianService> TechnicianServices { get; set; } = default!;
 
+        public DbSet<UserToken> UserTokens { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

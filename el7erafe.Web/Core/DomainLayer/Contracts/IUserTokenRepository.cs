@@ -1,5 +1,6 @@
-﻿
-namespace DomainLayer.Models.IdentityModule
+﻿using DomainLayer.Models.IdentityModule;
+
+namespace DomainLayer.Contracts
 {
     public interface IUserTokenRepository
     {

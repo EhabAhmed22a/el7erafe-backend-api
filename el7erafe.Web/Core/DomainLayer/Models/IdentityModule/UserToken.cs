@@ -5,7 +5,7 @@ namespace DomainLayer.Models.IdentityModule
 {
     public class UserToken
     {
-        public int Id { get; set; } // ✅ Add separate primary key
+        public int Id { get; set; } 
         public string Token { get; set; } = default!;
         public TokenType Type { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
