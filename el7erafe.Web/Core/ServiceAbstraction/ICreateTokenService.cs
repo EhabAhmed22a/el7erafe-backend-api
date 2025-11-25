@@ -6,6 +6,5 @@ namespace ServiceAbstraction
     public interface ICreateTokenService
     {
         Task<string> CreateAndStoreTokenAsync(ApplicationUser user, TokenType tokenType);
-        Task<string> GenerateJwtTokenAsync(ApplicationUser user, TokenType tokenType);
     }
 }
