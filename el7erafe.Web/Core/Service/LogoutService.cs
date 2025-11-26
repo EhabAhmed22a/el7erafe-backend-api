@@ -3,7 +3,6 @@ using DomainLayer.Contracts;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
 using Shared.DataTransferObject.LogoutDTOs;
-using System.IdentityModel.Tokens.Jwt;
 
 namespace Service
 {
