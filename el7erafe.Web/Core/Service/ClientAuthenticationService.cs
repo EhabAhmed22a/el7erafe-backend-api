@@ -3,7 +3,6 @@ using DomainLayer.Exceptions;
 using DomainLayer.Models.IdentityModule;
 using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Service.Helpers;
@@ -11,7 +10,6 @@ using ServiceAbstraction;
 using Shared.DataTransferObject.ClientIdentityDTOs;
 using Shared.DataTransferObject.LoginDTOs;
 using Shared.DataTransferObject.OtpDTOs;
-using static System.Net.WebRequestMethods;
 
 namespace Service
 {

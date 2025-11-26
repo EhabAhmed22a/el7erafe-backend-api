@@ -52,6 +52,12 @@ namespace Service
                 throw new UnauthorizedUserException();
             }
 
+            var userToken = await userTokenRepository.GetUserTokenAsync(user.Id);
+            if (userToken is not null)
+            {
+                throw new Exception("المستخدم مسجل الدخول بالفعل.");
+            }
+
             logger.LogInformation("[SERVICE] Password verification successful for user: {UserId}", user.Id);
 
             if (user.UserType == UserTypeEnum.Client)
