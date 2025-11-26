@@ -154,26 +154,41 @@ namespace Service
                 case TechnicianStatus.Accepted:
                     _logger.LogInformation("[SERVICE] Technician approved: {UserId}", userId);
 
-                    await _userTokenRepository.DeleteUserTokenAsync(userId);
+                    var usertoken = await _userTokenRepository.GetUserTokenAsync(userId);
 
-                    // Generate and store new regular token
-                    var createToken = new CreateToken(_userManager, _configuration);
-                    var accessToken = await createToken.CreateTokenAsync(user);
-
-                    await _userTokenRepository.CreateUserTokenAsync(new UserToken
+                    if (usertoken.Type == TokenType.Token)
                     {
-                        Token = accessToken,
-                        Type = TokenType.Token,
-                        UserId = user.Id
-                    });
-
-                    return new UserDTO
+                        _logger.LogInformation("[SERVICE] Existing regular token found for user: {UserId}", userId);
+                        return new UserDTO
+                        {
+                            token = usertoken.Token,
+                            userId = technician.UserId,
+                            userName = technician.Name,
+                            type = 'T'
+                        };
+                    }
+                    else
                     {
-                        token = accessToken,
-                        userId = technician.UserId,
-                        userName = technician.Name,
-                        type = 'T'
-                    };
+                        await _userTokenRepository.DeleteUserTokenAsync(userId);
+
+                        var createToken = new CreateToken(_userManager, _configuration);
+                        var accessToken = await createToken.CreateTokenAsync(user);
+
+                        await _userTokenRepository.CreateUserTokenAsync(new UserToken
+                        {
+                            Token = accessToken,
+                            Type = TokenType.Token,
+                            UserId = user.Id
+                        });
+
+                        return new UserDTO
+                        {
+                            token = accessToken,
+                            userId = technician.UserId,
+                            userName = technician.Name,
+                            type = 'T'
+                        };
+                    }
 
                 case TechnicianStatus.Pending:
                     _logger.LogWarning("[SERVICE] Technician pending approval: {UserId}", userId);
