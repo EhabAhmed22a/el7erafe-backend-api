@@ -16,43 +16,15 @@ namespace Presentation.Controllers
         [Authorize(AuthenticationSchemes = "Bearer")]
         public async Task<ActionResult<LogoutResponseDto>> Logout()
         {
-            try
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
             {
-                // Extract token from header
-                var token = ExtractTokenFromHeader();
-                if (string.IsNullOrEmpty(token))
-                {
-                    return Unauthorized(new { message = "Invalid token" });
-                }
-
-                var result = await _logoutService.LogoutAsync(token);
-
-                _logger.LogInformation("[CONTROLLER] User {UserId} logged out successfully", GetCurrentUserId());
-
-                return Ok(result);
+                return Unauthorized(new { message = "Invalid token" });
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[CONTROLLER] Error during logout");
-                return StatusCode(500, new { message = "An error occurred during logout" });
-            }
-        }
+            _logger.LogInformation("[CONTROLLER] Checking approval for user: {UserId}", userId);
+            var result = await _logoutService.LogoutAsync(userId);
 
-        private string ExtractTokenFromHeader()
-        {
-            var authHeader = Request.Headers["Authorization"].FirstOrDefault();
-
-            if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
-            {
-                return string.Empty; // or return string.Empty;
-            }
-
-            return authHeader.Substring("Bearer ".Length).Trim();
-        }
-
-        private string GetCurrentUserId()
-        {
-            return User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "Unknown";
+            return Ok(result);
         }
     }
 }

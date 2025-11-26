@@ -1,4 +1,5 @@
-﻿using DomainLayer.Contracts;
+﻿using Azure.Core;
+using DomainLayer.Contracts;
 using DomainLayer.Exceptions;
 using DomainLayer.Models.IdentityModule;
 using DomainLayer.Models.IdentityModule.Enums;
@@ -20,7 +21,8 @@ namespace Service
         IClientRepository clientRepository,
         ITechnicianRepository technicianRepository,
         OtpHelper otpHelper,
-        ILogger<LoginService> logger) : ILoginService
+        ILogger<LoginService> logger,
+        IUserTokenRepository userTokenRepository) : ILoginService
     {
         public async Task<UserDTO> LoginAsync(LoginDTO loginDTO)
         {
@@ -105,8 +107,18 @@ namespace Service
                 if (technician.Status == TechnicianStatus.Pending)
                 {
                     logger.LogWarning("[SERVICE] Technician login rejected - status Pending for user: {UserId}", user.Id);
-                    throw new PendingTechnicianRequest(await new CreateToken(userManager, configuration).CreateTokenAsync(user));
+                    var createToken = new CreateToken(userManager, configuration);
+                    var accessToken = await createToken.CreateTokenAsync(user);
+
+                    await userTokenRepository.CreateUserTokenAsync(new UserToken
+                    {
+                        Token = accessToken,
+                        Type = TokenType.TempToken,
+                        UserId = user.Id
+                    });
+                    throw new PendingTechnicianRequest(accessToken);
                 }
+
                 else if (technician.Status == TechnicianStatus.Rejected)
                 {
                     logger.LogWarning("[SERVICE] Technician login rejected - status Rejected for user: {UserId}", user.Id);
@@ -121,6 +133,13 @@ namespace Service
 
                 logger.LogInformation("[SERVICE] Technician login completed successfully: {TechnicianName} ({UserId})",
                     technician.Name, user.Id);
+
+                await userTokenRepository.CreateUserTokenAsync(new UserToken
+                {
+                    Token = token,
+                    Type = TokenType.Token,
+                    UserId = user.Id
+                });
 
                 return new UserDTO
                 {

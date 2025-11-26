@@ -45,5 +45,11 @@ namespace Persistance.Repositories
         {
             return await _dbContext.UserTokens.AnyAsync(ut => ut.UserId == userId);
         }
+
+        async Task<UserToken?> IUserTokenRepository.GetByTokenAsync(string token)
+        {
+            return await _dbContext.UserTokens
+            .FirstOrDefaultAsync(ut => ut.Token == token);
+        }
     }
 }
