@@ -108,8 +108,6 @@ namespace el7erafe.Web
 
             app.UseHttpsRedirection();
 
-            //app.UseAuthorization();
-
 
             app.MapControllers();
             #endregion

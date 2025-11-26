@@ -11,24 +11,9 @@ namespace Persistance.Repositories
     {
         public async Task CreateUserTokenAsync(UserToken userToken)
         {
-            var existingToken = await GetUserTokenAsync(userToken.UserId);
-
-            if (existingToken != null)
-            {
-                existingToken.Token = userToken.Token;
-                existingToken.Type = userToken.Type;
-                existingToken.CreatedAt = DateTime.UtcNow;
-
-                _dbContext.UserTokens.Update(existingToken);
-                _logger.LogInformation("[REPO] Token updated for user {UserId}, type: {Type}",
-                    userToken.UserId, userToken.Type);
-            }
-            else
-            {
-                await _dbContext.UserTokens.AddAsync(userToken);
-                _logger.LogInformation("[REPO] Token created for user {UserId}, type: {Type}",
-                    userToken.UserId, userToken.Type);
-            }
+            await _dbContext.UserTokens.AddAsync(userToken);
+            _logger.LogInformation("[REPO] {TokenType} token created for user {UserId}",
+                userToken.Type, userToken.UserId);
             await _dbContext.SaveChangesAsync();
         }
 

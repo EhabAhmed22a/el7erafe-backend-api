@@ -15,7 +15,8 @@ namespace Service
         ITechnicianRepository _technicianRepository,
         ITechnicianFileService _fileService,
         ILogger<TechAuthenticationService> _logger,
-        IConfiguration _configuration) : ITechAuthenticationService
+        IConfiguration _configuration,
+        IUserTokenRepository _userTokenRepository) : ITechAuthenticationService
     {
         public async Task<TechDTO> techRegisterAsync(TechRegisterDTO techRegisterDTO)
         {
@@ -109,20 +110,28 @@ namespace Service
 
             _logger.LogInformation("[SERVICE] Technician registration completed for: {PhoneNumber}", techRegisterDTO.PhoneNumber);
 
-            var CreateToken = new CreateToken(_userManager, _configuration); // Assuming IConfiguration is not needed here
-            // Return TechDTO (assuming TechDTO has Name and PhoneNumber)
+            var CreateToken = new CreateToken(_userManager, _configuration);
+            string token = await CreateToken.CreateTokenAsync(user);
+
+            var TechToken = new UserToken
+            {
+                Token = token,
+                Type = TokenType.TempToken,
+                UserId = user.Id
+            };
+
+            await _userTokenRepository.CreateUserTokenAsync(TechToken);
+
             return new TechDTO
             {
-                tempToken = await CreateToken.CreateTokenAsync(user, () => DateTime.UtcNow.AddDays(1))
+                tempToken = token
             };
         }
 
-        // In TechAuthenticationService.cs
         public async Task<UserDTO> CheckTechnicianApprovalAsync(string userId)
         {
             _logger.LogInformation("[SERVICE] Checking technician approval status for user: {UserId}", userId);
 
-            // Get user
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
@@ -130,15 +139,6 @@ namespace Service
                 throw new UserNotFoundException("المستخدم غير موجود");
             }
 
-            // Check if user is a technician
-            var isTechnician = await _userManager.IsInRoleAsync(user, "Technician");
-            if (!isTechnician)
-            {
-                _logger.LogWarning("[SERVICE] User is not a technician: {UserId}", userId);
-                throw new TechNotFoundException(userId);
-            }
-
-            // Get technician record
             var technician = await _technicianRepository.GetByUserIdAsync(userId);
             if (technician == null)
             {
@@ -154,13 +154,22 @@ namespace Service
                 case TechnicianStatus.Accepted:
                     _logger.LogInformation("[SERVICE] Technician approved: {UserId}", userId);
 
-                    // Generate new token
+                    await _userTokenRepository.DeleteUserTokenAsync(userId);
+
+                    // Generate and store new regular token
                     var createToken = new CreateToken(_userManager, _configuration);
-                    var token = await createToken.CreateTokenAsync(user, () => DateTime.UtcNow.AddDays(7));
+                    var accessToken = await createToken.CreateTokenAsync(user);
+
+                    await _userTokenRepository.CreateUserTokenAsync(new UserToken
+                    {
+                        Token = accessToken,
+                        Type = TokenType.Token,
+                        UserId = user.Id
+                    });
 
                     return new UserDTO
                     {
-                        token = token,
+                        token = accessToken,
                         userId = technician.UserId,
                         userName = technician.Name,
                         type = 'T'
@@ -168,15 +177,17 @@ namespace Service
 
                 case TechnicianStatus.Pending:
                     _logger.LogWarning("[SERVICE] Technician pending approval: {UserId}", userId);
-                    throw new PendingTechnicianRequest(await new CreateToken(_userManager, _configuration).CreateTokenAsync(user, () => DateTime.UtcNow.AddDays(1)));
+                    var userToken = await _userTokenRepository.GetUserTokenAsync(userId);
+                    throw new PendingTechnicianRequest(userToken.Token);
 
                 case TechnicianStatus.Rejected:
                     _logger.LogWarning("[SERVICE] Technician rejected: {UserId}", userId);
+                    await _userTokenRepository.DeleteUserTokenAsync(userId);
                     throw new RejectedTechnician();
 
                 default:
                     _logger.LogWarning("[SERVICE] Unknown technician status: {Status} for user: {UserId}", technician.Status, userId);
-                    throw new PendingTechnicianRequest(await new CreateToken(_userManager, _configuration).CreateTokenAsync(user, () => DateTime.UtcNow.AddDays(1)));
+                    throw new RejectedTechnician();
             }
         }
     }

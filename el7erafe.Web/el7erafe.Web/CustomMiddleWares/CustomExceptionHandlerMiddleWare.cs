@@ -1,6 +1,7 @@
 ﻿using DomainLayer.Contracts;
 using DomainLayer.Exceptions;
 using DomainLayer.Models.IdentityModule.Enums;
+using Microsoft.AspNetCore.Authentication;
 using ServiceAbstraction;
 using Shared.ErrorModels;
 using System.Text.Json;
@@ -15,37 +16,22 @@ namespace el7erafe.Web.CustomMiddleWares
         {
             try
             {
-                // Skip token validation for public endpoints
-                if (!IsPublicEndpoint(httpContext.Request.Path))
+                // === TOKEN VALIDATION ===
+                var token = ExtractTokenFromHeader(httpContext);
+                if (!string.IsNullOrEmpty(token))
                 {
-                    var token = ExtractTokenFromHeader(httpContext);
-                    if (!string.IsNullOrEmpty(token))
+                    // Check if token exists in database
+                    var tokenExists = await tokenRepository.TokenExistsAsync(token);
+                    if (!tokenExists)
                     {
-                        // Check if token exists in database
-                        var tokenExists = await tokenRepository.TokenExistsAsync(token);
-                        if (!tokenExists)
-                        {
-                            _logger.LogWarning("[AUTH] Token not found in database: {Token}", token);
-                            httpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                            await httpContext.Response.WriteAsJsonAsync(new
-                            {
-                                success = false,
-                                message = "انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى"
-                            });
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        // No token provided for protected endpoint
-                        _logger.LogWarning("[AUTH] No token provided for protected endpoint: {Endpoint}", httpContext.Request.Path);
+                        _logger.LogWarning("[AUTH] Token not found in database: {Token}", token);
                         httpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
                         await httpContext.Response.WriteAsJsonAsync(new
                         {
                             success = false,
-                            message = "يرجى تسجيل الدخول للوصول إلى هذه الصفحة"
+                            message = "انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى"
                         });
-                        return;
+                        return; 
                     }
                 }
 
@@ -111,33 +97,17 @@ namespace el7erafe.Web.CustomMiddleWares
             }
         }
 
-        // === NEW HELPER METHODS FOR AUTHENTICATION ===
-
-        private static string ExtractTokenFromHeader(HttpContext context)
+        private static string? ExtractTokenFromHeader(HttpContext context)
         {
-            var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
-            if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
-            {
+            if (context.Request.Headers.Authorization.FirstOrDefault() is not string authHeader)
                 return null;
-            }
 
-            return authHeader.Substring("Bearer ".Length).Trim();
-        }
-
-        private static bool IsPublicEndpoint(PathString path)
-        {
-            var publicPaths = new[]
+            return authHeader.Split(' ') switch
             {
-                "/api/auth/login",
-                "/api/auth/register/client",
-                "/api/auth/register/technician",
-                "/api/public/services",
-                "/api/auth/verify-otp",
-                "/api/auth/resend-otp",
-                "/swagger"
+                ["Bearer", var token] => token.Trim(),
+                ["bearer", var token] => token.Trim(),
+                _ => null
             };
-
-            return publicPaths.Any(publicPath => path.StartsWithSegments(publicPath));
         }
     }
 }
