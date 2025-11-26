@@ -19,7 +19,8 @@ namespace Service
         IClientRepository clientRepository,
         IConfiguration configuration,
         OtpHelper otpHelper,
-        ILogger<ClientAuthenticationService> logger) : IClientAuthenticationService
+        ILogger<ClientAuthenticationService> logger,
+        IUserTokenRepository userTokenRepository) : IClientAuthenticationService
     {
         public async Task<OtpResponseDTO> RegisterAsync(ClientRegisterDTO clientRegisterDTO)
         {
@@ -114,7 +115,14 @@ namespace Service
                 throw new UserNotFoundException("المستخدم غير موجود.");
 
             logger.LogInformation("[Service] Registration completed with OTP verification: {Email}", otpVerificationDTO.Email);
+
             var token = await new CreateToken(userManager, configuration).CreateTokenAsync(user);
+            await userTokenRepository.CreateUserTokenAsync(new UserToken
+            {
+                Token = token,
+                Type = TokenType.Token,
+                UserId = user.Id
+            });
             return new UserDTO
             {
                 token = token,
