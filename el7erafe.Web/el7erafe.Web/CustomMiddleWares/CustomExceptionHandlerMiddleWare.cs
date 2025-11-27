@@ -60,7 +60,7 @@ namespace el7erafe.Web.CustomMiddleWares
                 ForgotPasswordDisallowed => StatusCodes.Status403Forbidden,
                 UnverifiedClientLogin => 452,
                 PendingTechnicianRequest pendingTechnicianRequest => GetTempToken(pendingTechnicianRequest, Response),
-                RejectedTechnician => 461,
+                RejectedTechnician rejectedTechnician => GetRejectedTechnicanData(rejectedTechnician, Response),
                 OtpAlreadySent => StatusCodes.Status429TooManyRequests,
                 _ => StatusCodes.Status500InternalServerError
             };
@@ -76,6 +76,20 @@ namespace el7erafe.Web.CustomMiddleWares
         {
             response.tempToken = pendingTechnicianRequest._tempToken;
             return 460;
+        }
+
+        private static int GetRejectedTechnicanData(RejectedTechnician rejectedTechnician, ErrorToReturn response)
+        {
+            response.RejectionReason = rejectedTechnician.RejectionReason;
+            response.Name = rejectedTechnician.TechnicianName;
+            response.Phone = rejectedTechnician.UserName;
+            response.Governorate = rejectedTechnician.GovernorateName;
+            response.City = rejectedTechnician.CityName;
+            response.ServiceType = rejectedTechnician.ServiceName;
+            response.FrontId = rejectedTechnician.IsNationalIdFrontVerified;
+            response.BackId = rejectedTechnician.IsNationalIdBackVerified;
+            response.CriminalRecord = rejectedTechnician.IsCriminalHistoryVerified;
+            return 461;
         }
 
         private static int GetBadRequestErrors(BadRequestException badRequestException, ErrorToReturn response)

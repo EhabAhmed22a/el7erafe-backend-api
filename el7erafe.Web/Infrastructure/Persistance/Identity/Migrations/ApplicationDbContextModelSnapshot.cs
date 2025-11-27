@@ -185,7 +185,7 @@ namespace Persistance.Identity.Migrations
                     b.HasIndex("TechnicianId")
                         .IsUnique();
 
-                    b.ToTable("Rejections");
+                    b.ToTable("Rejections", (string)null);
                 });
 
             modelBuilder.Entity("DomainLayer.Models.IdentityModule.Technician", b =>
@@ -301,7 +301,7 @@ namespace Persistance.Identity.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("UserTokens");
+                    b.ToTable("UserTokens", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

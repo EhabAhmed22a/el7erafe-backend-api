@@ -1,12 +1,7 @@
-﻿
-namespace Shared.ErrorModels
+﻿namespace Shared.DataTransferObject.TechnicianIdentityDTOs
 {
-    public class ErrorToReturn
+    public class RejectedTechnicanDTO
     {
-        public int StatusCode { get; set; }
-        public string ErrorMessage { get; set; } = default!;
-        public string? tempToken { get; set; }
-        public string? RejectionReason { get; set; }
         public string? Name { get; set; }
         public string? Phone { get; set; }
         public string? Governorate { get; set; }

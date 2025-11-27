@@ -109,7 +109,7 @@ namespace Service
             else
             {
                 logger.LogInformation("[SERVICE] Retrieving technician details for user: {UserId}", user.Id);
-                var technician = await technicianRepository.GetByUserIdAsync(user.Id);
+                var technician = await technicianRepository.GetFullTechnicianByUserIdAsync(user.Id);
                 if (technician is null)
                 {
                     logger.LogError("[SERVICE] Technician record not found for user: {UserId}", user.Id);
@@ -135,7 +135,7 @@ namespace Service
                 else if (technician.Status == TechnicianStatus.Rejected)
                 {
                     logger.LogWarning("[SERVICE] Technician login rejected - status Rejected for user: {UserId}", user.Id);
-                    throw new RejectedTechnician();
+                    throw new RejectedTechnician(technician);
                 }
 
                 logger.LogInformation("[SERVICE] Technician status approved, proceeding with login for user: {UserId}",

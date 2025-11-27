@@ -8,6 +8,7 @@ namespace DomainLayer.Contracts
         Task<Technician> CreateAsync(Technician technician); //Create technician 
         Task<Technician?> GetByIdAsync(int id); //Get technician by id
         Task<Technician?> GetByUserIdAsync(string userId); //Get technician by userId
+        Task<Technician?> GetFullTechnicianByUserIdAsync(string userId); //Get full technician details by userId
         Task<IEnumerable<Technician>?> GetAllAsync(); //Get all technicians
         Task<IEnumerable<Technician>?> GetAllByStatusAsync(TechnicianStatus status); //Get all technicians by status
         Task<int> UpdateAsync(Technician technician); //Update technician

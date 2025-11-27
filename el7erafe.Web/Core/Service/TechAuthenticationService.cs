@@ -139,7 +139,7 @@ namespace Service
                 throw new UserNotFoundException("المستخدم غير موجود");
             }
 
-            var technician = await _technicianRepository.GetByUserIdAsync(userId);
+            var technician = await _technicianRepository.GetFullTechnicianByUserIdAsync(userId);
             if (technician == null)
             {
                 _logger.LogWarning("[SERVICE] Technician record not found for user: {UserId}", userId);
@@ -189,7 +189,7 @@ namespace Service
                             type = 'T'
                         };
                     }
-
+                    
                 case TechnicianStatus.Pending:
                     _logger.LogWarning("[SERVICE] Technician pending approval: {UserId}", userId);
                     var userToken = await _userTokenRepository.GetUserTokenAsync(userId);
@@ -198,11 +198,11 @@ namespace Service
                 case TechnicianStatus.Rejected:
                     _logger.LogWarning("[SERVICE] Technician rejected: {UserId}", userId);
                     await _userTokenRepository.DeleteUserTokenAsync(userId);
-                    throw new RejectedTechnician();
+                    throw new RejectedTechnician(technician);
 
                 default:
                     _logger.LogWarning("[SERVICE] Unknown technician status: {Status} for user: {UserId}", technician.Status, userId);
-                    throw new RejectedTechnician();
+                    throw new RejectedTechnician(technician);
             }
         }
     }
