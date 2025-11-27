@@ -1,4 +1,5 @@
 ﻿using DomainLayer.Models.IdentityModule;
+using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -10,16 +11,14 @@ namespace Service
 {
     public class CreateToken(UserManager<ApplicationUser> _userManager, IConfiguration _configuration)
     {
-        // for tempToken assign to true
-        // for token assign tempToken to false
-        public async Task<string> CreateTokenAsync(ApplicationUser user, Func<DateTime> expiration)
+        public async Task<string> CreateTokenAsync(ApplicationUser user)
         {
             var claims = new List<Claim>()
             {
-                new(ClaimTypes.NameIdentifier , user.Id),
-                new(ClaimTypes.MobilePhone , user.PhoneNumber!),
-                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), // Unique ID
-                new("iat", DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString()) 
+                new(ClaimTypes.NameIdentifier, user.Id),
+                new(ClaimTypes.MobilePhone, user.PhoneNumber!),
+                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new("iat", DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString())
             };
 
             var Roles = await _userManager.GetRolesAsync(user);
@@ -34,7 +33,6 @@ namespace Service
                 issuer: _configuration.GetSection("JWTOptions")["Issuer"],
                 audience: _configuration.GetSection("JWTOptions")["Audience"],
                 claims: claims,
-                expires: expiration(),
                 signingCredentials: Creds
             );
             return new JwtSecurityTokenHandler().WriteToken(Token);

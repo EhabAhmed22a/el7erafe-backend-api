@@ -1,7 +1,10 @@
-﻿using DomainLayer.Exceptions;
+﻿using DomainLayer.Contracts;
+using DomainLayer.Exceptions;
+using DomainLayer.Models.IdentityModule.Enums;
+using Microsoft.AspNetCore.Authentication;
+using ServiceAbstraction;
 using Shared.ErrorModels;
 using System.Text.Json;
-using ServiceAbstraction;
 
 namespace el7erafe.Web.CustomMiddleWares
 {
@@ -9,40 +12,28 @@ namespace el7erafe.Web.CustomMiddleWares
                    ILogger<CustomExceptionHandlerMiddleWare> _logger)
     {
 
-        public async Task InvokeAsync(HttpContext httpContext, ITokenBlocklistService tokenBlocklistService)
+        public async Task InvokeAsync(HttpContext httpContext, IUserTokenRepository tokenRepository)
         {
             try
             {
-                // === NEW AUTHENTICATION MIDDLEWARE LOGIC ===
-                // Skip token validation for public endpoints
-                if (!IsPublicEndpoint(httpContext.Request.Path))
+                // === TOKEN VALIDATION ===
+                var token = ExtractTokenFromHeader(httpContext);
+                if (!string.IsNullOrEmpty(token))
                 {
-                    // Check if authorization header exists
-                    var token = ExtractTokenFromHeader(httpContext);
-                    if (!string.IsNullOrEmpty(token))
+                    // Check if token exists in database
+                    var tokenExists = await tokenRepository.TokenExistsAsync(token);
+                    if (!tokenExists)
                     {
-                        // Check if token is revoked
-                        var isRevoked = await tokenBlocklistService.IsTokenRevokedAsync(token);
-                        if (isRevoked)
+                        _logger.LogWarning("[AUTH] Token not found in database: {Token}", token);
+                        httpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        await httpContext.Response.WriteAsJsonAsync(new
                         {
-                            _logger.LogWarning("[AUTH] Attempt to use revoked token for endpoint: {Endpoint}", httpContext.Request.Path);
-                            httpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                            await httpContext.Response.WriteAsJsonAsync(new ErrorToReturn
-                            {
-                                StatusCode = StatusCodes.Status401Unauthorized,
-                                ErrorMessage = "Token has been revoked. Please login again."
-                            });
-                            return; // Stop further processing
-                        }
-
-                        _logger.LogDebug("[AUTH] Token validation passed for endpoint: {Endpoint}", httpContext.Request.Path);
-                    }
-                    else
-                    {
-                        _logger.LogDebug("[AUTH] No token found for endpoint: {Endpoint}", httpContext.Request.Path);
+                            success = false,
+                            message = "انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى"
+                        });
+                        return; 
                     }
                 }
-                // === END AUTHENTICATION MIDDLEWARE LOGIC ===
 
                 await _next.Invoke(httpContext);
                 await HandleNotFoundEndPointAsync(httpContext);
@@ -106,33 +97,17 @@ namespace el7erafe.Web.CustomMiddleWares
             }
         }
 
-        // === NEW HELPER METHODS FOR AUTHENTICATION ===
-
-        private static string ExtractTokenFromHeader(HttpContext context)
+        private static string? ExtractTokenFromHeader(HttpContext context)
         {
-            var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
-            if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
-            {
+            if (context.Request.Headers.Authorization.FirstOrDefault() is not string authHeader)
                 return null;
-            }
 
-            return authHeader.Substring("Bearer ".Length).Trim();
-        }
-
-        private static bool IsPublicEndpoint(PathString path)
-        {
-            var publicPaths = new[]
+            return authHeader.Split(' ') switch
             {
-                "/api/auth/login",
-                "/api/auth/register/client",
-                "/api/auth/register/technician",
-                "/api/public/services",
-                "/api/auth/verify-otp",
-                "/api/auth/resend-otp",
-                "/swagger"
+                ["Bearer", var token] => token.Trim(),
+                ["bearer", var token] => token.Trim(),
+                _ => null
             };
-
-            return publicPaths.Any(publicPath => path.StartsWithSegments(publicPath));
         }
     }
 }

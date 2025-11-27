@@ -38,6 +38,7 @@ namespace Persistance
             services.AddScoped<ITechnicianRepository, TechnicianRepository>();
             services.AddScoped<IClientRepository, ClientRepository>();
             services.AddScoped<IBlobStorageRepository, BlobStorageRepository>();
+            services.AddScoped<IUserTokenRepository, UserTokenRepository>();
 
             return services;
         }

@@ -71,7 +71,7 @@ namespace Persistance.Repositories
 
         public async Task<bool> ExistsAsync(string phoneNumber)
         {
-            return await _context.Set<Technician>().AnyAsync(t => t.User.PhoneNumber == phoneNumber);
+            return await _context.Set<ApplicationUser>().AnyAsync(t => t.UserName == phoneNumber);
         }
 
         public async Task<IEnumerable<TechnicianService>?> GetAllServicesAsync()

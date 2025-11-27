@@ -3,7 +3,6 @@ using DomainLayer.Exceptions;
 using DomainLayer.Models.IdentityModule;
 using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Service.Helpers;
@@ -11,7 +10,6 @@ using ServiceAbstraction;
 using Shared.DataTransferObject.ClientIdentityDTOs;
 using Shared.DataTransferObject.LoginDTOs;
 using Shared.DataTransferObject.OtpDTOs;
-using static System.Net.WebRequestMethods;
 
 namespace Service
 {
@@ -19,7 +17,8 @@ namespace Service
         IClientRepository clientRepository,
         IConfiguration configuration,
         OtpHelper otpHelper,
-        ILogger<ClientAuthenticationService> logger) : IClientAuthenticationService
+        ILogger<ClientAuthenticationService> logger,
+        IUserTokenRepository userTokenRepository) : IClientAuthenticationService
     {
         public async Task<OtpResponseDTO> RegisterAsync(ClientRegisterDTO clientRegisterDTO)
         {
@@ -114,7 +113,14 @@ namespace Service
                 throw new UserNotFoundException("المستخدم غير موجود.");
 
             logger.LogInformation("[Service] Registration completed with OTP verification: {Email}", otpVerificationDTO.Email);
-            var token = await new CreateToken(userManager, configuration).CreateTokenAsync(user, () => DateTime.UtcNow.AddDays(1));
+
+            var token = await new CreateToken(userManager, configuration).CreateTokenAsync(user);
+            await userTokenRepository.CreateUserTokenAsync(new UserToken
+            {
+                Token = token,
+                Type = TokenType.Token,
+                UserId = user.Id
+            });
             return new UserDTO
             {
                 token = token,
@@ -175,9 +181,22 @@ namespace Service
         {
             await VerifyOtpAsync(otpVerificationDTO);
             logger.LogInformation("[SERVICE] Temp Token generated for reset password for user: {Email}", otpVerificationDTO.Email);
+            var user = await userManager.FindByEmailAsync(otpVerificationDTO.Email);
+            if (user is null)
+            {
+                logger.LogWarning("[SERVICE] Email not registered: {Email}", otpVerificationDTO.Email);
+                throw new UserNotFoundException("البريد الإلكتروني غير مسجل");
+            }
+            var token = await new CreateToken(userManager, configuration).CreateTokenAsync(user);
+            await userTokenRepository.CreateUserTokenAsync(new UserToken
+            {
+                Token = token,
+                Type = TokenType.TempToken,
+                UserId = user.Id
+            });
             return new ResetOTP
             {
-                tempToken = await new CreateToken(userManager, configuration).CreateTokenAsync(await userManager.FindByEmailAsync(otpVerificationDTO.Email), () => DateTime.UtcNow.AddMinutes(5))
+                tempToken = token
             };
         }
     }
