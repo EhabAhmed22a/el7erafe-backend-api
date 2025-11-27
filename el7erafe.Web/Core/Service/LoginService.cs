@@ -71,7 +71,7 @@ namespace Service
                     await otpHelper.SendOTP(user);
 
                     logger.LogWarning("[SERVICE] Throwing UnverifiedClientLogin for user: {UserId}", user.Id);
-                    throw new UnverifiedClientLogin();
+                    throw new UnverifiedClientLogin(user.Email!);
                 }
 
                 logger.LogInformation("[SERVICE] Client email verified, proceeding with login for user: {UserId}", user.Id);

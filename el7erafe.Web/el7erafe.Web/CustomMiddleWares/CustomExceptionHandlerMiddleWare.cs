@@ -58,7 +58,7 @@ namespace el7erafe.Web.CustomMiddleWares
                 { } when ex is AlreadyExistException or EmailAlreadyVerified => StatusCodes.Status409Conflict,
                 InvalidOtpException => StatusCodes.Status400BadRequest,
                 ForgotPasswordDisallowed => StatusCodes.Status403Forbidden,
-                UnverifiedClientLogin => 452,
+                UnverifiedClientLogin unverifiedClientLogin => GetEmail(unverifiedClientLogin, Response),
                 PendingTechnicianRequest pendingTechnicianRequest => GetTempToken(pendingTechnicianRequest, Response),
                 RejectedTechnician => 461,
                 OtpAlreadySent => StatusCodes.Status429TooManyRequests,
@@ -76,6 +76,12 @@ namespace el7erafe.Web.CustomMiddleWares
         {
             response.tempToken = pendingTechnicianRequest._tempToken;
             return 460;
+        }
+
+        private static int GetEmail(UnverifiedClientLogin unverifiedClientLogin, ErrorToReturn response)
+        {
+            response.email = unverifiedClientLogin._email;
+            return 452;
         }
 
         private static int GetBadRequestErrors(BadRequestException badRequestException, ErrorToReturn response)
