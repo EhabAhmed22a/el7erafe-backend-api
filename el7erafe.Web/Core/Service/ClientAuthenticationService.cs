@@ -181,9 +181,22 @@ namespace Service
         {
             await VerifyOtpAsync(otpVerificationDTO);
             logger.LogInformation("[SERVICE] Temp Token generated for reset password for user: {Email}", otpVerificationDTO.Email);
+            var user = await userManager.FindByEmailAsync(otpVerificationDTO.Email);
+            if (user is null)
+            {
+                logger.LogWarning("[SERVICE] Email not registered: {Email}", otpVerificationDTO.Email);
+                throw new UserNotFoundException("البريد الإلكتروني غير مسجل");
+            }
+            var token = await new CreateToken(userManager, configuration).CreateTokenAsync(user);
+            await userTokenRepository.CreateUserTokenAsync(new UserToken
+            {
+                Token = token,
+                Type = TokenType.TempToken,
+                UserId = user.Id
+            });
             return new ResetOTP
             {
-                tempToken = await new CreateToken(userManager, configuration).CreateTokenAsync(await userManager.FindByEmailAsync(otpVerificationDTO.Email))
+                tempToken = token
             };
         }
     }
