@@ -1,5 +1,4 @@
-﻿
-using DomainLayer.Contracts;
+﻿using DomainLayer.Contracts;
 using DomainLayer.Models.IdentityModule;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
