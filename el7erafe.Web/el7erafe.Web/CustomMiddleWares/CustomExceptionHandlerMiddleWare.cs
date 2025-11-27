@@ -69,6 +69,7 @@ namespace el7erafe.Web.CustomMiddleWares
                     UnverifiedClientLogin => 452,
                     PendingTechnicianRequest pendingTechnicianRequest => GetTempToken(pendingTechnicianRequest, Response),
                     OtpAlreadySent => StatusCodes.Status429TooManyRequests,
+                    BlockedTechnician => 462,
                     _ => StatusCodes.Status500InternalServerError
                 };
 

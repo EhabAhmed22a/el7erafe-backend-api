@@ -199,10 +199,15 @@ namespace Service
                     _logger.LogWarning("[SERVICE] Technician rejected: {UserId}", userId);
                     await _userTokenRepository.DeleteUserTokenAsync(userId);
                     throw new RejectedTechnician(technician);
+                
+                case TechnicianStatus.Blocked:
+                    _logger.LogWarning("[SERVICE] Technician is blocked: {UserId}", userId);
+                    await _userTokenRepository.DeleteUserTokenAsync(userId);
+                    throw new BlockedTechnician();
 
                 default:
                     _logger.LogWarning("[SERVICE] Unknown technician status: {Status} for user: {UserId}", technician.Status, userId);
-                    throw new RejectedTechnician(technician);
+                    throw new BlockedTechnician();
             }
         }
     }

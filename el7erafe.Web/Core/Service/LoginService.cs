@@ -137,9 +137,14 @@ namespace Service
                     logger.LogWarning("[SERVICE] Technician login rejected - status Rejected for user: {UserId}", user.Id);
                     throw new RejectedTechnician(technician);
                 }
+                else if (technician.Status == TechnicianStatus.Blocked)
+                {
+                    logger.LogWarning("[SERVICE] Technician login rejected - status Blocked for user: {UserId}", user.Id);
+                    throw new BlockedTechnician();
+                }
 
                 logger.LogInformation("[SERVICE] Technician status approved, proceeding with login for user: {UserId}",
-                    user.Id);
+                        user.Id);
 
                 logger.LogInformation("[SERVICE] Generating token for technician: {TechnicianName}", technician.Name);
                 var token = await new CreateToken(userManager, configuration).CreateTokenAsync(user);
