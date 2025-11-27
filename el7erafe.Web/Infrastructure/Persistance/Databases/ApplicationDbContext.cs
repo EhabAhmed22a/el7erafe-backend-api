@@ -30,6 +30,16 @@ namespace Persistance.Databases
             builder.Ignore<IdentityUserLogin<string>>();
             builder.Ignore<IdentityRoleClaim<string>>();
 
+            // Configure Technician
+            builder.Entity<Technician>(entity =>
+            {
+                // One-to-One with Rejection
+                entity.HasOne(t => t.Rejection)
+                      .WithOne(r => r.Technician)
+                      .HasForeignKey<Rejection>(r => r.TechnicianId) // Explicit foreign key
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
             builder.Entity<UserToken>(entity =>
             {
                 // Primary Key
@@ -71,7 +81,8 @@ namespace Persistance.Databases
                       .IsRequired();
 
                 // Index for better performance
-                entity.HasIndex(r => r.TechnicianId);
+                entity.HasIndex(r => r.TechnicianId)
+                .IsUnique();
             });
 
         }

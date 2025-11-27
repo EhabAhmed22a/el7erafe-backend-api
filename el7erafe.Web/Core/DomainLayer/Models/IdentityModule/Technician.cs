@@ -20,6 +20,8 @@ namespace DomainLayer.Models.IdentityModule
         public int CityId { get; set; }            
         public TechnicianService Service { get; set; } = default!;
         public int ServiceId { get; set; }
-        
+        public virtual Rejection Rejection { get; set; }
+        public int? RejectionId { get; set; } // Nullable foreign key
+
     }
 }
