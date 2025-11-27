@@ -11,7 +11,8 @@ namespace Persistance.Databases
         public DbSet<City> Cities { get; set; } = default!;
         public DbSet<TechnicianService> TechnicianServices { get; set; } = default!;
 
-        public DbSet<UserToken> UserTokens { get; set; }
+        public DbSet<UserToken> UserTokens { get; set; } = default!;
+        public DbSet<Rejection> Rejections { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -60,6 +61,19 @@ namespace Persistance.Databases
                 entity.Property(ut => ut.Id)
                       .HasColumnName("TokenId");
             });
+
+            builder.Entity<Rejection>(entity =>
+            {
+                entity.HasKey(r => r.Id);
+
+                entity.Property(r => r.Reason)
+                      .HasMaxLength(500)
+                      .IsRequired();
+
+                // Index for better performance
+                entity.HasIndex(r => r.TechnicianId);
+            });
+
         }
     }
 }
