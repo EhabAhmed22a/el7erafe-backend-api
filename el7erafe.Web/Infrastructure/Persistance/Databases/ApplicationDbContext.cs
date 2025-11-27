@@ -29,7 +29,6 @@ namespace Persistance.Databases
             builder.Ignore<IdentityUserLogin<string>>();
             builder.Ignore<IdentityRoleClaim<string>>();
 
-            // Configure UserToken entity
             builder.Entity<UserToken>(entity =>
             {
                 // Primary Key
@@ -47,6 +46,11 @@ namespace Persistance.Databases
 
                 entity.HasIndex(ut => ut.UserId)
                       .IsUnique(); // Ensures one-to-one
+
+                // Configure Token column with length 2000
+                entity.Property(ut => ut.Token)
+                      .HasMaxLength(2000)
+                      .IsRequired();
 
                 // Configure enum storage
                 entity.Property(ut => ut.Type)
