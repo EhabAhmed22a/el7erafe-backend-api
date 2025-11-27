@@ -6,11 +6,11 @@ public class RejectedTechnician : Exception
     public string UserName { get; }
     public string RejectionReason { get; }
     public string CityName { get; }
-    public string GovernorateName { get; } // Added
+    public string GovernorateName { get; }
     public string ServiceName { get; }
-    public bool IsNationalIdFrontVerified { get; } // Added
-    public bool IsNationalIdBackVerified { get; } // Added
-    public bool IsCriminalHistoryVerified { get; } // Added
+    public bool IsNationalIdFrontVerified { get; }
+    public bool IsNationalIdBackVerified { get; }
+    public bool IsCriminalHistoryVerified { get; }
 
     public RejectedTechnician(Technician technician)
         : base("لم يتم الموافقة على ملفاتك الشخصية من قبل المسؤول. يرجى مراجعة المتطلبات والمحاولة مرة أخرى")
@@ -19,10 +19,10 @@ public class RejectedTechnician : Exception
         UserName = technician.User?.UserName ?? string.Empty;
         RejectionReason = technician.Rejection?.Reason ?? "غير محدد";
         CityName = technician.City?.NameAr ?? string.Empty;
-        GovernorateName = technician.City?.Governorate?.NameAr ?? string.Empty; // Added
+        GovernorateName = technician.City?.Governorate?.NameAr ?? string.Empty;
         ServiceName = technician.Service?.NameAr ?? string.Empty;
-        IsNationalIdFrontVerified = technician.IsNationalIdFrontVerified; // Added
-        IsNationalIdBackVerified = technician.IsNationalIdBackVerified; // Added
-        IsCriminalHistoryVerified = technician.IsCriminalHistoryVerified; // Added
+        IsNationalIdFrontVerified = technician.IsNationalIdFrontVerified;
+        IsNationalIdBackVerified = technician.IsNationalIdBackVerified;
+        IsCriminalHistoryVerified = technician.IsCriminalHistoryVerified;
     }
 }
