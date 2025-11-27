@@ -18,7 +18,7 @@ namespace el7erafe.Web.Extensions
                 {
                     ValidateIssuer = true,
                     ValidateAudience = true,
-                    ValidateLifetime = true,
+                    ValidateLifetime = false,
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = _configuration["JWTOptions:Issuer"],
                     

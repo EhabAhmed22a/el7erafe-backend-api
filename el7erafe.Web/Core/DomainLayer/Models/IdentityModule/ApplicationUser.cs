@@ -8,6 +8,7 @@ namespace DomainLayer.Models.IdentityModule
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public Technician? Technician { get; set; } 
         public Client? Client { get; set; }
-        public UserTypeEnum UserType { get; set; } 
+        public UserTypeEnum UserType { get; set; }
+        public virtual UserToken? UserToken { get; set; }
     }
 }
