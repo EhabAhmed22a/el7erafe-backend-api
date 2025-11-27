@@ -6,9 +6,9 @@ namespace DomainLayer.Contracts
     public interface IRejectionRepository
     {
         Task<Rejection> GetByIdAsync(int id);
-        Task AddAsync(Rejection rejection);
-        Task UpdateAsync(Rejection rejection);
-        Task DeleteAsync(int id);
+        Task<int> CreateAsync(Rejection rejection);
+        Task<int> UpdateAsync(Rejection rejection);
+        Task<int> DeleteAsync(int id);
         Task<bool> ExistsForTechnicianAsync(int technicianId);
     }
 }
