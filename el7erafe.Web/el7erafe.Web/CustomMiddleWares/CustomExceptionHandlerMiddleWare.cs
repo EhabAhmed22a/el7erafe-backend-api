@@ -63,14 +63,15 @@ namespace el7erafe.Web.CustomMiddleWares
                     NotFoundException => StatusCodes.Status404NotFound,
                     UnauthorizedException => StatusCodes.Status401Unauthorized,
                     BadRequestException badRequestException => GetBadRequestErrors(badRequestException, Response),
-                    { } when ex is AlreadyExistException or EmailAlreadyVerified => StatusCodes.Status409Conflict,
+                    { } when ex is AlreadyExistException or EmailAlreadyVerified or  TechnicianAcceptedOrPendingException=> StatusCodes.Status409Conflict,
                     InvalidOtpException => StatusCodes.Status400BadRequest,
-                    ForgotPasswordDisallowed => StatusCodes.Status403Forbidden,
+                    { } when ex is ForgotPasswordDisallowed or ResetTokenExpiredException => StatusCodes.Status403Forbidden,
+                    UnverifiedClientLogin unverifiedClientLogin => GetEmail(unverifiedClientLogin, Response),
                     UnverifiedClientLogin => 452,
                     PendingTechnicianRequest pendingTechnicianRequest => GetTempToken(pendingTechnicianRequest, Response),
                     OtpAlreadySent => StatusCodes.Status429TooManyRequests,
                     BlockedTechnician => 462,
-                    TechnicianAcceptedOrPendingException => StatusCodes.Status409Conflict,
+                    TechnicalException => StatusCodes.Status500InternalServerError,
                     _ => StatusCodes.Status500InternalServerError
                 };
 
@@ -109,6 +110,10 @@ namespace el7erafe.Web.CustomMiddleWares
                     CriminalRecord = rejectedTechnician.IsCriminalHistoryVerified
                 }
             };
+        private static int GetEmail(UnverifiedClientLogin unverifiedClientLogin, ErrorToReturn response)
+        {
+            response.email = unverifiedClientLogin._email;
+            return 452;
         }
 
         private static int GetBadRequestErrors(BadRequestException badRequestException, ErrorToReturn response)

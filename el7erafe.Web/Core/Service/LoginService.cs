@@ -71,7 +71,7 @@ namespace Service
                     await otpHelper.SendOTP(user);
 
                     logger.LogWarning("[SERVICE] Throwing UnverifiedClientLogin for user: {UserId}", user.Id);
-                    throw new UnverifiedClientLogin();
+                    throw new UnverifiedClientLogin(user.Email!);
                 }
 
                 logger.LogInformation("[SERVICE] Client email verified, proceeding with login for user: {UserId}", user.Id);
@@ -199,6 +199,73 @@ namespace Service
             {
                 Message = "تم إرسال رمز التحقق إلى بريدك الإلكتروني."
             };
+        }
+
+        public async Task<UserDTO> ResetPasswordAsync(ResetPasswordDTO resetPasswordDTO, string userId, TimeSpan timeDifference)
+        {
+            try
+            {
+                if (timeDifference.TotalMinutes > 5)
+                {
+                    await userTokenRepository.DeleteUserTokenAsync(userId);
+                    throw new ResetTokenExpiredException();
+                }
+
+                var checkForTempToken = await userTokenRepository.GetUserTokenAsync(userId);
+                if (checkForTempToken!.Type != TokenType.TempToken)
+                {
+                    throw new TechnicalException();
+                }
+
+                var user = await userManager.FindByIdAsync(userId);
+                if (user is null)
+                {
+                    throw new UserNotFoundException("المستخدم غير موجود");
+                }
+
+                var result = await userManager.CheckPasswordAsync(user, resetPasswordDTO.Password);
+                if (result is true)
+                {
+                    throw new PasswordReuseException();
+                }
+
+                var removeResult = await userManager.RemovePasswordAsync(user);
+                if (!removeResult.Succeeded)
+                {
+                    throw new BadRequestException(removeResult.Errors.Select(e => e.Description).ToList());
+                }
+
+                var addResult = await userManager.AddPasswordAsync(user, resetPasswordDTO.Password);
+                if (!addResult.Succeeded)
+                {
+                    throw new BadRequestException(addResult.Errors.Select(e => e.Description).ToList());
+                }
+
+                await userTokenRepository.DeleteUserTokenAsync(userId);
+                var token = await new CreateToken(userManager, configuration).CreateTokenAsync(user);
+                await userTokenRepository.CreateUserTokenAsync(new UserToken
+                {
+                    Token = token,
+                    Type = TokenType.Token,
+                    UserId = user.Id
+                });
+
+                var client = await clientRepository.GetByUserIdAsync(userId);
+                if (client is null)
+                    throw new TechnicalException();
+
+                return new UserDTO
+                {
+                    userId = user.Id,
+                    userName = client!.Name,
+                    type = 'C',
+                    token = token
+                };
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
     }
 }

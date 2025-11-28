@@ -8,8 +8,8 @@ namespace DomainLayer.Contracts
         Task<Client?> GetByIdAsync(int id);
         Task<Client?> GetByUserIdAsync(string userId);
         Task<IEnumerable<Client>?> GetAllAsync();
-        Task<bool> UpdateAsync(Client client);
-        Task<bool> DeleteAsync(int id);
+        Task<int> UpdateAsync(Client client);
+        Task<int> DeleteAsync(int id);
         Task<bool> ExistsAsync(int id);
         Task<bool> ExistsAsync(string phoneNumber);
         Task<bool> EmailExistsAsync(string email);

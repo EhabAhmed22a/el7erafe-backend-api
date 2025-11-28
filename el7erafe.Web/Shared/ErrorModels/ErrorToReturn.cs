@@ -10,5 +10,6 @@ namespace Shared.ErrorModels
         public string? tempToken { get; set; }
         public string? RejectionReason { get; set; }
         public RejectedTechnicanDTO? Data { get; set; }
+        public string? email { get; set; }
     }
 }
