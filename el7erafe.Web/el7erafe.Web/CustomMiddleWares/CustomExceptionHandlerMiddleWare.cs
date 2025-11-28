@@ -48,16 +48,8 @@ namespace el7erafe.Web.CustomMiddleWares
 
         private static async Task HandleExceptionAsync(HttpContext httpContext, Exception ex)
         {
-            ErrorToReturn Response;
-            if (ex is RejectedTechnician rejectedTechnician)
-            {
-                Response = CreateRejectionResponse(rejectedTechnician);
-                httpContext.Response.StatusCode = Response.StatusCode;
-            }
-            else
-            {
-                Response = new ErrorToReturn();
-                //Set Status Code For Response
+            ErrorToReturn Response = new ErrorToReturn();
+
                 httpContext.Response.StatusCode = ex switch
                 {
                     NotFoundException => StatusCodes.Status404NotFound,
@@ -67,7 +59,7 @@ namespace el7erafe.Web.CustomMiddleWares
                     InvalidOtpException => StatusCodes.Status400BadRequest,
                     { } when ex is ForgotPasswordDisallowed or ResetTokenExpiredException => StatusCodes.Status403Forbidden,
                     UnverifiedClientLogin unverifiedClientLogin => GetEmail(unverifiedClientLogin, Response),
-                    UnverifiedClientLogin => 452,
+                    RejectedTechnician rejectedTechnician => CreateRejectionResponse(rejectedTechnician, Response),
                     PendingTechnicianRequest pendingTechnicianRequest => GetTempToken(pendingTechnicianRequest, Response),
                     OtpAlreadySent => StatusCodes.Status429TooManyRequests,
                     BlockedTechnician => 462,
@@ -77,11 +69,7 @@ namespace el7erafe.Web.CustomMiddleWares
 
                 Response.StatusCode = httpContext.Response.StatusCode;
                 Response.ErrorMessage = ex.Message;
-            }
 
-                
-
-            //Return Object As Json 
             await httpContext.Response.WriteAsJsonAsync(Response);
         }
 
@@ -91,25 +79,23 @@ namespace el7erafe.Web.CustomMiddleWares
             return 460;
         }
 
-        private static ErrorToReturn CreateRejectionResponse(RejectedTechnician rejectedTechnician, string tempToken = null)
+        private static int CreateRejectionResponse(RejectedTechnician rejectedTechnician, ErrorToReturn response, string tempToken = null)
         {
-            return new ErrorToReturn
+            response.ErrorMessage = rejectedTechnician.Message;
+            response.RejectionReason = rejectedTechnician.RejectionReason;
+            response.Data = new RejectedTechnicanDTO()
             {
-                StatusCode = 461,
-                ErrorMessage = rejectedTechnician.Message,
-                RejectionReason = rejectedTechnician.RejectionReason,
-                Data = new RejectedTechnicanDTO
-                {
-                    Name = rejectedTechnician.TechnicianName,
-                    Phone = rejectedTechnician.UserName,
-                    Governorate = rejectedTechnician.GovernorateName,
-                    City = rejectedTechnician.CityName,
-                    ServiceType = rejectedTechnician.ServiceName,
-                    FrontId = rejectedTechnician.IsNationalIdFrontVerified,
-                    BackId = rejectedTechnician.IsNationalIdBackVerified,
-                    CriminalRecord = rejectedTechnician.IsCriminalHistoryVerified
-                }
+                Name = rejectedTechnician.TechnicianName,
+                Phone = rejectedTechnician.UserName,
+                Governorate = rejectedTechnician.GovernorateName,
+                City = rejectedTechnician.CityName,
+                ServiceType = rejectedTechnician.ServiceName,
+                FrontId = rejectedTechnician.IsNationalIdFrontVerified,
+                BackId = rejectedTechnician.IsNationalIdBackVerified,
+                CriminalRecord = rejectedTechnician.IsCriminalHistoryVerified
             };
+            return 461;
+        }
         private static int GetEmail(UnverifiedClientLogin unverifiedClientLogin, ErrorToReturn response)
         {
             response.email = unverifiedClientLogin._email;
