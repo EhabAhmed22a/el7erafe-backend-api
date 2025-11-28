@@ -7,7 +7,7 @@ using Persistance.Databases;
 
 namespace Persistance.Repositories
 {
-    public class ClientRepository(ApplicationDbContext context, ILogger<ClientRepository> logger) : IClientRepository
+    public class ClientRepository(ApplicationDbContext context) : IClientRepository
     {
         public async Task<Client> CreateAsync(Client client)
         {
@@ -18,60 +18,49 @@ namespace Persistance.Repositories
 
         public async Task<Client?> GetByIdAsync(int id)
         {
-            var client = await context.Set<Client>()
+            return await context.Set<Client>()
                         .Include(c => c.User)
                         .FirstOrDefaultAsync(c => c.Id == id);
-            return client;
         }
 
         public async Task<Client?> GetByUserIdAsync(string userId)
         {
-            var client = await context.Set<Client>()
+            return await context.Set<Client>()
                         .Include(c => c.User)
                         .FirstOrDefaultAsync(c => c.UserId == userId);
-            return client;
         }
 
         public async Task<IEnumerable<Client>?> GetAllAsync()
         {
-            var clients = await context.Set<Client>()
+            return await context.Set<Client>()
                 .Include(c => c.User)
                 .ToListAsync();
-            return clients;
         }
 
-        public async Task<bool> UpdateAsync(Client client)
+        public async Task<int> UpdateAsync(Client client)
         {
-            try
-            {
-                context.Set<Client>().Update(client);
-                await context.SaveChangesAsync();
-                return true;
-            }
+            var existingClient = await context.Set<Client>()
+            .FirstOrDefaultAsync(c => c.Id == client.Id);
 
-            catch (SqlException ex)
-            {
-                return false;
-            }
+            if (existingClient is null)
+                return -1;
+
+            context.Entry(existingClient).CurrentValues.SetValues(client);
+
+            return await context.SaveChangesAsync();
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<int> DeleteAsync(int id)
         {
-            try
-            {
-                var client = await context.Set<Client>().FindAsync(id);
-                if (client is not null)
-                {
-                    context.Set<Client>().Remove(client);
-                    await context.SaveChangesAsync();
-                    return true;
-                }
-                return false;
-            }
-            catch (SqlException ex)
-            {
-                return false;
-            }
+            var existingClient = await context.Set<Client>()
+            .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (existingClient is null)
+                return -1;
+
+            context.Entry(existingClient).CurrentValues.SetValues(existingClient);
+
+            return await context.SaveChangesAsync();
         }
 
         public async Task<bool> ExistsAsync(int id)
