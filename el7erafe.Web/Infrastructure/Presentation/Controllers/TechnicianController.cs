@@ -45,6 +45,8 @@ namespace Presentation.Controllers
         public async Task<ActionResult<TechResubmitResponseDTO>> Resubmission(TechResubmitDTO techResubmitDTO)
         {
             _logger.LogInformation("[CONTROLLER] Technician Resubmission with phone: {phone}", techResubmitDTO.PhoneNumber);
+            var result = await _techAuthenticationService.TechnicianResubmitDocumentsAsync(techResubmitDTO);
+            return Ok(result);
         }
     }
 }

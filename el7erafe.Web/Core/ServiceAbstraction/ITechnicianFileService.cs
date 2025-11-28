@@ -7,6 +7,7 @@ namespace ServiceAbstraction
     public interface ITechnicianFileService
     {
         Task<TechRegisterToReturnDTO> ProcessTechnicianFilesAsync(TechRegisterDTO techRegisterDTO);
+        Task<TechReUploadFilesUrlDTO> ProcessTechnicianFileReUpload(TechResubmitDTO techResubmitDTO);
         Task<Stream> GetFileStreamAsync(string blobName);
         Task<BlobProperties> GetFilePropertiesAsync(string blobName);
     }

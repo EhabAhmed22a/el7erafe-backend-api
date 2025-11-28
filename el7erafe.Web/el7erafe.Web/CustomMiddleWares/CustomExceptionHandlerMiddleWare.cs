@@ -70,6 +70,7 @@ namespace el7erafe.Web.CustomMiddleWares
                     PendingTechnicianRequest pendingTechnicianRequest => GetTempToken(pendingTechnicianRequest, Response),
                     OtpAlreadySent => StatusCodes.Status429TooManyRequests,
                     BlockedTechnician => 462,
+                    TechnicianAcceptedOrPendingException => StatusCodes.Status409Conflict,
                     _ => StatusCodes.Status500InternalServerError
                 };
 

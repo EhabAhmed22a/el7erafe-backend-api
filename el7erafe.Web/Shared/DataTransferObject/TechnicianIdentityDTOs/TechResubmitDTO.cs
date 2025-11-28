@@ -10,9 +10,9 @@ namespace Shared.DataTransferObject.TechnicianIdentityDTOs
         public IFormFile? NationalIdFront { get; set; }
 
         [ValidateFile(1 * 1024 * 1024, new[] { ".png", ".jpg", ".jpeg" })]
-        public IFormFile? NationalIdBack { get; set; } = default!;
+        public IFormFile? NationalIdBack { get; set; } 
 
         [ValidateFile(1 * 1024 * 1024, new[] { ".png", ".jpg", ".jpeg" })]
-        public IFormFile? CriminalRecord { get; set; } = default!;
+        public IFormFile? CriminalRecord { get; set; } 
     }
 }
