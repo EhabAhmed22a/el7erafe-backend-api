@@ -6,14 +6,11 @@ using Persistance.Databases;
 
 namespace Persistance.Repositories
 {
-    public class UserTokenRepository(ApplicationDbContext _dbContext,
-                       ILogger<UserTokenRepository> _logger) : IUserTokenRepository
+    public class UserTokenRepository(ApplicationDbContext _dbContext) : IUserTokenRepository
     {
         public async Task CreateUserTokenAsync(UserToken userToken)
         {
             await _dbContext.UserTokens.AddAsync(userToken);
-            _logger.LogInformation("[REPO] {TokenType} token created for user {UserId}",
-                userToken.Type, userToken.UserId);
             await _dbContext.SaveChangesAsync();
         }
 
@@ -31,7 +28,6 @@ namespace Persistance.Repositories
             {
                 _dbContext.UserTokens.Remove(userToken);
                 await _dbContext.SaveChangesAsync();
-                _logger.LogInformation("[REPO] Token deleted for user {UserId}", userId);
             }
         }
 
@@ -46,7 +42,7 @@ namespace Persistance.Repositories
             return await _dbContext.UserTokens.AnyAsync(ut => ut.UserId == userId);
         }
 
-        async Task<UserToken?> IUserTokenRepository.GetByTokenAsync(string token)
+        public async Task<UserToken?> GetByTokenAsync(string token)
         {
             return await _dbContext.UserTokens
             .FirstOrDefaultAsync(ut => ut.Token == token);

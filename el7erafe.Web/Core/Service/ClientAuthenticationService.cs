@@ -2,6 +2,7 @@
 using DomainLayer.Exceptions;
 using DomainLayer.Models.IdentityModule;
 using DomainLayer.Models.IdentityModule.Enums;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -187,6 +188,8 @@ namespace Service
                 logger.LogWarning("[SERVICE] Email not registered: {Email}", otpVerificationDTO.Email);
                 throw new UserNotFoundException("البريد الإلكتروني غير مسجل");
             }
+
+            await userTokenRepository.DeleteUserTokenAsync(user.Id);
             var token = await new CreateToken(userManager, configuration).CreateTokenAsync(user);
             await userTokenRepository.CreateUserTokenAsync(new UserToken
             {

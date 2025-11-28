@@ -1,7 +1,11 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+﻿using System.Security.Claims;
+using DomainLayer.Exceptions;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
+using Shared.DataTransferObject.ClientIdentityDTOs;
 using Shared.DataTransferObject.LoginDTOs;
 using Shared.DataTransferObject.OtpDTOs;
 
@@ -9,7 +13,7 @@ namespace Presentation.Controllers
 {
     [ApiController]
     [Route("api/auth")]
-    public class LoginController(ILoginService loginService,IClientAuthenticationService clientAuthenticationService, ILogger<LoginController> logger) : ControllerBase
+    public class LoginController(ILoginService loginService, IClientAuthenticationService clientAuthenticationService, ILogger<LoginController> logger) : ControllerBase
     {
         /// <summary>
         /// Authenticates a user and returns JWT token with user information.
@@ -74,6 +78,40 @@ namespace Presentation.Controllers
         {
             logger.LogInformation("[API] OTP verification attempt for email: {Email}", otpVerificationDTO.Email);
             return Ok(await clientAuthenticationService.VerifyResetOtpAsync(otpVerificationDTO));
+        }
+
+        /// <summary>
+        /// Resets the user's password using a temporary reset token.
+        /// </summary>
+        /// <remarks>
+        /// This endpoint allows users to reset their password using a valid temporary reset token.
+        /// The token must be issued within the last 5 minutes and is automatically validated from the Authorization header.
+        /// The new password must be different from the current password and meet the application's password policy requirements.
+        /// Upon successful password reset, the temporary token is invalidated and a new authentication token is issued.
+        /// </remarks>
+        /// <param name="resetPasswordDTO">Request containing the new password</param>
+        /// <returns>Returns user details with new authentication token upon successful password reset</returns>
+        /// <response code="200">Returns when password is reset successfully with new token</response>
+        /// <response code="400">Returns when the reset token is invalid or missing timestamp</response>
+        /// <response code="401">Returns when the bearer token is invalid or expired</response>
+        /// <response code="403">Returns when the reset token has expired (older than 5 minutes)</response>
+        /// <response code="422">Returns when the new password is identical to the current password</response>
+        /// <response code="500">Returns when internal server error occurs</response>
+        [HttpPost("reset-password")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        public async Task<ActionResult> ResetPassword(ResetPasswordDTO resetPasswordDTO)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(new { message = "Invalid token" });
+
+            var iatClaim = User.FindFirst("iat")?.Value;
+            if (string.IsNullOrEmpty(iatClaim))
+                return Unauthorized(new { message = "Token missing timestamp" });
+
+            var tokenIssuedAt = DateTimeOffset.FromUnixTimeSeconds(long.Parse(iatClaim)).UtcDateTime;
+            var currentTime = DateTime.UtcNow;
+            return Ok(await loginService.ResetPasswordAsync(resetPasswordDTO, userId, currentTime - tokenIssuedAt));
         }
     }
 }
