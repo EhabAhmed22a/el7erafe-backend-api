@@ -18,7 +18,7 @@ namespace Shared.Validations
         {
             if (value == null)
             {
-                return new ValidationResult("File is required.");
+                return null;
             }
 
             if (value is IFormFile file)

@@ -1,4 +1,6 @@
 ﻿
+using Shared.DataTransferObject.TechnicianIdentityDTOs;
+
 namespace Shared.ErrorModels
 {
     public class ErrorToReturn
@@ -6,6 +8,8 @@ namespace Shared.ErrorModels
         public int StatusCode { get; set; }
         public string ErrorMessage { get; set; } = default!;
         public string? tempToken { get; set; }
+        public string? RejectionReason { get; set; }
+        public RejectedTechnicanDTO? Data { get; set; }
         public string? email { get; set; }
     }
 }

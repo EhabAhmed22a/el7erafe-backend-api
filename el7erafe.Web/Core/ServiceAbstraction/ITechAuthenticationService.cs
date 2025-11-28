@@ -7,6 +7,6 @@ namespace ServiceAbstraction
     {
         Task<TechDTO> techRegisterAsync(TechRegisterDTO techRegisterDTO);
         Task<UserDTO> CheckTechnicianApprovalAsync(string userId);
-
+        Task<TechResubmitResponseDTO> TechnicianResubmitDocumentsAsync(TechResubmitDTO techResubmitDTO);
     }
 }

@@ -147,5 +147,48 @@ namespace Service
                 throw;
             }
         }
+
+        async Task<TechReUploadFilesUrlDTO> ITechnicianFileService.ProcessTechnicianFileReUpload(TechResubmitDTO techResubmitDTO)
+        {
+            string nationalIdFrontUrl = null;
+            string nationalIdBackUrl = null;
+            string criminalRecordUrl = null;
+
+            if (techResubmitDTO.NationalIdFront is null && techResubmitDTO.NationalIdBack is null && techResubmitDTO.CriminalRecord is null)
+            {
+                throw new Exception("يرجى ادخال البيانات المطلوبة");
+            }
+
+            if (techResubmitDTO.NationalIdFront is not null)
+            {
+                nationalIdFrontUrl = await _blobStorageService.UploadFileAsync(
+                    techResubmitDTO.NationalIdFront,
+                    "technician-documents",
+                    $"nationalidfront{Guid.NewGuid()}"
+                    );
+            }
+            if (techResubmitDTO.NationalIdBack is not null)
+            {
+                nationalIdBackUrl = await _blobStorageService.UploadFileAsync(
+                    techResubmitDTO.NationalIdBack,
+                    "technician-documents",
+                    $"nationalidfront{Guid.NewGuid()}"
+                    );
+            }
+            if (techResubmitDTO.CriminalRecord is not null)
+            {
+                criminalRecordUrl = await _blobStorageService.UploadFileAsync(
+                    techResubmitDTO.CriminalRecord,
+                    "technician-documents",
+                    $"nationalidfront{Guid.NewGuid()}"
+                    );
+            }
+            return new TechReUploadFilesUrlDTO()
+            {
+                NationalIdFrontUrl = nationalIdFrontUrl,
+                NationalIdBackUrl = nationalIdBackUrl, 
+                CriminalRecordUrl = criminalRecordUrl 
+            };
+        }
     }
 }
