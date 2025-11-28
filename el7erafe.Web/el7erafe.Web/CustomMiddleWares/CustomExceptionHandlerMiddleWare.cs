@@ -57,11 +57,13 @@ namespace el7erafe.Web.CustomMiddleWares
                 BadRequestException badRequestException => GetBadRequestErrors(badRequestException, Response),
                 { } when ex is AlreadyExistException or EmailAlreadyVerified => StatusCodes.Status409Conflict,
                 InvalidOtpException => StatusCodes.Status400BadRequest,
-                ForgotPasswordDisallowed => StatusCodes.Status403Forbidden,
+                { } when ex is ForgotPasswordDisallowed or ResetTokenExpiredException => StatusCodes.Status403Forbidden,
                 UnverifiedClientLogin unverifiedClientLogin => GetEmail(unverifiedClientLogin, Response),
                 PendingTechnicianRequest pendingTechnicianRequest => GetTempToken(pendingTechnicianRequest, Response),
                 RejectedTechnician => 461,
+                PasswordReuseException => StatusCodes.Status422UnprocessableEntity,
                 OtpAlreadySent => StatusCodes.Status429TooManyRequests,
+                TechnicalException => StatusCodes.Status500InternalServerError,
                 _ => StatusCodes.Status500InternalServerError
             };
 

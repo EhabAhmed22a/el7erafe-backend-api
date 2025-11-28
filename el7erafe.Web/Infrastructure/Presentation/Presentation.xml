@@ -118,5 +118,24 @@
             <response code="404">Returns when no user found with the provided email</response>
             <response code="500">Returns when internal server error occurs</response>
         </member>
+        <member name="M:Presentation.Controllers.LoginController.ResetPassword(Shared.DataTransferObject.ClientIdentityDTOs.ResetPasswordDTO)">
+            <summary>
+            Resets the user's password using a temporary reset token.
+            </summary>
+            <remarks>
+            This endpoint allows users to reset their password using a valid temporary reset token.
+            The token must be issued within the last 5 minutes and is automatically validated from the Authorization header.
+            The new password must be different from the current password and meet the application's password policy requirements.
+            Upon successful password reset, the temporary token is invalidated and a new authentication token is issued.
+            </remarks>
+            <param name="resetPasswordDTO">Request containing the new password</param>
+            <returns>Returns user details with new authentication token upon successful password reset</returns>
+            <response code="200">Returns when password is reset successfully with new token</response>
+            <response code="400">Returns when the reset token is invalid or missing timestamp</response>
+            <response code="401">Returns when the bearer token is invalid or expired</response>
+            <response code="403">Returns when the reset token has expired (older than 5 minutes)</response>
+            <response code="422">Returns when the new password is identical to the current password</response>
+            <response code="500">Returns when internal server error occurs</response>
+        </member>
     </members>
 </doc>
