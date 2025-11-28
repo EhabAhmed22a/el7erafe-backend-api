@@ -91,21 +91,21 @@ namespace Persistance.Repositories
                 .ToListAsync();
         }
 
-        Task<Governorate?> ITechnicianRepository.GetGovernorateByNameAsync(string nameAr)
+        async Task<Governorate?> ITechnicianRepository.GetGovernorateByNameAsync(string nameAr)
         {
-            return _context.Set<Governorate>()
+            return await _context.Set<Governorate>()
                 .FirstOrDefaultAsync(g => g.NameAr == nameAr);
         }
 
-        Task<City?> ITechnicianRepository.GetCityByNameAsync(string nameAr, int governorateId)
+        async Task<City?> ITechnicianRepository.GetCityByNameAsync(string nameAr, int governorateId)
         {
-            return _context.Set<City>()
+            return await _context.Set<City>()
                .FirstOrDefaultAsync(c => c.NameAr == nameAr && c.GovernorateId == governorateId);
         }
 
-        Task<TechnicianService?> ITechnicianRepository.GetServiceByNameAsync(string nameAr)
+        async Task<TechnicianService?> ITechnicianRepository.GetServiceByNameAsync(string nameAr)
         {
-            return _context.Set<TechnicianService>()
+            return await _context.Set<TechnicianService>()
                 .FirstOrDefaultAsync(s => s.NameAr == nameAr);
         }
 
