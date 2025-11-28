@@ -172,7 +172,7 @@ namespace Service
                 nationalIdBackUrl = await _blobStorageService.UploadFileAsync(
                     techResubmitDTO.NationalIdBack,
                     "technician-documents",
-                    $"nationalidfront{Guid.NewGuid()}"
+                    $"nationalIdBackUrl{Guid.NewGuid()}"
                     );
             }
             if (techResubmitDTO.CriminalRecord is not null)
@@ -180,7 +180,7 @@ namespace Service
                 criminalRecordUrl = await _blobStorageService.UploadFileAsync(
                     techResubmitDTO.CriminalRecord,
                     "technician-documents",
-                    $"nationalidfront{Guid.NewGuid()}"
+                    $"criminalRecordUrl{Guid.NewGuid()}"
                     );
             }
             return new TechReUploadFilesUrlDTO()

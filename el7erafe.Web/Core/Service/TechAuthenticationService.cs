@@ -287,6 +287,7 @@ namespace Service
                     Type = TokenType.TempToken,
                     UserId = user.Id
                 };
+                await _userTokenRepository.CreateUserTokenAsync(TechToken);
                 _logger.LogInformation("[SERVICE] Technician re-submission completed for: {PhoneNumber}", techResubmitDTO.PhoneNumber);
                 return new TechResubmitResponseDTO
                 {
