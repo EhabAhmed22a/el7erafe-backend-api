@@ -79,7 +79,7 @@ namespace el7erafe.Web.CustomMiddleWares
             return 460;
         }
 
-        private static int CreateRejectionResponse(RejectedTechnician rejectedTechnician, ErrorToReturn response, string tempToken = null)
+        private static int CreateRejectionResponse(RejectedTechnician rejectedTechnician, ErrorToReturn response)
         {
             response.ErrorMessage = rejectedTechnician.Message;
             response.RejectionReason = rejectedTechnician.RejectionReason;
