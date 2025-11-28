@@ -3,6 +3,7 @@ using DomainLayer.Exceptions;
 using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.AspNetCore.Authentication;
 using ServiceAbstraction;
+using Shared.DataTransferObject.TechnicianIdentityDTOs;
 using Shared.ErrorModels;
 using System.Text.Json;
 
@@ -47,28 +48,38 @@ namespace el7erafe.Web.CustomMiddleWares
 
         private static async Task HandleExceptionAsync(HttpContext httpContext, Exception ex)
         {
-            var Response = new ErrorToReturn();
-
-            //Set Status Code For Response
-            httpContext.Response.StatusCode = ex switch
+            ErrorToReturn Response;
+            if (ex is RejectedTechnician rejectedTechnician)
             {
-                NotFoundException => StatusCodes.Status404NotFound,
-                UnauthorizedException => StatusCodes.Status401Unauthorized,
-                BadRequestException badRequestException => GetBadRequestErrors(badRequestException, Response),
-                { } when ex is AlreadyExistException or EmailAlreadyVerified => StatusCodes.Status409Conflict,
-                InvalidOtpException => StatusCodes.Status400BadRequest,
-                { } when ex is ForgotPasswordDisallowed or ResetTokenExpiredException => StatusCodes.Status403Forbidden,
-                UnverifiedClientLogin unverifiedClientLogin => GetEmail(unverifiedClientLogin, Response),
-                PendingTechnicianRequest pendingTechnicianRequest => GetTempToken(pendingTechnicianRequest, Response),
-                RejectedTechnician => 461,
-                PasswordReuseException => StatusCodes.Status422UnprocessableEntity,
-                OtpAlreadySent => StatusCodes.Status429TooManyRequests,
-                TechnicalException => StatusCodes.Status500InternalServerError,
-                _ => StatusCodes.Status500InternalServerError
-            };
+                Response = CreateRejectionResponse(rejectedTechnician);
+                httpContext.Response.StatusCode = Response.StatusCode;
+            }
+            else
+            {
+                Response = new ErrorToReturn();
+                //Set Status Code For Response
+                httpContext.Response.StatusCode = ex switch
+                {
+                    NotFoundException => StatusCodes.Status404NotFound,
+                    UnauthorizedException => StatusCodes.Status401Unauthorized,
+                    BadRequestException badRequestException => GetBadRequestErrors(badRequestException, Response),
+                    { } when ex is AlreadyExistException or EmailAlreadyVerified or  TechnicianAcceptedOrPendingException=> StatusCodes.Status409Conflict,
+                    InvalidOtpException => StatusCodes.Status400BadRequest,
+                    { } when ex is ForgotPasswordDisallowed or ResetTokenExpiredException => StatusCodes.Status403Forbidden,
+                    UnverifiedClientLogin unverifiedClientLogin => GetEmail(unverifiedClientLogin, Response),
+                    UnverifiedClientLogin => 452,
+                    PendingTechnicianRequest pendingTechnicianRequest => GetTempToken(pendingTechnicianRequest, Response),
+                    OtpAlreadySent => StatusCodes.Status429TooManyRequests,
+                    BlockedTechnician => 462,
+                    TechnicalException => StatusCodes.Status500InternalServerError,
+                    _ => StatusCodes.Status500InternalServerError
+                };
 
-            Response.StatusCode = httpContext.Response.StatusCode;
-            Response.ErrorMessage = ex.Message;
+                Response.StatusCode = httpContext.Response.StatusCode;
+                Response.ErrorMessage = ex.Message;
+            }
+
+                
 
             //Return Object As Json 
             await httpContext.Response.WriteAsJsonAsync(Response);
@@ -80,6 +91,25 @@ namespace el7erafe.Web.CustomMiddleWares
             return 460;
         }
 
+        private static ErrorToReturn CreateRejectionResponse(RejectedTechnician rejectedTechnician, string tempToken = null)
+        {
+            return new ErrorToReturn
+            {
+                StatusCode = 461,
+                ErrorMessage = rejectedTechnician.Message,
+                RejectionReason = rejectedTechnician.RejectionReason,
+                Data = new RejectedTechnicanDTO
+                {
+                    Name = rejectedTechnician.TechnicianName,
+                    Phone = rejectedTechnician.UserName,
+                    Governorate = rejectedTechnician.GovernorateName,
+                    City = rejectedTechnician.CityName,
+                    ServiceType = rejectedTechnician.ServiceName,
+                    FrontId = rejectedTechnician.IsNationalIdFrontVerified,
+                    BackId = rejectedTechnician.IsNationalIdBackVerified,
+                    CriminalRecord = rejectedTechnician.IsCriminalHistoryVerified
+                }
+            };
         private static int GetEmail(UnverifiedClientLogin unverifiedClientLogin, ErrorToReturn response)
         {
             response.email = unverifiedClientLogin._email;

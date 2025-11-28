@@ -31,6 +31,17 @@ namespace Persistance.Repositories
                 .FirstOrDefaultAsync(t => t.UserId == userId);
         }
 
+        public async Task<Technician?> GetFullTechnicianByUserIdAsync(string userId)
+        {
+            return await _context.Set<Technician>()
+                .Include(t => t.User)
+                .Include(t => t.Rejection)
+                .Include(t => t.City)
+                    .ThenInclude(c => c.Governorate)
+                .Include(t => t.Service)
+                .FirstOrDefaultAsync(t => t.UserId == userId);
+        }
+
         public async Task<IEnumerable<Technician>?> GetAllAsync()
         {
             return await _context.Set<Technician>()

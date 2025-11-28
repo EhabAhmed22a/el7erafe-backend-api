@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Persistance.Databases;
 
@@ -11,9 +12,11 @@ using Persistance.Databases;
 namespace Persistance.Identity.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251127201124_AddRejectionsTable")]
+    partial class AddRejectionsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -182,10 +185,9 @@ namespace Persistance.Identity.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TechnicianId")
-                        .IsUnique();
+                    b.HasIndex("TechnicianId");
 
-                    b.ToTable("Rejections", (string)null);
+                    b.ToTable("Rejections");
                 });
 
             modelBuilder.Entity("DomainLayer.Models.IdentityModule.Technician", b =>
@@ -223,9 +225,6 @@ namespace Persistance.Identity.Migrations
                     b.Property<string>("NationalIdFrontURL")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("RejectionId")
-                        .HasColumnType("int");
 
                     b.Property<int>("Rejection_Count")
                         .HasColumnType("int");
@@ -301,7 +300,7 @@ namespace Persistance.Identity.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("UserTokens", (string)null);
+                    b.ToTable("UserTokens");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -371,8 +370,8 @@ namespace Persistance.Identity.Migrations
             modelBuilder.Entity("DomainLayer.Models.IdentityModule.Rejection", b =>
                 {
                     b.HasOne("DomainLayer.Models.IdentityModule.Technician", "Technician")
-                        .WithOne("Rejection")
-                        .HasForeignKey("DomainLayer.Models.IdentityModule.Rejection", "TechnicianId")
+                        .WithMany()
+                        .HasForeignKey("TechnicianId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -449,12 +448,6 @@ namespace Persistance.Identity.Migrations
             modelBuilder.Entity("DomainLayer.Models.IdentityModule.Governorate", b =>
                 {
                     b.Navigation("Cities");
-                });
-
-            modelBuilder.Entity("DomainLayer.Models.IdentityModule.Technician", b =>
-                {
-                    b.Navigation("Rejection")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("DomainLayer.Models.IdentityModule.TechnicianService", b =>

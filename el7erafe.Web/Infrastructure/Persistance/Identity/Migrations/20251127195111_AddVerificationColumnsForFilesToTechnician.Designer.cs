@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Persistance.Databases;
 
@@ -11,9 +12,11 @@ using Persistance.Databases;
 namespace Persistance.Identity.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251127195111_AddVerificationColumnsForFilesToTechnician")]
+    partial class AddVerificationColumnsForFilesToTechnician
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -164,30 +167,6 @@ namespace Persistance.Identity.Migrations
                     b.ToTable("Governorates", (string)null);
                 });
 
-            modelBuilder.Entity("DomainLayer.Models.IdentityModule.Rejection", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Reason")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<int>("TechnicianId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TechnicianId")
-                        .IsUnique();
-
-                    b.ToTable("Rejections", (string)null);
-                });
-
             modelBuilder.Entity("DomainLayer.Models.IdentityModule.Technician", b =>
                 {
                     b.Property<int>("Id")
@@ -223,9 +202,6 @@ namespace Persistance.Identity.Migrations
                     b.Property<string>("NationalIdFrontURL")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("RejectionId")
-                        .HasColumnType("int");
 
                     b.Property<int>("Rejection_Count")
                         .HasColumnType("int");
@@ -301,7 +277,7 @@ namespace Persistance.Identity.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("UserTokens", (string)null);
+                    b.ToTable("UserTokens");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -366,17 +342,6 @@ namespace Persistance.Identity.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("DomainLayer.Models.IdentityModule.Rejection", b =>
-                {
-                    b.HasOne("DomainLayer.Models.IdentityModule.Technician", "Technician")
-                        .WithOne("Rejection")
-                        .HasForeignKey("DomainLayer.Models.IdentityModule.Rejection", "TechnicianId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Technician");
                 });
 
             modelBuilder.Entity("DomainLayer.Models.IdentityModule.Technician", b =>
@@ -449,12 +414,6 @@ namespace Persistance.Identity.Migrations
             modelBuilder.Entity("DomainLayer.Models.IdentityModule.Governorate", b =>
                 {
                     b.Navigation("Cities");
-                });
-
-            modelBuilder.Entity("DomainLayer.Models.IdentityModule.Technician", b =>
-                {
-                    b.Navigation("Rejection")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("DomainLayer.Models.IdentityModule.TechnicianService", b =>
