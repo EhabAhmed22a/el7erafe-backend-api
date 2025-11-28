@@ -278,10 +278,20 @@ namespace Service
                     await _blobStorageRepository.DeleteFileAsync(oldCriminalRecordUrl, "technician-documents");
                 }
                 await _technicianRepository.UpdateAsync(technician);
+                var CreateToken = new CreateToken(_userManager, _configuration);
+                string token = await CreateToken.CreateTokenAsync(user);
+
+                var TechToken = new UserToken
+                {
+                    Token = token,
+                    Type = TokenType.TempToken,
+                    UserId = user.Id
+                };
                 _logger.LogInformation("[SERVICE] Technician re-submission completed for: {PhoneNumber}", techResubmitDTO.PhoneNumber);
                 return new TechResubmitResponseDTO
                 {
-                    message = "تم إعادة إرسال المستندات بنجاح. يرجى انتظار المراجعة."
+                    message = "تم إعادة إرسال المستندات بنجاح. يرجى انتظار المراجعة.",
+                    tempToken = token
                 };
             }
         }
