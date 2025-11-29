@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Persistance.Databases;
 
@@ -11,9 +12,11 @@ using Persistance.Databases;
 namespace Persistance.Identity.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251129145319_Admin-Table-Creation")]
+    partial class AdminTableCreation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -208,7 +211,7 @@ namespace Persistance.Identity.Migrations
                     b.HasIndex("TechnicianId")
                         .IsUnique();
 
-                    b.ToTable("Rejections", (string)null);
+                    b.ToTable("Rejections");
                 });
 
             modelBuilder.Entity("DomainLayer.Models.IdentityModule.Technician", b =>
@@ -324,7 +327,7 @@ namespace Persistance.Identity.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("UserTokens", (string)null);
+                    b.ToTable("UserTokens");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

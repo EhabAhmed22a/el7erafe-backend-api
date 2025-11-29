@@ -101,16 +101,35 @@ namespace Presentation.Controllers
         [Authorize(AuthenticationSchemes = "Bearer")]
         public async Task<ActionResult> ResetPassword(ResetPasswordDTO resetPasswordDTO)
         {
+            logger.LogInformation("[API] ResetPassword endpoint called");
+
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
+            {
+                logger.LogWarning("[API] UserId not found in token claims");
                 return Unauthorized(new { message = "Invalid token" });
+            }
+
+            logger.LogInformation("[API] UserId extracted: {UserId}", userId);
 
             var iatClaim = User.FindFirst("iat")?.Value;
             if (string.IsNullOrEmpty(iatClaim))
+            {
+                logger.LogWarning("[API] iat claim missing in token for user: {UserId}", userId);
                 return Unauthorized(new { message = "Token missing timestamp" });
+            }
+
+            logger.LogInformation("[API] iat claim found: {IatClaim}", iatClaim);
 
             var tokenIssuedAt = DateTimeOffset.FromUnixTimeSeconds(long.Parse(iatClaim)).UtcDateTime;
             var currentTime = DateTime.UtcNow;
+            var timeDifference = currentTime - tokenIssuedAt;
+
+            logger.LogInformation("[API] Token issued at: {TokenIssuedAt}, Current time: {CurrentTime}, Time difference: {TimeDifference} minutes",
+                tokenIssuedAt, currentTime, timeDifference.TotalMinutes);
+
+            logger.LogInformation("[API] Calling loginService.ResetPasswordAsync for user: {UserId}", userId);
+
             return Ok(await loginService.ResetPasswordAsync(resetPasswordDTO, userId, currentTime - tokenIssuedAt));
         }
     }

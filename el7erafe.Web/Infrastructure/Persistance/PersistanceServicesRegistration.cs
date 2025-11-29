@@ -39,6 +39,7 @@ namespace Persistance
             services.AddScoped<IClientRepository, ClientRepository>();
             services.AddScoped<IBlobStorageRepository, BlobStorageRepository>();
             services.AddScoped<IUserTokenRepository, UserTokenRepository>();
+            services.AddScoped<IAdminRepository, AdminRepository>();
 
             return services;
         }
