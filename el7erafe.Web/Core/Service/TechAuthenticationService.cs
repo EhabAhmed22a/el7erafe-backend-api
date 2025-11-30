@@ -2,6 +2,7 @@
 using DomainLayer.Exceptions;
 using DomainLayer.Models.IdentityModule;
 using DomainLayer.Models.IdentityModule.Enums;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -17,7 +18,8 @@ namespace Service
         ILogger<TechAuthenticationService> _logger,
         IConfiguration _configuration,
         IUserTokenRepository _userTokenRepository,
-        IBlobStorageRepository _blobStorageRepository) : ITechAuthenticationService
+        IBlobStorageRepository _blobStorageRepository,
+        IWebHostEnvironment _env) : ITechAuthenticationService
     {
         public async Task<TechDTO> techRegisterAsync(TechRegisterDTO techRegisterDTO)
         {
@@ -111,7 +113,7 @@ namespace Service
 
             _logger.LogInformation("[SERVICE] Technician registration completed for: {PhoneNumber}", techRegisterDTO.PhoneNumber);
 
-            var CreateToken = new CreateToken(_userManager, _configuration);
+            var CreateToken = new CreateToken(_userManager, _configuration, _env);
             string token = await CreateToken.CreateTokenAsync(user);
 
             var TechToken = new UserToken
@@ -172,7 +174,7 @@ namespace Service
                     {
                         await _userTokenRepository.DeleteUserTokenAsync(userId);
 
-                        var createToken = new CreateToken(_userManager, _configuration);
+                        var createToken = new CreateToken(_userManager, _configuration, _env);
                         var accessToken = await createToken.CreateTokenAsync(user);
 
                         await _userTokenRepository.CreateUserTokenAsync(new UserToken
@@ -278,7 +280,7 @@ namespace Service
                     await _blobStorageRepository.DeleteFileAsync(oldCriminalRecordUrl, "technician-documents");
                 }
                 await _technicianRepository.UpdateAsync(technician);
-                var CreateToken = new CreateToken(_userManager, _configuration);
+                var CreateToken = new CreateToken(_userManager, _configuration, _env);
                 string token = await CreateToken.CreateTokenAsync(user);
 
                 var TechToken = new UserToken
