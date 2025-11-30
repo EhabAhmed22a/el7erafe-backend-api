@@ -23,8 +23,7 @@ namespace Service
         ITechnicianRepository technicianRepository,
         OtpHelper otpHelper,
         ILogger<LoginService> logger,
-        IUserTokenRepository userTokenRepository,
-        IWebHostEnvironment env) : ILoginService
+        IUserTokenRepository userTokenRepository) : ILoginService
     {
         public async Task<UserDTO> LoginAsync(LoginDTO loginDTO)
         {
@@ -88,7 +87,7 @@ namespace Service
                 }
 
                 logger.LogInformation("[SERVICE] Generating token for client: {ClientName}", client.Name);
-                var token = await new CreateToken(userManager, configuration, env).CreateTokenAsync(user);
+                var token = await new CreateToken(userManager, configuration).CreateTokenAsync(user);
 
                 await userTokenRepository.CreateUserTokenAsync(new UserToken
                 {
@@ -122,7 +121,7 @@ namespace Service
                 if (technician.Status == TechnicianStatus.Pending)
                 {
                     logger.LogWarning("[SERVICE] Technician login rejected - status Pending for user: {UserId}", user.Id);
-                    var createToken = new CreateToken(userManager, configuration, env);
+                    var createToken = new CreateToken(userManager, configuration);
                     var accessToken = await createToken.CreateTokenAsync(user);
 
                     await userTokenRepository.CreateUserTokenAsync(new UserToken
@@ -149,7 +148,7 @@ namespace Service
                         user.Id);
 
                 logger.LogInformation("[SERVICE] Generating token for technician: {TechnicianName}", technician.Name);
-                var token = await new CreateToken(userManager, configuration, env).CreateTokenAsync(user);
+                var token = await new CreateToken(userManager, configuration).CreateTokenAsync(user);
 
                 logger.LogInformation("[SERVICE] Technician login completed successfully: {TechnicianName} ({UserId})",
                     technician.Name, user.Id);
@@ -244,7 +243,7 @@ namespace Service
                 }
 
                 await userTokenRepository.DeleteUserTokenAsync(userId);
-                var token = await new CreateToken(userManager, configuration, env).CreateTokenAsync(user);
+                var token = await new CreateToken(userManager, configuration).CreateTokenAsync(user);
                 await userTokenRepository.CreateUserTokenAsync(new UserToken
                 {
                     Token = token,

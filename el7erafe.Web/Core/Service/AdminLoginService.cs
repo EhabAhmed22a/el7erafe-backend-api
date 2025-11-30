@@ -17,7 +17,6 @@ namespace Service
         UserManager<ApplicationUser> userManager,
         IUserTokenRepository userTokenRepository,
         IConfiguration configuration,
-        IWebHostEnvironment env,
         ILogger<AdminLoginService> logger) : IAdminLoginService
     {
         public async Task<AdminDTO> LoginAsync(AdminLoginDTO adminLoginDTO)
@@ -74,7 +73,7 @@ namespace Service
             logger.LogInformation("[SERVICE] Admin details found: {AdminName}, generating token for user: {UserId}",
                 admin.Name, user.Id);
 
-            var token = await new CreateToken(userManager, configuration, env).CreateTokenAsync(user);
+            var token = await new CreateToken(userManager, configuration).CreateTokenAsync(user);
 
             logger.LogInformation("[SERVICE] Token generated successfully, storing user token for user: {UserId}", user.Id);
 

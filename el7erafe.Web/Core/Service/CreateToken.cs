@@ -19,23 +19,13 @@ namespace Service
         private readonly IConfiguration configuration;
         private readonly IWebHostEnvironment env;
 
-        public CreateToken(UserManager<ApplicationUser> _userManager, IConfiguration _configuration, IWebHostEnvironment _env)
+        public CreateToken(UserManager<ApplicationUser> _userManager, IConfiguration _configuration)
         {
             userManager = _userManager;
             configuration = _configuration;
-            env = _env;
-            if (env.IsDevelopment())
-            {
-                secretKey = configuration.GetSection("JWTOptions")["SecretKey"];
-                issuer = configuration.GetSection("JWTOptions")["Issuer"];
-                audience = configuration.GetSection("JWTOptions")["Audience"];
-            }
-            else
-            {
-                secretKey = configuration.GetSection("JWTOptions")["SecretKey"];
-                issuer = configuration.GetSection("JWTOptions")["Issuer"];
-                audience = configuration.GetSection("JWTOptions")["Audience"];
-            }
+            secretKey = configuration.GetSection("JWTOptions")["SecretKey"];
+            issuer = configuration.GetSection("JWTOptions")["Issuer"];
+            audience = configuration.GetSection("JWTOptions")["Audience"];
         }
         public async Task<string> CreateTokenAsync(ApplicationUser user)
         {

@@ -20,8 +20,7 @@ namespace Service
         IConfiguration configuration,
         OtpHelper otpHelper,
         ILogger<ClientAuthenticationService> logger,
-        IUserTokenRepository userTokenRepository,
-        IWebHostEnvironment env) : IClientAuthenticationService
+        IUserTokenRepository userTokenRepository) : IClientAuthenticationService
     {
         public async Task<OtpResponseDTO> RegisterAsync(ClientRegisterDTO clientRegisterDTO)
         {
@@ -118,7 +117,7 @@ namespace Service
 
             logger.LogInformation("[Service] Registration completed with OTP verification: {Email}", otpVerificationDTO.Email);
 
-            var token = await new CreateToken(userManager, configuration,env).CreateTokenAsync(user);
+            var token = await new CreateToken(userManager, configuration).CreateTokenAsync(user);
             await userTokenRepository.CreateUserTokenAsync(new UserToken
             {
                 Token = token,
@@ -193,7 +192,7 @@ namespace Service
             }
 
             await userTokenRepository.DeleteUserTokenAsync(user.Id);
-            var token = await new CreateToken(userManager, configuration, env).CreateTokenAsync(user);
+            var token = await new CreateToken(userManager, configuration).CreateTokenAsync(user);
             await userTokenRepository.CreateUserTokenAsync(new UserToken
             {
                 Token = token,
