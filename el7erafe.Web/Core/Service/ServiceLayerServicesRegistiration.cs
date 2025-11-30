@@ -19,6 +19,7 @@ namespace Service
             services.AddScoped<OtpHelper>();
             services.AddScoped<ILogoutService, LogoutService>();
             services.AddScoped<ITokenBlocklistService, TokenBlocklistService>();
+            services.AddScoped<IAdminLoginService, AdminLoginService>();
             return services;
         }
     }

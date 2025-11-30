@@ -57,7 +57,7 @@ namespace Service
             var userToken = await userTokenRepository.GetUserTokenAsync(user.Id);
             if (userToken is not null)
             {
-                throw new Exception("المستخدم مسجل الدخول بالفعل.");
+                throw new AlreadyLoggedInException();
             }
 
             logger.LogInformation("[SERVICE] Password verification successful for user: {UserId}", user.Id);

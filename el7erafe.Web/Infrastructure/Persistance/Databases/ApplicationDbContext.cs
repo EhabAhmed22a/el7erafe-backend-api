@@ -13,6 +13,7 @@ namespace Persistance.Databases
 
         public DbSet<UserToken> UserTokens { get; set; } = default!;
         public DbSet<Rejection> Rejections { get; set; } = default!;
+        public DbSet<Admin> Admins { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -25,6 +26,7 @@ namespace Persistance.Databases
             builder.Entity<Governorate>().ToTable("Governorates");
             builder.Entity<TechnicianService>().ToTable("TechnicianServices");
             builder.Entity<City>().ToTable("Cities");
+            builder.Entity<Admin>().ToTable("Admins");
             builder.Ignore<IdentityUserClaim<string>>();
             builder.Ignore<IdentityUserToken<string>>();
             builder.Ignore<IdentityUserLogin<string>>();

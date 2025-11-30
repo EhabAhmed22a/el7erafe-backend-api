@@ -1,5 +1,6 @@
 ﻿using DomainLayer.Contracts;
 using DomainLayer.Models.IdentityModule;
+using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +12,7 @@ using System.Text.Json;
 namespace Persistance
 {
     public class DataSeeding(ApplicationDbContext _dbContext,IWebHostEnvironment _webHostEnvironment, ILogger<DataSeeding> logger,
-        RoleManager<IdentityRole> _roleManager) : IDataSeeding
+        RoleManager<IdentityRole> _roleManager, UserManager<ApplicationUser> userManager) : IDataSeeding
     {
         private readonly string SeedFilePath = Path.Combine(_webHostEnvironment.ContentRootPath, "data/message.txt");
 
@@ -41,7 +42,26 @@ namespace Persistance
                         new TechnicianService { NameAr = "نجار" }
                     );
                 }
-
+                if (!await _dbContext.Admins.AnyAsync())
+                {
+                    var user = new ApplicationUser
+                    {
+                        UserName = "ahmedSalah",
+                        Email = "temp@temp.com",
+                        EmailConfirmed = true,
+                        PhoneNumber = "01201884828", 
+                        UserType = UserTypeEnum.Admin
+                    };
+                    var result = await userManager.CreateAsync(user, "ahmedSalah123$");
+                    if (result.Succeeded)
+                    {
+                        await _dbContext.Admins.AddAsync(new Admin()
+                        {
+                            Name = "Ahmed Salah",
+                            UserId = user.Id,
+                        });
+                    }
+                }
                 // Save any role changes
                 await _dbContext.SaveChangesAsync();
 
@@ -86,7 +106,6 @@ namespace Persistance
                             await _dbContext.SaveChangesAsync(); // ensure Id is generated
                         }
 
-                        // cities array in the JSON is named "cities"
                         if (govEl.TryGetProperty("cities", out var citiesEl) && citiesEl.ValueKind == JsonValueKind.Array)
                         {
                             foreach (var cityEl in citiesEl.EnumerateArray())
