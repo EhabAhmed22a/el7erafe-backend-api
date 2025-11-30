@@ -2,7 +2,6 @@ using Azure.Identity;
 using Azure.Storage.Blobs;
 using el7erafe.Web.CustomMiddleWares;
 using el7erafe.Web.Extensions;
-using el7erafe.Web.Mapper;
 using Persistance;
 using Persistance.Databases;
 using Serilog;
@@ -38,8 +37,6 @@ namespace el7erafe.Web
             builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("gmail"));
             builder.Services.AddScoped<IEmailService, EmailService>();
             #endregion
-
-            builder.Services.AddAutoMapper(typeof(MapperProfile));
 
             #region Swagger Setup
             builder.Services.AddOpenApi();

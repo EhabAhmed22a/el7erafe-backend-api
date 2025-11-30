@@ -68,6 +68,7 @@ namespace Service
             };
 
             await clientRepository.CreateAsync(client);
+            await userManager.AddToRoleAsync(user, "Client");
 
             await otpHelper.SendOTP(user);
 

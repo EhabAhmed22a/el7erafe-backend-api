@@ -60,6 +60,7 @@ namespace Persistance
                             Name = "Ahmed Salah",
                             UserId = user.Id,
                         });
+                        await userManager.AddToRoleAsync(user, "Admin");
                     }
                 }
                 // Save any role changes

@@ -8,6 +8,7 @@ namespace DomainLayer.Contracts
         Task<Client?> GetByIdAsync(int id);
         Task<Client?> GetByUserIdAsync(string userId);
         Task<IEnumerable<Client>?> GetAllAsync();
+        Task<IEnumerable<Client>?> GetPagedAsync(int pageNumber, int pageSize);
         Task<int> UpdateAsync(Client client);
         Task<int> DeleteAsync(int id);
         Task<bool> ExistsAsync(int id);
