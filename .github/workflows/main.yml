@@ -38,7 +38,7 @@ jobs:
         run: dotnet restore el7erafe.Web/el7erafe.Web.sln
         
       - name: Build
-        run: dotnet build el7erafe.Web/el7erafe.Web.sln --no-restore
+        run: dotnet rebuild el7erafe.Web/el7erafe.Web.sln --no-restore
 
       - name: Install EF Core tools
         run: dotnet tool install --global dotnet-ef --version 9.0.9
