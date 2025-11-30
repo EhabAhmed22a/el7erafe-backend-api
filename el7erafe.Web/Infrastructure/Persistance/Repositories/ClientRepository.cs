@@ -37,6 +37,16 @@ namespace Persistance.Repositories
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<Client>?> GetPagedAsync(int pageNumber, int pageSize)
+        {
+            return await context.Set<Client>()
+                .Include(c => c.User)
+                .OrderBy(c => c.User.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
         public async Task<int> UpdateAsync(Client client)
         {
             var existingClient = await context.Set<Client>()

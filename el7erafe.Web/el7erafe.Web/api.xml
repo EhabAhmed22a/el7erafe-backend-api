@@ -4,16 +4,5 @@
         <name>el7erafe.Web</name>
     </assembly>
     <members>
-        <member name="T:el7erafe.Web.Mapper.MapperProfile">
-            <summary>
-            Configures AutoMapper mappings for ApplicationUser and related DTOs.
-            </summary>
-        </member>
-        <member name="M:el7erafe.Web.Mapper.MapperProfile.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:el7erafe.Web.Mapper.MapperProfile"/> class.
-            Configures AutoMapper mappings for ApplicationUser and related DTOs.
-            </summary>
-        </member>
     </members>
 </doc>
