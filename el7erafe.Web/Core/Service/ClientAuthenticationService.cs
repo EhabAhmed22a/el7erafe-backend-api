@@ -2,6 +2,7 @@
 using DomainLayer.Exceptions;
 using DomainLayer.Models.IdentityModule;
 using DomainLayer.Models.IdentityModule.Enums;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
@@ -19,7 +20,8 @@ namespace Service
         IConfiguration configuration,
         OtpHelper otpHelper,
         ILogger<ClientAuthenticationService> logger,
-        IUserTokenRepository userTokenRepository) : IClientAuthenticationService
+        IUserTokenRepository userTokenRepository,
+        IWebHostEnvironment env) : IClientAuthenticationService
     {
         public async Task<OtpResponseDTO> RegisterAsync(ClientRegisterDTO clientRegisterDTO)
         {
@@ -115,7 +117,7 @@ namespace Service
 
             logger.LogInformation("[Service] Registration completed with OTP verification: {Email}", otpVerificationDTO.Email);
 
-            var token = await new CreateToken(userManager, configuration).CreateTokenAsync(user);
+            var token = await new CreateToken(userManager, configuration,env).CreateTokenAsync(user);
             await userTokenRepository.CreateUserTokenAsync(new UserToken
             {
                 Token = token,
@@ -190,7 +192,7 @@ namespace Service
             }
 
             await userTokenRepository.DeleteUserTokenAsync(user.Id);
-            var token = await new CreateToken(userManager, configuration).CreateTokenAsync(user);
+            var token = await new CreateToken(userManager, configuration, env).CreateTokenAsync(user);
             await userTokenRepository.CreateUserTokenAsync(new UserToken
             {
                 Token = token,
