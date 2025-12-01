@@ -40,6 +40,21 @@
             <response code="403">Returns when unauthorized calls occur</response>
             <response code="500">Returns when internal server error occurs during services retrieval</response>
         </member>
+        <member name="M:Presentation.Controllers.AdminDashboardController.CreateServiceAsync(Shared.DataTransferObject.AdminDTOs.Dashboard.ServiceRegisterDTO)">
+            <summary>
+            Creates a new service in the system.
+            </summary>
+            <remarks>
+            This endpoint allows administrators to register new services in the platform.
+            Validates service uniqueness and required fields before creation.
+            </remarks>
+            <param name="serviceRegisterDTO">Service registration data containing service details</param>
+            <returns>Returns the created service object with its ID</returns>
+            <response code="201">Returns when service is successfully created with the service object</response>
+            <response code="400">Returns when required fields are missing or invalid</response>
+            <response code="403">Returns when user is not authorized as an admin</response>
+            <response code="409">Returns when service name already exists in the system</response>
+        </member>
         <member name="M:Presentation.Controllers.AdminLoginController.AdminLoginAsync(Shared.DataTransferObject.AdminDTOs.LoginDTO.AdminLoginDTO)">
             <summary>
             Authenticates an admin user and returns JWT token.

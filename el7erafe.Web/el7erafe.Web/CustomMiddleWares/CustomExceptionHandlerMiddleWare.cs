@@ -55,7 +55,8 @@ namespace el7erafe.Web.CustomMiddleWares
                     NotFoundException => StatusCodes.Status404NotFound,
                     UnauthorizedException => StatusCodes.Status401Unauthorized,
                     BadRequestException badRequestException => GetBadRequestErrors(badRequestException, Response),
-                    { } when ex is AlreadyExistException or EmailAlreadyVerified or  TechnicianAcceptedOrPendingException or AlreadyLoggedInException=> StatusCodes.Status409Conflict,
+                    { } when ex is AlreadyExistException or EmailAlreadyVerified or  TechnicianAcceptedOrPendingException or AlreadyLoggedInException
+                    or ServiceAlreadyRegisteredException => StatusCodes.Status409Conflict,
                     InvalidOtpException => StatusCodes.Status400BadRequest,
                     { } when ex is ForgotPasswordDisallowed or ResetTokenExpiredException or ForbiddenAccessException => StatusCodes.Status403Forbidden,
                     UnverifiedClientLogin unverifiedClientLogin => GetEmail(unverifiedClientLogin, Response),

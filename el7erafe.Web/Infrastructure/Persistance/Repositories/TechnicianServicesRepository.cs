@@ -22,5 +22,17 @@ namespace Persistance.Repositories
                                     .Take(pageSize)
                                     .ToListAsync();
         }
+
+        public async Task<TechnicianService> CreateServiceAsync(TechnicianService technicianService)
+        {
+            await dbContext.Set<TechnicianService>().AddAsync(technicianService);
+            await dbContext.SaveChangesAsync();
+            return technicianService;
+        }
+
+        public async Task<bool> ServiceExistsAsync(string serivceName)
+        {
+            return await dbContext.Set<TechnicianService>().AnyAsync(ts => ts.NameAr == serivceName);
+        }
     }
 }
