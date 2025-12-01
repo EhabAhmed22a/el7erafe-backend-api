@@ -7,5 +7,6 @@ namespace ServiceAbstraction
     public interface IAdminDashboardService
     {
         Task<ClientListDTO> GetClientsAsync(int? pageNumber, int? pageSize);
+        Task<ServiceListDTO> GetServicesAsync(int? pageNumber, int? pageSize);
     }
 }

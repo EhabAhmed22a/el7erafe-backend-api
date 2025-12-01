@@ -7,7 +7,8 @@ using Shared.DataTransferObject.AdminDTOs.Dashboard;
 
 namespace Service
 {
-    public class AdminDashboardService(IClientRepository clientRepository, ILogger<AdminDashboardService> logger) : IAdminDashboardService
+    public class AdminDashboardService(IClientRepository clientRepository, ITechnicianServicesRepository technicianServicesRepository,
+        ILogger<AdminDashboardService> logger) : IAdminDashboardService
     {
         public async Task<ClientListDTO> GetClientsAsync(int? pageNumber, int? pageSize)
         {
@@ -64,6 +65,63 @@ namespace Service
             catch
             {
                 logger.LogError("[SERVICE] Error occurred while retrieving clients. PageNumber: {PageNumber}, PageSize: {PageSize}",
+                    pageNumber, pageSize);
+                throw new TechnicalException();
+            }
+        }
+
+        public async Task<ServiceListDTO> GetServicesAsync(int? pageNumber, int? pageSize)
+        {
+            pageNumber = (pageNumber.HasValue && pageNumber.Value < 1) ? 1 : pageNumber;
+            pageSize = (pageSize.HasValue && pageSize.Value < 1) ? 10 : pageSize;
+
+            logger.LogInformation("[SERVICE] GetServicesAsync method started. PageNumber: {PageNumber}, PageSize: {PageSize}",
+                pageNumber, pageSize);
+
+            try
+            {
+                logger.LogInformation("[SERVICE] Retrieving services from repository. Using pagination: {UsePagination}",
+                    pageNumber.HasValue && pageSize.HasValue);
+
+                IEnumerable<TechnicianService>? services = pageNumber.HasValue && pageSize.HasValue
+                    ? await technicianServicesRepository.GetPagedTechnicianServicesAsync(pageNumber.Value, pageSize.Value)
+                    : await technicianServicesRepository.GetAllTechnicianServicesAsync();
+
+                logger.LogInformation("[SERVICE] Successfully retrieved services from repository. Services count: {ServicesCount}",
+                    services?.Count() ?? 0);
+
+                if (services is null || !services.Any())
+                {
+                    logger.LogWarning("[SERVICE] No services found in the database. PageNumber: {PageNumber}, PageSize: {PageSize}",
+                        pageNumber, pageSize);
+                    return new ServiceListDTO
+                    {
+                        Count = 0,
+                        Services = Enumerable.Empty<ServiceDTO>()
+                    };
+                }
+
+                logger.LogInformation("[SERVICE] Mapping {ServicesCount} services to DTOs", services.Count());
+
+                var serviceDTOs = services.Select(ser => new ServiceDTO()
+                {
+                    Id = ser.Id,
+                    Name = ser.NameAr,
+                    ServiceImageURL = ser?.ServiceImageURL
+                }).ToList();
+
+                logger.LogInformation("[SERVICE] Successfully mapped {ServicesCount} services to DTOs. Returning results",
+                    serviceDTOs.Count);
+
+                return new ServiceListDTO
+                {
+                    Count = serviceDTOs.Count,
+                    Services = serviceDTOs
+                };
+            }
+            catch
+            {
+                logger.LogError("[SERVICE] Error occurred while retrieving services. PageNumber: {PageNumber}, PageSize: {PageSize}",
                     pageNumber, pageSize);
                 throw new TechnicalException();
             }
