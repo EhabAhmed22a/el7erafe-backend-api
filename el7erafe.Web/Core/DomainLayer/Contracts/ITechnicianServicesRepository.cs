@@ -8,5 +8,6 @@ namespace DomainLayer.Contracts
         Task<IEnumerable<TechnicianService>?> GetPagedTechnicianServicesAsync(int pageNumber, int pageSize);
         Task<TechnicianService> CreateServiceAsync(TechnicianService technicianService);
         Task<bool> ServiceExistsAsync(string serviceName);
+        Task<bool> DeleteAsync(int id);
     }
 }
