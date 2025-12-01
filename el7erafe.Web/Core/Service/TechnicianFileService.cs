@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
+using Shared.DataTransferObject.AdminDTOs.Dashboard;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
 namespace Service
 {
@@ -102,6 +103,27 @@ namespace Service
                 NationalIdBackPath = nationalIdBackUrl,
                 CriminalRecordPath = criminalRecordUrl,
                 ServiceType = techRegisterDTO.ServiceType
+            };
+        }
+
+        public async Task<ServiceDTO> ProcessServiceFilesAsync(ServiceRegisterDTO serviceRegisterDTO)
+        {
+            _logger.LogInformation("[FILE-SERVICE] Uploading service image. File Name: {FileName}, File Size: {FileSize} bytes",
+           serviceRegisterDTO.ServiceImage?.FileName,
+           serviceRegisterDTO.ServiceImage?.Length);
+
+            var serviceImageURL = await _blobStorageService.UploadFileAsync(
+                serviceRegisterDTO.ServiceImage!,
+                "services-documents",
+                $"{serviceRegisterDTO.ServiceImage?.FileName}");
+
+            _logger.LogInformation("[FILE-SERVICE] Successfully uploaded service image. Generated URL: {ImageURL}",
+                serviceImageURL);
+
+            return new ServiceDTO()
+            {
+                Name = serviceRegisterDTO.Name,
+                ServiceImageURL = serviceImageURL
             };
         }
 

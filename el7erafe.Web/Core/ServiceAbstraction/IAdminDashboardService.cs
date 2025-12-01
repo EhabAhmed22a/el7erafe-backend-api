@@ -1,4 +1,5 @@
 ﻿
+using DomainLayer.Models.IdentityModule;
 using Shared.DataTransferObject.AdminDTOs.Dashboard;
 using Shared.DataTransferObject.LoginDTOs;
 
@@ -8,5 +9,6 @@ namespace ServiceAbstraction
     {
         Task<ClientListDTO> GetClientsAsync(int? pageNumber, int? pageSize);
         Task<ServiceListDTO> GetServicesAsync(int? pageNumber, int? pageSize);
+        Task<ServiceDTO> CreateServiceAsync(ServiceRegisterDTO serviceRegisterDTO);
     }
 }
