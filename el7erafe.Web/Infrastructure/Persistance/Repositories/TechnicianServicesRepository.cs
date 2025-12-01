@@ -34,5 +34,18 @@ namespace Persistance.Repositories
         {
             return await dbContext.Set<TechnicianService>().AnyAsync(ts => ts.NameAr == serivceName);
         }
+
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var existingService = await dbContext.Set<TechnicianService>()
+                                                    .FirstOrDefaultAsync(ts => ts.Id == id);
+
+            if (existingService is null)
+                return false;
+
+            dbContext.Set<TechnicianService>().Remove(existingService);
+            await dbContext.SaveChangesAsync();
+            return true;
+        }
     }
 }

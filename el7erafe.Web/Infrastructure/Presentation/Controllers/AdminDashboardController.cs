@@ -93,5 +93,29 @@ namespace Presentation.Controllers
 
             return StatusCode(201,await adminDashboardService.CreateServiceAsync(serviceRegisterDTO));
         }
+
+        /// <summary>
+        /// Deletes (deactivates) a service from the system.
+        /// </summary>
+        /// <remarks>
+        /// This endpoint allows administrators to permanently remove a service from the platform.
+        /// The operation performs a physical deletion of the service record from the database.
+        /// Use with caution as this action cannot be undone.
+        /// </remarks>
+        /// <param name="id">The unique identifier of the service to be deleted</param>
+        /// <returns>Returns a confirmation of successful deletion</returns>
+        /// <response code="200">Service deleted successfully</response>
+        /// <response code="403">User is not authorized as an administrator</response>
+        /// <response code="404">Service with the specified ID does not exist</response>
+        [HttpDelete("admin/services")]
+        public async Task<ActionResult> DeleteServiceAsync([FromQuery] int id)
+        {
+            logger.LogInformation("DELETE request received for service ID: {id}", id);
+
+            await adminDashboardService.DeleteServiceAsync(id);
+
+            logger.LogInformation("DELETE request completed successfully for service ID: {id}", id);
+            return Ok();
+        }
     }
 }

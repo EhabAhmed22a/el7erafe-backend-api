@@ -60,17 +60,18 @@ namespace Persistance.Repositories
             return await context.SaveChangesAsync();
         }
 
-        public async Task<int> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
             var existingClient = await context.Set<Client>()
             .FirstOrDefaultAsync(c => c.Id == id);
 
             if (existingClient is null)
-                return -1;
+                return false;
 
-            context.Entry(existingClient).CurrentValues.SetValues(existingClient);
+            context.Set<Client>().Remove(existingClient);
 
-            return await context.SaveChangesAsync();
+            await context.SaveChangesAsync();
+            return true;
         }
 
         public async Task<bool> ExistsAsync(int id)
