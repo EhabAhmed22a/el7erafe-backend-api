@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
+using Shared.DataTransferObject.AdminDTOs.Dashboard;
 
 namespace Presentation.Controllers
 {
@@ -65,6 +66,32 @@ namespace Presentation.Controllers
                 pageNumber, pageSize);
 
             return Ok(await adminDashboardService.GetServicesAsync(pageNumber, pageSize));
+        }
+
+        /// <summary>
+        /// Creates a new service in the system.
+        /// </summary>
+        /// <remarks>
+        /// This endpoint allows administrators to register new services in the platform.
+        /// Validates service uniqueness and required fields before creation.
+        /// </remarks>
+        /// <param name="serviceRegisterDTO">Service registration data containing service details</param>
+        /// <returns>Returns the created service object with its ID</returns>
+        /// <response code="201">Returns when service is successfully created with the service object</response>
+        /// <response code="400">Returns when required fields are missing or invalid</response>
+        /// <response code="403">Returns when user is not authorized as an admin</response>
+        /// <response code="409">Returns when service name already exists in the system</response>
+        [HttpPost("admin/services")]
+        public async Task<ActionResult> CreateServiceAsync(ServiceRegisterDTO serviceRegisterDTO)
+        {
+            logger.LogInformation("[API] CreateService endpoint called");
+
+            logger.LogInformation("[API] Service creation request - Name: {ServiceName}, Description: {Description}, Category: {CategoryId}",
+                serviceRegisterDTO.Name);
+
+            logger.LogInformation("[API] Calling adminDashboardService.CreateServiceAsync");
+
+            return StatusCode(201,await adminDashboardService.CreateServiceAsync(serviceRegisterDTO));
         }
     }
 }

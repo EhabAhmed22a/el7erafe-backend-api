@@ -8,6 +8,7 @@ using Shared.DataTransferObject.AdminDTOs.Dashboard;
 namespace Service
 {
     public class AdminDashboardService(IClientRepository clientRepository, ITechnicianServicesRepository technicianServicesRepository,
+        ITechnicianFileService fileService,
         ILogger<AdminDashboardService> logger) : IAdminDashboardService
     {
         public async Task<ClientListDTO> GetClientsAsync(int? pageNumber, int? pageSize)
@@ -123,6 +124,71 @@ namespace Service
             {
                 logger.LogError("[SERVICE] Error occurred while retrieving services. PageNumber: {PageNumber}, PageSize: {PageSize}",
                     pageNumber, pageSize);
+                throw new TechnicalException();
+            }
+        }
+
+        public async Task<ServiceDTO> CreateServiceAsync(ServiceRegisterDTO serviceRegisterDTO)
+        {
+            logger.LogInformation("[SERVICE] CreateServiceAsync started for service: {ServiceName}",
+                serviceRegisterDTO.Name);
+
+            logger.LogInformation("[SERVICE] Checking if service already exists: {ServiceName}",
+        serviceRegisterDTO.Name);
+
+            if (await technicianServicesRepository.ServiceExistsAsync(serviceRegisterDTO.Name))
+            {
+                logger.LogWarning("[SERVICE] Service creation failed - already exists: {ServiceName}",
+            serviceRegisterDTO.Name);
+                throw new ServiceAlreadyRegisteredException();
+            }
+
+            logger.LogInformation("[SERVICE] Service does not exist, proceeding with creation: {ServiceName}",
+       serviceRegisterDTO.Name);
+
+            ServiceDTO serviceDTO;
+            try
+            {
+                logger.LogInformation("[SERVICE] Processing service files for: {ServiceName}",
+                    serviceRegisterDTO.Name);
+
+                serviceDTO = await fileService.ProcessServiceFilesAsync(serviceRegisterDTO);
+
+                logger.LogInformation("[SERVICE] Successfully processed files. Image URL: {ImageURL}",
+                    serviceDTO.ServiceImageURL);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "[SERVICE] Failed to process service files for: {ServiceName}",
+                    serviceRegisterDTO.Name);
+                throw new UnauthorizedBlobStorage();
+            }
+
+            try
+            {
+                logger.LogInformation("[SERVICE] Creating technician service record: {ServiceName}",
+                    serviceDTO.Name);
+
+                var createdService = await technicianServicesRepository.CreateServiceAsync(new TechnicianService()
+                {
+                    NameAr = serviceDTO.Name,
+                    ServiceImageURL = serviceDTO.ServiceImageURL
+                });
+
+                logger.LogInformation("[SERVICE] Successfully created service with ID: {ServiceId}",
+                    createdService.Id);
+
+                serviceDTO.Id = createdService.Id;
+
+                logger.LogInformation("[SERVICE] CreateServiceAsync completed successfully. Service ID: {ServiceId}, Name: {ServiceName}",
+                    serviceDTO.Id, serviceDTO.Name);
+
+                return serviceDTO;
+            }
+            catch
+            {
+                logger.LogError("[SERVICE] Failed to create service record in database for: {ServiceName}",
+                    serviceDTO.Name);
                 throw new TechnicalException();
             }
         }
