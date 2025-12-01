@@ -22,6 +22,24 @@
             <response code="403">Returns when unauthorized calls occur</response>
             <response code="500">Returns when internal server error occurs during client retrieval</response>
         </member>
+        <member name="M:Presentation.Controllers.AdminDashboardController.GetServicesAsync(System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            Retrieves a list of services with optional pagination support.
+            </summary>
+            <remarks>
+            This method provides flexible services retrieval:
+            - When both pageNumber and pageSize are provided: returns paginated results
+            - When either parameter is null: returns all services without pagination
+            - Invalid values are corrected: pageNumber &lt; 1 becomes 1, pageSize &lt; 1 becomes 10
+            - The count in response represents the number of services in the current page/set
+            </remarks>
+            <param name="pageNumber">The page number for pagination (optional). If null, all services are returned. If &lt; 1, set to 1.</param>
+            <param name="pageSize">The number of items per page (optional). If null, all services are returned. If &lt; 1, set to 10.</param>
+            <returns>Returns a ServiceListDTO containing count of returned services and the service data</returns>
+            <response code="200">Returns when services are successfully retrieved with count and data</response>
+            <response code="403">Returns when unauthorized calls occur</response>
+            <response code="500">Returns when internal server error occurs during services retrieval</response>
+        </member>
         <member name="M:Presentation.Controllers.AdminLoginController.AdminLoginAsync(Shared.DataTransferObject.AdminDTOs.LoginDTO.AdminLoginDTO)">
             <summary>
             Authenticates an admin user and returns JWT token.
