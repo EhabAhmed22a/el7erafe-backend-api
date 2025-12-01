@@ -192,5 +192,20 @@ namespace Service
                 throw new TechnicalException();
             }
         }
+
+        public async Task DeleteServiceAsync(int id)
+        {
+            logger.LogInformation("Attempting to delete service with ID: {id}", id);
+
+            bool result = await technicianServicesRepository.DeleteAsync(id);
+
+            if (result is false)
+            {
+                logger.LogWarning("Service with ID: {id} not found for deletion", id);
+                throw new ServiceDoesNotExistException();
+            }
+
+            logger.LogInformation("Successfully deleted service with ID: {id}", id);
+        }
     }
 }
