@@ -207,5 +207,22 @@ namespace Service
 
             logger.LogInformation("Successfully deleted service with ID: {id}", id);
         }
+
+        public async Task DeleteClientAsync(string userId)
+        {
+            logger.LogInformation("[SERVICE] DeleteClientAsync called for user ID: {UserId}", userId);
+
+            logger.LogInformation("[SERVICE] Attempting to delete client from repository for user ID: {UserId}", userId);
+
+            var clientDeleted = await clientRepository.DeleteAsync(userId);
+
+            if (clientDeleted is false)
+            {
+                logger.LogWarning("[SERVICE] Client deletion failed - User not found: {UserId}", userId);
+                throw new UserNotFoundException("المستخدم غير موجود");
+            }
+
+            logger.LogInformation("[SERVICE] Client successfully deleted for user ID: {UserId}", userId);
+        }
     }
 }

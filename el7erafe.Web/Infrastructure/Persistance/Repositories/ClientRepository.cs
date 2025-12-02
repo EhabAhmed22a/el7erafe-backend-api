@@ -60,16 +60,16 @@ namespace Persistance.Repositories
             return await context.SaveChangesAsync();
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(string userId)
         {
             var existingClient = await context.Set<Client>()
-            .FirstOrDefaultAsync(c => c.Id == id);
+                                            .FirstOrDefaultAsync(c => c.UserId == userId);
 
             if (existingClient is null)
                 return false;
 
-            context.Set<Client>().Remove(existingClient);
-
+            var user = await context.Set<ApplicationUser>().FirstOrDefaultAsync(c => c.Id == userId);
+            context.Set<ApplicationUser>().Remove(user!);
             await context.SaveChangesAsync();
             return true;
         }
@@ -77,6 +77,11 @@ namespace Persistance.Repositories
         public async Task<bool> ExistsAsync(int id)
         {
             return await context.Set<Client>().AnyAsync(c => c.Id == id);
+        }
+
+        public async Task<bool> ExistsByUserIdAsync(string userId)
+        {
+            return await context.Set<Client>().AnyAsync(c => c.UserId == userId);
         }
 
         public async Task<bool> ExistsAsync(string phoneNumber)

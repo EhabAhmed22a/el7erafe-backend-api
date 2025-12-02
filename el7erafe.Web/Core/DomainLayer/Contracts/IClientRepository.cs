@@ -10,8 +10,9 @@ namespace DomainLayer.Contracts
         Task<IEnumerable<Client>?> GetAllAsync();
         Task<IEnumerable<Client>?> GetPagedAsync(int pageNumber, int pageSize);
         Task<int> UpdateAsync(Client client);
-        Task<bool> DeleteAsync(int id);
+        Task<bool> DeleteAsync(string userId);
         Task<bool> ExistsAsync(int id);
+        Task<bool> ExistsByUserIdAsync(string userId);
         Task<bool> ExistsAsync(string phoneNumber);
         Task<bool> EmailExistsAsync(string email);
     }
