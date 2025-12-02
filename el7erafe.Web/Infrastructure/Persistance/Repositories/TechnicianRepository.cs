@@ -66,12 +66,12 @@ namespace Persistance.Repositories
             return await _context.SaveChangesAsync();
         }
 
-        public async Task<int> DeleteAsync(int id)
+        public async Task<int> DeleteAsync(string id)
         {
-            var technician = await _context.Set<Technician>().FindAsync(id);
+            var technician = await _context.Set<ApplicationUser>().FindAsync(id);
             if (technician is not null)
             {
-                _context.Set<Technician>().Remove(technician);
+                _context.Set<ApplicationUser>().Remove(technician);
                 return await _context.SaveChangesAsync();
             }
             return 0;

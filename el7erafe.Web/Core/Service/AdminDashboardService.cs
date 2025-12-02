@@ -320,7 +320,7 @@ namespace Service
                 logger.LogInformation("[SERVICE] Mapping {TechnicianCount} Technicians to DTOs", technicians.Count());
                 var technicianDTOs = technicians.Select(technician => new TechnicianDTO()
                 {
-                    id = technician.Id,
+                    id = technician.UserId,
                     name = technician.Name,
                     phone = technician.User?.PhoneNumber,
                     governorate = technician.City.Governorate.NameAr,
@@ -346,6 +346,19 @@ namespace Service
                         pageNumber, pageSize);
                 throw new TechnicalException();
             }
+        }
+
+        public async Task DeleteTechnicianAsync(string userId)
+        {
+            logger.LogInformation("[SERVICE] DeleteTechnicianAsync called for user ID: {UserId}", userId);
+            logger.LogInformation("[SERVICE] Attempting to delete technician from repository for user ID: {UserId}", userId);
+            var technicianDeleted = await technicianRepository.DeleteAsync(userId);
+            if (technicianDeleted == 0)
+            {
+                logger.LogWarning("[SERVICE] Technician deletion failed - User not found: {UserId}", userId);
+                throw new UserNotFoundException("المستخدم غير موجود");
+            }
+            logger.LogInformation("[SERVICE] Technician successfully deleted for user ID: {UserId}", userId);
         }
     }
 }
