@@ -13,6 +13,6 @@ namespace ServiceAbstraction
         Task DeleteServiceAsync(int id);
         Task DeleteClientAsync(string userId);
         Task UpdateServiceAsync(int id, ServiceUpdateDTO serviceUpdateDTO);
-        Task<TechnicianListDTO> GetTechniciansAsync(int? pageNumber);
+        Task<TechnicianListDTO> GetTechniciansAsync(int? pageNumber, int? pageSize);
     }
 }

@@ -13,7 +13,6 @@ namespace Service
         ILogger<AdminDashboardService> logger,
         ITechnicianRepository technicianRepository) : IAdminDashboardService
     {
-        private const int DefaultPageSize = 5;
         public async Task<ClientListDTO> GetClientsAsync(int? pageNumber, int? pageSize)
         {
             pageNumber = (pageNumber.HasValue && pageNumber.Value < 1) ? 1 : pageNumber;
@@ -289,17 +288,19 @@ namespace Service
             logger.LogInformation("[SERVICE] Service updated successfully for ID: {ServiceId}", id);
         }
 
-        async Task<TechnicianListDTO> IAdminDashboardService.GetTechniciansAsync(int? pageNumber)
+        async Task<TechnicianListDTO> IAdminDashboardService.GetTechniciansAsync(int? pageNumber, int? pageSize)
         {
             pageNumber = (pageNumber.HasValue && pageNumber.Value < 1) ? 1 : pageNumber;
-            logger.LogInformation("[SERVICE] GetTechincianss method started. PageNumber: {PageNumber}",
-                pageNumber);
+            pageSize = (pageSize.HasValue && pageSize.Value < 1) ? 10 : pageSize;
+            logger.LogInformation("[SERVICE] GetTechincianss method started. PageNumber: {PageNumber}, PageSize: {PageSize}",
+                pageNumber, pageSize);
             try
             {
                 logger.LogInformation("[SERVICE] Retrieving Technicians from repository. Using pagination: {UsePagination}",
-                    pageNumber.HasValue);
+                    pageNumber.HasValue && pageSize.HasValue);
+
                 IEnumerable<Technician>? technicians = pageNumber.HasValue
-                    ? await technicianRepository.GetPagedAsync(pageNumber.Value, DefaultPageSize)
+                    ? await technicianRepository.GetPagedAsync(pageNumber.Value, pageSize.Value)
                     : await technicianRepository.GetAllAsync();
 
                 logger.LogInformation("[SERVICE] Successfully retrieved Technicians from repository. Technician count: {TechnicianCount}",
@@ -307,8 +308,8 @@ namespace Service
 
                 if (technicians is null || !technicians.Any())
                 {
-                    logger.LogWarning("[SERVICE] No Technicians found in the database. PageNumber: {PageNumber}",
-                        pageNumber);
+                    logger.LogWarning("[SERVICE] No Technicians found in the database. PageNumber: {PageNumber}, PageSize: {pageSize}",
+                        pageNumber, pageSize);
                     return new TechnicianListDTO()
                     {
                         Count = 0,
@@ -341,8 +342,8 @@ namespace Service
             }
             catch (Exception)
             {
-                logger.LogError("[SERVICE] Error occurred while retrieving technicians. PageNumber: {PageNumber}",
-                        pageNumber);
+                logger.LogError("[SERVICE] Error occurred while retrieving technicians. PageNumber: {PageNumber}, PageSize: {PageSize}",
+                        pageNumber, pageSize);
                 throw new TechnicalException();
             }
         }
