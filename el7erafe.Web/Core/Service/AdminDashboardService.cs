@@ -53,7 +53,8 @@ namespace Service
                     Email = client.User?.Email,
                     EmailConfirmed = client.User?.EmailConfirmed ?? false,
                     PhoneNumber = client.User?.PhoneNumber,
-                    CreatedAt = client.User?.CreatedAt
+                    CreatedAt = client.User?.CreatedAt,
+                    IsBlocked = blockedUserRepository.IsBlockedAsync(client.User?.Id!).Result
                 }).ToList();
 
                 logger.LogInformation("[SERVICE] Successfully mapped {ClientCount} clients to DTOs. Returning results",
