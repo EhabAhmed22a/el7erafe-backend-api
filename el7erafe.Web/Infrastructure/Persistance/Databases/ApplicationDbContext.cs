@@ -14,6 +14,7 @@ namespace Persistance.Databases
         public DbSet<UserToken> UserTokens { get; set; } = default!;
         public DbSet<Rejection> Rejections { get; set; } = default!;
         public DbSet<Admin> Admins { get; set; } = default!;
+        public DbSet<BlockedUser> BlockedUsers { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -21,6 +22,7 @@ namespace Persistance.Databases
             builder.Entity<ApplicationUser>().ToTable("Users");
             builder.Entity<Technician>().ToTable("Technicians");
             builder.Entity<Client>().ToTable("Clients");
+            builder.Entity<BlockedUser>().ToTable("BlockedUsers");
             builder.Entity<IdentityRole>().ToTable("Roles");
             builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles");
             builder.Entity<Governorate>().ToTable("Governorates");
