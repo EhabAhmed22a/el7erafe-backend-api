@@ -41,6 +41,7 @@ namespace Persistance
             services.AddScoped<IUserTokenRepository, UserTokenRepository>();
             services.AddScoped<IAdminRepository, AdminRepository>();
             services.AddScoped<ITechnicianServicesRepository, TechnicianServicesRepository>();
+            services.AddScoped<IRejectionCommentsRepository, RejectionCommentsRepository>();
 
             return services;
         }

@@ -15,6 +15,7 @@ namespace Persistance.Databases
         public DbSet<Rejection> Rejections { get; set; } = default!;
         public DbSet<Admin> Admins { get; set; } = default!;
         public DbSet<BlockedUser> BlockedUsers { get; set; } = default!;
+        public DbSet<RejectionComment> rejectionComments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -29,6 +30,7 @@ namespace Persistance.Databases
             builder.Entity<TechnicianService>().ToTable("TechnicianServices");
             builder.Entity<City>().ToTable("Cities");
             builder.Entity<Admin>().ToTable("Admins");
+            builder.Entity<RejectionComment>().ToTable("RejectionComments");
             builder.Ignore<IdentityUserClaim<string>>();
             builder.Ignore<IdentityUserToken<string>>();
             builder.Ignore<IdentityUserLogin<string>>();
