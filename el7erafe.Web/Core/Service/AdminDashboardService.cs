@@ -288,7 +288,7 @@ namespace Service
             logger.LogInformation("[SERVICE] Service updated successfully for ID: {ServiceId}", id);
         }
 
-        async Task<TechnicianListDTO> IAdminDashboardService.GetTechniciansAsync(int? pageNumber, int? pageSize)
+        public async Task<TechnicianListDTO> GetTechniciansAsync(int? pageNumber, int? pageSize)
         {
             pageNumber = (pageNumber.HasValue && pageNumber.Value < 1) ? 1 : pageNumber;
             pageSize = (pageSize.HasValue && pageSize.Value < 1) ? 10 : pageSize;
