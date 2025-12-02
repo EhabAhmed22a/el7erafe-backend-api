@@ -15,7 +15,7 @@ namespace Persistance.Databases
         public DbSet<Rejection> Rejections { get; set; } = default!;
         public DbSet<Admin> Admins { get; set; } = default!;
         public DbSet<BlockedUser> BlockedUsers { get; set; } = default!;
-        public DbSet<RejectionComment> rejection_Comments { get; set; }
+        public DbSet<RejectionComment> rejectionComments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

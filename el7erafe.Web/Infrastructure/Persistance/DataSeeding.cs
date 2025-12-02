@@ -63,6 +63,14 @@ namespace Persistance
                         await userManager.AddToRoleAsync(user, "Admin");
                     }
                 }
+                if (!await _dbContext.rejection_Comments.AnyAsync())
+                {
+                    _dbContext.rejection_Comments.AddRange(
+                        new rejection_Comment { Comment = "المعلومات غير واضحة" },
+                        new rejection_Comment { Comment = "الصور غير واضحة" },
+                        new rejection_Comment { Comment = "الموقع غير صحيح" }
+                    );
+                }
                 // Save any role changes
                 await _dbContext.SaveChangesAsync();
 
