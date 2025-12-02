@@ -178,5 +178,12 @@ namespace Presentation.Controllers
 
             return Ok();
         }
+
+        [HttpPatch("admin/clients/{clientId:guid}/status")]
+        public async Task<ActionResult> BlockUnblockClientAsync(BlockUnblockDTO blockUnblockDTO, Guid clientId)
+        {
+            await adminDashboardService.BlockUnblockClientAsync(blockUnblockDTO, clientId.ToString());
+            return Ok();
+        }
     }
 }

@@ -1,7 +1,7 @@
 ﻿
 namespace DomainLayer.Exceptions
 {
-    public sealed class BadRequestException(List<string> errors) : Exception("البيانات المدخلة غير صالحة")
+    public sealed class BadRequestException(List<string> errors) : Exception
     {
         public List<string> Errors { get; } = errors;
     }
