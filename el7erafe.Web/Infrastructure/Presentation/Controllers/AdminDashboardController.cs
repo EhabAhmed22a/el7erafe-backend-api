@@ -184,6 +184,8 @@ namespace Presentation.Controllers
         {
             await adminDashboardService.BlockUnblockClientAsync(blockUnblockDTO, clientId.ToString());
             return Ok();
+        }
+
         [HttpGet("technicians")]
         public async Task<ActionResult> GetTechniciansAsync([FromQuery] int? pageNumber, [FromQuery] int? pageSize)
         {
