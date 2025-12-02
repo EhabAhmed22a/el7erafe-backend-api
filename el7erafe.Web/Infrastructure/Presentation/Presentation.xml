@@ -70,6 +70,20 @@
             <response code="403">User is not authorized as an administrator</response>
             <response code="404">Service with the specified ID does not exist</response>
         </member>
+        <member name="M:Presentation.Controllers.AdminDashboardController.DeleteClientAsync(System.String)">
+            <summary>
+            Deletes a client from the system by user ID.
+            </summary>
+            <remarks>
+            This endpoint allows administrators to permanently delete client accounts.
+            Requires admin authorization to access.
+            </remarks>
+            <param name="userId">The unique identifier of the user to delete</param>
+            <returns>Returns success message upon successful deletion</returns>
+            <response code="200">Returns when client is successfully deleted</response>
+            <response code="403">Returns when unauthorized non-admin user attempts deletion</response>
+            <response code="404">Returns when the specified user ID does not exist</response>
+        </member>
         <member name="M:Presentation.Controllers.AdminLoginController.AdminLoginAsync(Shared.DataTransferObject.AdminDTOs.LoginDTO.AdminLoginDTO)">
             <summary>
             Authenticates an admin user and returns JWT token.
