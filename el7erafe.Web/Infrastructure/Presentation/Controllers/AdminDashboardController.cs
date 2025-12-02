@@ -199,7 +199,15 @@ namespace Presentation.Controllers
 
             logger.LogInformation("[API] Technician successfully deleted. UserId: {UserId}", id);
 
-            return Ok(new { status = "success",message = "Technician has been deleted successfully." });
+            return Ok(new { status = "success", message = "Technician has been deleted successfully." });
+        }
+
+        [HttpGet("admin/rejection-reason")]
+        public async Task<ActionResult> GetRejectionComments()
+        {
+            logger.LogInformation("[API] GetRejectionComments endpoint called.");
+            var response = await adminDashboardService.GetRejectionComments();
+            return Ok(response);
         }
     }
 }
