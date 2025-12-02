@@ -4,6 +4,7 @@ using DomainLayer.Models.IdentityModule;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
 using Shared.DataTransferObject.AdminDTOs.Dashboard;
+using Shared.DataTransferObject.LookupDTOs;
 
 namespace Service
 {
@@ -11,7 +12,8 @@ namespace Service
         ITechnicianFileService fileService,
         IBlobStorageRepository blobStorageRepository,
         ILogger<AdminDashboardService> logger,
-        ITechnicianRepository technicianRepository) : IAdminDashboardService
+        ITechnicianRepository technicianRepository,
+        IRejectionCommentsRepository rejectionCommentsRepository) : IAdminDashboardService
     {
         public async Task<ClientListDTO> GetClientsAsync(int? pageNumber, int? pageSize)
         {
@@ -359,6 +361,28 @@ namespace Service
                 throw new UserNotFoundException("المستخدم غير موجود");
             }
             logger.LogInformation("[SERVICE] Technician successfully deleted for user ID: {UserId}", userId);
+        }
+
+        public async Task<RejectionCommentsResponseDTO> GetRejectionComments()
+        {
+            try
+            {
+                logger.LogInformation("[SERVICE] Retrieving all services");
+                var rejectionComments = await rejectionCommentsRepository.GetAllRejectionCommentsAsync();
+                if (rejectionComments == null || !rejectionComments.Any())
+                {
+                    logger.LogWarning("[SERVICE] No services found");
+                    return new RejectionCommentsResponseDTO { data = new List<string>() };
+                }
+
+                var serviceNames = rejectionComments.Select(s => s.Reason).ToList();
+                return new RejectionCommentsResponseDTO { data = serviceNames };
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "[SERVICE] Error retrieving all services");
+                throw;
+            }
         }
     }
 }

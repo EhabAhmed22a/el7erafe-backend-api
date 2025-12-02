@@ -63,6 +63,15 @@ namespace Persistance
                         await userManager.AddToRoleAsync(user, "Admin");
                     }
                 }
+                if (!await _dbContext.rejectionComments.AnyAsync())
+                {
+                    _dbContext.rejectionComments.AddRange(
+                        new RejectionComment { Reason = "صورة البطاقة الأمامية غير واضحة" },
+                        new RejectionComment { Reason = "صورة البطاقة الخلفية غير واضحة" },
+                        new RejectionComment { Reason = "صحيفة الحالة الجنائية منتهية الصلاحية" },
+                        new RejectionComment { Reason = "البيانات الشخصية غير مطابقة للمستندات" }
+                    );
+                }
                 // Save any role changes
                 await _dbContext.SaveChangesAsync();
 

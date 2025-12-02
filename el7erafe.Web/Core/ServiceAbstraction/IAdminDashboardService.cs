@@ -15,5 +15,6 @@ namespace ServiceAbstraction
         Task UpdateServiceAsync(int id, ServiceUpdateDTO serviceUpdateDTO);
         Task<TechnicianListDTO> GetTechniciansAsync(int? pageNumber, int? pageSize);
         Task DeleteTechnicianAsync(string userId);
+        Task<RejectionCommentsResponseDTO> GetRejectionComments();
     }
 }
