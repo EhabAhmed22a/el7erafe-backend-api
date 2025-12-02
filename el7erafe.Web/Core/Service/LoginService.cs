@@ -21,6 +21,7 @@ namespace Service
         IConfiguration configuration,
         IClientRepository clientRepository,
         ITechnicianRepository technicianRepository,
+        IBlockedUserRepository blockedUserRepository,
         OtpHelper otpHelper,
         ILogger<LoginService> logger,
         IUserTokenRepository userTokenRepository) : ILoginService
@@ -57,6 +58,17 @@ namespace Service
             if (userToken is not null)
             {
                 throw new AlreadyLoggedInException();
+            }
+
+            if (await blockedUserRepository.IsBlockedAsync(user.Id))
+            {
+                var blockedAudit = await blockedUserRepository.GetByUserIdAsync(user.Id);
+                var suspensionTime = (blockedAudit?.EndDate!.Value.Date - DateTime.UtcNow.Date)!.Value.Days;
+                throw new BlockedUserException( $"تم حظرك مؤقتا. متبقي {suspensionTime} يوم/أيام");
+            }
+            else if (await blockedUserRepository.IsPermBlockedAsync(user.Id))
+            {
+                throw new BlockedUserException( "تم حظرك دائما");
             }
 
             logger.LogInformation("[SERVICE] Password verification successful for user: {UserId}", user.Id);

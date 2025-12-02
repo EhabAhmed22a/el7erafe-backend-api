@@ -32,7 +32,7 @@ namespace el7erafe.Web.CustomMiddleWares
                             success = false,
                             message = "انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى"
                         });
-                        return; 
+                        return;
                     }
                 }
 
@@ -50,25 +50,27 @@ namespace el7erafe.Web.CustomMiddleWares
         {
             ErrorToReturn Response = new ErrorToReturn();
 
-                httpContext.Response.StatusCode = ex switch
-                {
-                    NotFoundException => StatusCodes.Status404NotFound,
-                    UnauthorizedException => StatusCodes.Status401Unauthorized,
-                    BadRequestException badRequestException => GetBadRequestErrors(badRequestException, Response),
-                    { } when ex is AlreadyExistException or EmailAlreadyVerified or  TechnicianAcceptedOrPendingException or AlreadyLoggedInException
-                    or ServiceAlreadyRegisteredException => StatusCodes.Status409Conflict,
-                    InvalidOtpException => StatusCodes.Status400BadRequest,
-                    { } when ex is ForgotPasswordDisallowed or ResetTokenExpiredException or ForbiddenAccessException => StatusCodes.Status403Forbidden,
-                    UnverifiedClientLogin unverifiedClientLogin => GetEmail(unverifiedClientLogin, Response),
-                    RejectedTechnician rejectedTechnician => CreateRejectionResponse(rejectedTechnician, Response),
-                    PendingTechnicianRequest pendingTechnicianRequest => GetTempToken(pendingTechnicianRequest, Response),
-                    OtpAlreadySent => StatusCodes.Status429TooManyRequests,
-                    BlockedTechnician => 462,
-                    TechnicalException => StatusCodes.Status500InternalServerError,
-                    _ => StatusCodes.Status500InternalServerError
-                };
+            httpContext.Response.StatusCode = ex switch
+            {
+                NotFoundException => StatusCodes.Status404NotFound,
+                UnauthorizedException => StatusCodes.Status401Unauthorized,
+                BadRequestException badRequestException => GetBadRequestErrors(badRequestException, Response),
+                { } when ex is AlreadyExistException or EmailAlreadyVerified or TechnicianAcceptedOrPendingException or AlreadyLoggedInException
+                or ServiceAlreadyRegisteredException => StatusCodes.Status409Conflict,
+                InvalidOtpException => StatusCodes.Status400BadRequest,
+                { } when ex is ForgotPasswordDisallowed or ResetTokenExpiredException or ForbiddenAccessException => StatusCodes.Status403Forbidden,
+                UnverifiedClientLogin unverifiedClientLogin => GetEmail(unverifiedClientLogin, Response),
+                RejectedTechnician rejectedTechnician => CreateRejectionResponse(rejectedTechnician, Response),
+                PendingTechnicianRequest pendingTechnicianRequest => GetTempToken(pendingTechnicianRequest, Response),
+                OtpAlreadySent => StatusCodes.Status429TooManyRequests,
+                BlockedTechnician => 462,
+                BlockedUserException => 470,
+                TechnicalException => StatusCodes.Status500InternalServerError,
+                _ => StatusCodes.Status500InternalServerError
+            };
 
-                Response.StatusCode = httpContext.Response.StatusCode;
+            Response.StatusCode = httpContext.Response.StatusCode;
+            if (string.IsNullOrEmpty(Response.ErrorMessage))
                 Response.ErrorMessage = ex.Message;
 
             await httpContext.Response.WriteAsJsonAsync(Response);
@@ -105,6 +107,7 @@ namespace el7erafe.Web.CustomMiddleWares
 
         private static int GetBadRequestErrors(BadRequestException badRequestException, ErrorToReturn response)
         {
+            response.ErrorMessage = string.Join("; ", badRequestException.Errors);
             return StatusCodes.Status400BadRequest;
         }
 
