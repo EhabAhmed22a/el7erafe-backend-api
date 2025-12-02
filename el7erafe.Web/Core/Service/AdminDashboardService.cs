@@ -56,7 +56,8 @@ namespace Service
                     Email = client.User?.Email,
                     EmailConfirmed = client.User?.EmailConfirmed ?? false,
                     PhoneNumber = client.User?.PhoneNumber,
-                    CreatedAt = client.User?.CreatedAt
+                    CreatedAt = client.User?.CreatedAt,
+                    IsBlocked = blockedUserRepository.IsBlockedAsync(client.User?.Id!).Result
                 }).ToList();
 
                 logger.LogInformation("[SERVICE] Successfully mapped {ClientCount} clients to DTOs. Returning results",
@@ -362,6 +363,9 @@ namespace Service
                     throw new BadRequestException(new List<string> { "المستخدم غير محظور بالفعل" });
 
                 await blockedUserRepository.RemoveAsync(userId);
+            }
+        }
+
         public async Task<TechnicianListDTO> GetTechniciansAsync(int? pageNumber, int? pageSize)
         {
             pageNumber = (pageNumber.HasValue && pageNumber.Value < 1) ? 1 : pageNumber;
