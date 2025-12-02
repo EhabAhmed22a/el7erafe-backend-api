@@ -11,5 +11,6 @@ namespace DomainLayer.Models.IdentityModule
         public Admin? Admin { get; set; }
         public UserTypeEnum UserType { get; set; }
         public virtual UserToken? UserToken { get; set; }
+        public BlockedUser? BlockedUser { get; set; }
     }
 }
