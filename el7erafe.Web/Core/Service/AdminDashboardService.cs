@@ -10,8 +10,10 @@ namespace Service
     public class AdminDashboardService(IClientRepository clientRepository, ITechnicianServicesRepository technicianServicesRepository,
         ITechnicianFileService fileService,
         IBlobStorageRepository blobStorageRepository,
-        ILogger<AdminDashboardService> logger) : IAdminDashboardService
+        ILogger<AdminDashboardService> logger,
+        ITechnicianRepository technicianRepository) : IAdminDashboardService
     {
+        private const int DefaultPageSize = 5;
         public async Task<ClientListDTO> GetClientsAsync(int? pageNumber, int? pageSize)
         {
             pageNumber = (pageNumber.HasValue && pageNumber.Value < 1) ? 1 : pageNumber;
@@ -285,6 +287,64 @@ namespace Service
             }
 
             logger.LogInformation("[SERVICE] Service updated successfully for ID: {ServiceId}", id);
+        }
+
+        async Task<TechnicianListDTO> IAdminDashboardService.GetTechniciansAsync(int? pageNumber)
+        {
+            pageNumber = (pageNumber.HasValue && pageNumber.Value < 1) ? 1 : pageNumber;
+            logger.LogInformation("[SERVICE] GetTechincianss method started. PageNumber: {PageNumber}",
+                pageNumber);
+            try
+            {
+                logger.LogInformation("[SERVICE] Retrieving Technicians from repository. Using pagination: {UsePagination}",
+                    pageNumber.HasValue);
+                IEnumerable<Technician>? technicians = pageNumber.HasValue
+                    ? await technicianRepository.GetPagedAsync(pageNumber.Value, DefaultPageSize)
+                    : await technicianRepository.GetAllAsync();
+
+                logger.LogInformation("[SERVICE] Successfully retrieved Technicians from repository. Technician count: {TechnicianCount}",
+                    technicians?.Count() ?? 0);
+
+                if (technicians is null || !technicians.Any())
+                {
+                    logger.LogWarning("[SERVICE] No Technicians found in the database. PageNumber: {PageNumber}",
+                        pageNumber);
+                    return new TechnicianListDTO()
+                    {
+                        Count = 0,
+                        Data = Enumerable.Empty<TechnicianDTO>()
+                    };
+                }
+
+                logger.LogInformation("[SERVICE] Mapping {TechnicianCount} Technicians to DTOs", technicians.Count());
+                var technicianDTOs = technicians.Select(technician => new TechnicianDTO()
+                {
+                    id = technician.Id,
+                    name = technician.Name,
+                    phone = technician.User?.PhoneNumber,
+                    governorate = technician.City.Governorate.NameAr,
+                    city = technician.City.NameAr,
+                    faceIdImage = technician.NationalIdFrontURL,
+                    backIdImage = technician.NationalIdBackURL,
+                    criminalRecordImage = technician.CriminalHistoryURL,
+                    serviceType = technician.Service.NameAr
+                }).ToList();
+
+                logger.LogInformation("[SERVICE] Successfully mapped {TechnicianCount} Technicians to DTOs. Returning results",
+                    technicianDTOs.Count);
+
+                return new TechnicianListDTO()
+                {
+                    Count = technicianDTOs.Count,
+                    Data = technicianDTOs
+                };
+            }
+            catch (Exception)
+            {
+                logger.LogError("[SERVICE] Error occurred while retrieving technicians. PageNumber: {PageNumber}",
+                        pageNumber);
+                throw new TechnicalException();
+            }
         }
     }
 }
