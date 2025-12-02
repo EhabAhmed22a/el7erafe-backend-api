@@ -46,6 +46,9 @@ namespace Persistance.Repositories
         {
             return await _context.Set<Technician>()
                 .Include(t => t.User)
+                .Include(c => c.Service)
+                .Include(c => c.City)
+                    .ThenInclude(city => city.Governorate)
                 .ToListAsync();
         }
 
@@ -63,12 +66,12 @@ namespace Persistance.Repositories
             return await _context.SaveChangesAsync();
         }
 
-        public async Task<int> DeleteAsync(int id)
+        public async Task<int> DeleteAsync(string id)
         {
-            var technician = await _context.Set<Technician>().FindAsync(id);
+            var technician = await _context.Set<ApplicationUser>().FindAsync(id);
             if (technician is not null)
             {
-                _context.Set<Technician>().Remove(technician);
+                _context.Set<ApplicationUser>().Remove(technician);
                 return await _context.SaveChangesAsync();
             }
             return 0;
@@ -109,6 +112,17 @@ namespace Persistance.Repositories
                 .FirstOrDefaultAsync(s => s.NameAr == nameAr);
         }
 
-
+        public async Task<IEnumerable<Technician>?> GetPagedAsync(int pageNumber, int pageSize)
+        {
+            return await context.Set<Technician>()
+                .Include(c => c.User)
+                .Include(c => c.Service)
+                .Include(c => c.City)
+                    .ThenInclude(city => city.Governorate)
+                .OrderBy(c => c.User.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
     }
 }

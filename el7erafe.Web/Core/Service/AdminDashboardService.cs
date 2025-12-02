@@ -4,6 +4,7 @@ using DomainLayer.Models.IdentityModule;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
 using Shared.DataTransferObject.AdminDTOs.Dashboard;
+using Shared.DataTransferObject.LookupDTOs;
 
 namespace Service
 {
@@ -11,6 +12,8 @@ namespace Service
         ITechnicianFileService fileService,
         IBlobStorageRepository blobStorageRepository,
         IBlockedUserRepository blockedUserRepository,
+        ITechnicianRepository technicianRepository,
+        IRejectionCommentsRepository rejectionCommentsRepository,
         ILogger<AdminDashboardService> logger) : IAdminDashboardService
     {
         public async Task<ClientListDTO> GetClientsAsync(int? pageNumber, int? pageSize)
@@ -359,6 +362,98 @@ namespace Service
                     throw new BadRequestException(new List<string> { "المستخدم غير محظور بالفعل" });
 
                 await blockedUserRepository.RemoveAsync(userId);
+        public async Task<TechnicianListDTO> GetTechniciansAsync(int? pageNumber, int? pageSize)
+        {
+            pageNumber = (pageNumber.HasValue && pageNumber.Value < 1) ? 1 : pageNumber;
+            pageSize = (pageSize.HasValue && pageSize.Value < 1) ? 10 : pageSize;
+            logger.LogInformation("[SERVICE] GetTechincianss method started. PageNumber: {PageNumber}, PageSize: {PageSize}",
+                pageNumber, pageSize);
+            try
+            {
+                logger.LogInformation("[SERVICE] Retrieving Technicians from repository. Using pagination: {UsePagination}",
+                    pageNumber.HasValue && pageSize.HasValue);
+
+                IEnumerable<Technician>? technicians = pageNumber.HasValue
+                    ? await technicianRepository.GetPagedAsync(pageNumber.Value, pageSize.Value)
+                    : await technicianRepository.GetAllAsync();
+
+                logger.LogInformation("[SERVICE] Successfully retrieved Technicians from repository. Technician count: {TechnicianCount}",
+                    technicians?.Count() ?? 0);
+
+                if (technicians is null || !technicians.Any())
+                {
+                    logger.LogWarning("[SERVICE] No Technicians found in the database. PageNumber: {PageNumber}, PageSize: {pageSize}",
+                        pageNumber, pageSize);
+                    return new TechnicianListDTO()
+                    {
+                        Count = 0,
+                        Data = Enumerable.Empty<TechnicianDTO>()
+                    };
+                }
+
+                logger.LogInformation("[SERVICE] Mapping {TechnicianCount} Technicians to DTOs", technicians.Count());
+                var technicianDTOs = technicians.Select(technician => new TechnicianDTO()
+                {
+                    id = technician.UserId,
+                    name = technician.Name,
+                    phone = technician.User?.PhoneNumber,
+                    governorate = technician.City.Governorate.NameAr,
+                    city = technician.City.NameAr,
+                    faceIdImage = technician.NationalIdFrontURL,
+                    backIdImage = technician.NationalIdBackURL,
+                    criminalRecordImage = technician.CriminalHistoryURL,
+                    serviceType = technician.Service.NameAr
+                }).ToList();
+
+                logger.LogInformation("[SERVICE] Successfully mapped {TechnicianCount} Technicians to DTOs. Returning results",
+                    technicianDTOs.Count);
+
+                return new TechnicianListDTO()
+                {
+                    Count = technicianDTOs.Count,
+                    Data = technicianDTOs
+                };
+            }
+            catch (Exception)
+            {
+                logger.LogError("[SERVICE] Error occurred while retrieving technicians. PageNumber: {PageNumber}, PageSize: {PageSize}",
+                        pageNumber, pageSize);
+                throw new TechnicalException();
+            }
+        }
+
+        public async Task DeleteTechnicianAsync(string userId)
+        {
+            logger.LogInformation("[SERVICE] DeleteTechnicianAsync called for user ID: {UserId}", userId);
+            logger.LogInformation("[SERVICE] Attempting to delete technician from repository for user ID: {UserId}", userId);
+            var technicianDeleted = await technicianRepository.DeleteAsync(userId);
+            if (technicianDeleted == 0)
+            {
+                logger.LogWarning("[SERVICE] Technician deletion failed - User not found: {UserId}", userId);
+                throw new UserNotFoundException("المستخدم غير موجود");
+            }
+            logger.LogInformation("[SERVICE] Technician successfully deleted for user ID: {UserId}", userId);
+        }
+
+        public async Task<RejectionCommentsResponseDTO> GetRejectionComments()
+        {
+            try
+            {
+                logger.LogInformation("[SERVICE] Retrieving all services");
+                var rejectionComments = await rejectionCommentsRepository.GetAllRejectionCommentsAsync();
+                if (rejectionComments == null || !rejectionComments.Any())
+                {
+                    logger.LogWarning("[SERVICE] No services found");
+                    return new RejectionCommentsResponseDTO { data = new List<string>() };
+                }
+
+                var serviceNames = rejectionComments.Select(s => s.Reason).ToList();
+                return new RejectionCommentsResponseDTO { data = serviceNames };
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "[SERVICE] Error retrieving all services");
+                throw;
             }
         }
     }

@@ -25,23 +25,23 @@ namespace Shared.Validations
             {
                 if (file.Length == 0)
                 {
-                    return new ValidationResult("File cannot be empty.");
+                    return new ValidationResult("الملف لا يمكن أن يكون فارغًا.");
                 }
 
                 if (file.Length > _maxFileSize)
                 {
-                    return new ValidationResult($"File size cannot exceed {_maxFileSize / 1024 / 1024}MB.");
+                    return new ValidationResult($"حجم الملف يجب ألا يتجاوز {_maxFileSize / 1024 / 1024} ميجابايت.");
                 }
 
                 var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
                 if (string.IsNullOrEmpty(fileExtension) || !_allowedExtensions.Contains(fileExtension))
                 {
-                    return new ValidationResult($"Only {string.Join(", ", _allowedExtensions)} files are allowed.");
+                    return new ValidationResult($"يُسمح فقط بملفات من الأنواع التالية: {string.Join(", ", _allowedExtensions)}");
                 }
             }
             else
             {
-                return new ValidationResult("Invalid file type.");
+                return new ValidationResult("نوع الملف غير صالح.");
             }
             
             return ValidationResult.Success; 

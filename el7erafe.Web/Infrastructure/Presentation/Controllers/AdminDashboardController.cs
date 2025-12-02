@@ -184,6 +184,35 @@ namespace Presentation.Controllers
         {
             await adminDashboardService.BlockUnblockClientAsync(blockUnblockDTO, clientId.ToString());
             return Ok();
+        [HttpGet("technicians")]
+        public async Task<ActionResult> GetTechniciansAsync([FromQuery] int? pageNumber, [FromQuery] int? pageSize)
+        {
+            logger.LogInformation("[API] GetTechnicians endpoint called. PageNumber: {PageNumber}",
+                pageNumber);
+
+            return Ok(await adminDashboardService.GetTechniciansAsync(pageNumber, pageSize));
+        }
+
+        [HttpDelete("admin/technicians")]
+        public async Task<ActionResult> DeleteTechnicianAsync([FromQuery] string id)
+        {
+            logger.LogInformation("[API] DeleteTechnician endpoint called for UserId: {UserId}", id);
+
+            logger.LogInformation("[API] Calling adminDashboardService.DeleteTechnicianAsync for UserId: {UserId}", id);
+
+            await adminDashboardService.DeleteTechnicianAsync(id);
+
+            logger.LogInformation("[API] Technician successfully deleted. UserId: {UserId}", id);
+
+            return Ok(new { status = "success", message = "Technician has been deleted successfully." });
+        }
+
+        [HttpGet("admin/rejection-reason")]
+        public async Task<ActionResult> GetRejectionComments()
+        {
+            logger.LogInformation("[API] GetRejectionComments endpoint called.");
+            var response = await adminDashboardService.GetRejectionComments();
+            return Ok(response);
         }
     }
 }

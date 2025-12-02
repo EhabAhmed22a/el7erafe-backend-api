@@ -12,13 +12,14 @@ namespace DomainLayer.Contracts
         Task<IEnumerable<Technician>?> GetAllAsync(); //Get all technicians
         Task<IEnumerable<Technician>?> GetAllByStatusAsync(TechnicianStatus status); //Get all technicians by status
         Task<int> UpdateAsync(Technician technician); //Update technician
-        Task<int> DeleteAsync(int id); //Delete technician
+        Task<int> DeleteAsync(string id); //Delete technician
         Task<bool> ExistsAsync(int id); //Check if technician exists by id
         Task<bool> ExistsAsync(string phoneNumber); //Check if technician exists by phone number
         Task<IEnumerable<TechnicianService>?> GetAllServicesAsync(); //Get all services
         Task<Governorate?> GetGovernorateByNameAsync(string nameAr);
         Task<City?> GetCityByNameAsync(string nameAr, int governorateId);
         Task<TechnicianService?> GetServiceByNameAsync(string nameAr);
+        Task<IEnumerable<Technician>?> GetPagedAsync(int pageNumber, int pageSize);
 
     }
 }
