@@ -187,5 +187,19 @@ namespace Presentation.Controllers
 
             return Ok(await adminDashboardService.GetTechniciansAsync(pageNumber, pageSize));
         }
+
+        [HttpDelete("admin/technicians")]
+        public async Task<ActionResult> DeleteTechnicianAsync([FromQuery] string id)
+        {
+            logger.LogInformation("[API] DeleteTechnician endpoint called for UserId: {UserId}", id);
+
+            logger.LogInformation("[API] Calling adminDashboardService.DeleteTechnicianAsync for UserId: {UserId}", id);
+
+            await adminDashboardService.DeleteTechnicianAsync(id);
+
+            logger.LogInformation("[API] Technician successfully deleted. UserId: {UserId}", id);
+
+            return Ok(new { status = "success",message = "Technician has been deleted successfully." });
+        }
     }
 }

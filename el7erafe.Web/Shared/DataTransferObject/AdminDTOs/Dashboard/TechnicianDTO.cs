@@ -3,7 +3,7 @@ namespace Shared.DataTransferObject.AdminDTOs.Dashboard
 {
     public class TechnicianDTO
     {
-        public int id { get; set; }
+        public string id { get; set; } = default!;
         public string name { get; set; } = default!;
         public string phone { get; set; } = default!;
         public string governorate { get; set; } = default!;
