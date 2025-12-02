@@ -1,4 +1,5 @@
 ﻿
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -86,7 +87,7 @@ namespace Presentation.Controllers
         {
             logger.LogInformation("[API] CreateService endpoint called");
 
-            logger.LogInformation("[API] Service creation request - Name: {ServiceName}, Description: {Description}, Category: {CategoryId}",
+            logger.LogInformation("[API] Service creation request - Name: {ServiceName}",
                 serviceRegisterDTO.Name);
 
             logger.LogInformation("[API] Calling adminDashboardService.CreateServiceAsync");
@@ -116,6 +117,32 @@ namespace Presentation.Controllers
 
             logger.LogInformation("DELETE request completed successfully for service ID: {id}", id);
             return Ok();
+        }
+
+        /// <summary>
+        /// Deletes a client from the system by user ID.
+        /// </summary>
+        /// <remarks>
+        /// This endpoint allows administrators to permanently delete client accounts.
+        /// Requires admin authorization to access.
+        /// </remarks>
+        /// <param name="id">The unique identifier of the user to delete</param>
+        /// <returns>Returns success message upon successful deletion</returns>
+        /// <response code="200">Returns when client is successfully deleted</response>
+        /// <response code="403">Returns when unauthorized non-admin user attempts deletion</response>
+        /// <response code="404">Returns when the specified user ID does not exist</response>
+        [HttpDelete("admin/clients")]
+        public async Task<ActionResult> DeleteClientAsync([FromQuery] string id)
+        {
+            logger.LogInformation("[API] DeleteClient endpoint called for UserId: {UserId}", id);
+
+            logger.LogInformation("[API] Calling adminDashboardService.DeleteClientAsync for UserId: {UserId}", id);
+
+            await adminDashboardService.DeleteClientAsync(id);
+
+            logger.LogInformation("[API] Client successfully deleted. UserId: {UserId}", id);
+
+            return Ok(new { message = "تم مسح العميل بنجاح" });
         }
     }
 }

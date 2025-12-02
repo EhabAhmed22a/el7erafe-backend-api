@@ -11,5 +11,6 @@ namespace ServiceAbstraction
         Task<ServiceListDTO> GetServicesAsync(int? pageNumber, int? pageSize);
         Task<ServiceDTO> CreateServiceAsync(ServiceRegisterDTO serviceRegisterDTO);
         Task DeleteServiceAsync(int id);
+        Task DeleteClientAsync(string userId);
     }
 }
