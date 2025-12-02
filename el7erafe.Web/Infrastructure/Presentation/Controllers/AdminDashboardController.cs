@@ -178,5 +178,14 @@ namespace Presentation.Controllers
 
             return Ok();
         }
+
+        [HttpGet("technicians")]
+        public async Task<ActionResult> GetTechniciansAsync([FromQuery] int? pageNumber, [FromQuery] int? pageSize)
+        {
+            logger.LogInformation("[API] GetTechnicians endpoint called. PageNumber: {PageNumber}",
+                pageNumber);
+
+            return Ok(await adminDashboardService.GetTechniciansAsync(pageNumber, pageSize));
+        }
     }
 }
