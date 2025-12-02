@@ -8,13 +8,13 @@ namespace Persistance.Repositories
 {
     public class TechnicianServicesRepository(ApplicationDbContext dbContext) : ITechnicianServicesRepository
     {
-        public async Task<IEnumerable<TechnicianService>?> GetAllTechnicianServicesAsync()
+        public async Task<IEnumerable<TechnicianService>?> GetAllAsync()
         {
             return await dbContext.Set<TechnicianService>()
                                     .ToListAsync();
         }
 
-        public async Task<IEnumerable<TechnicianService>?> GetPagedTechnicianServicesAsync(int pageNumber, int pageSize)
+        public async Task<IEnumerable<TechnicianService>?> GetPagedAsync(int pageNumber, int pageSize)
         {
             return await dbContext.Set<TechnicianService>()
                                     .OrderBy(ts => ts.NameAr)
@@ -23,16 +23,26 @@ namespace Persistance.Repositories
                                     .ToListAsync();
         }
 
-        public async Task<TechnicianService> CreateServiceAsync(TechnicianService technicianService)
+        public async Task<TechnicianService?> GetByIdAsync(int id)
+        {
+            return await dbContext.Set<TechnicianService>().FirstOrDefaultAsync(ts => ts.Id == id);
+        }
+
+        public async Task<TechnicianService> CreateAsync(TechnicianService technicianService)
         {
             await dbContext.Set<TechnicianService>().AddAsync(technicianService);
             await dbContext.SaveChangesAsync();
             return technicianService;
         }
 
-        public async Task<bool> ServiceExistsAsync(string serivceName)
+        public async Task<bool> ExistsAsync(string serivceName)
         {
             return await dbContext.Set<TechnicianService>().AnyAsync(ts => ts.NameAr == serivceName);
+        }
+
+        public async Task<bool> ExistsAsync(int id)
+        {
+            return await dbContext.Set<TechnicianService>().AnyAsync(ts => ts.Id == id);
         }
 
         public async Task<bool> DeleteAsync(int id)
@@ -44,6 +54,17 @@ namespace Persistance.Repositories
                 return false;
 
             dbContext.Set<TechnicianService>().Remove(existingService);
+            await dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> UpdateAsync(TechnicianService technicianService)
+        {
+            var exisitingService = await dbContext.Set<TechnicianService>()
+                                                .FirstOrDefaultAsync(ts => ts.Id == technicianService.Id);
+            if (exisitingService is null) return false;
+
+            dbContext.Entry<TechnicianService>(exisitingService).CurrentValues.SetValues(technicianService);
             await dbContext.SaveChangesAsync();
             return true;
         }

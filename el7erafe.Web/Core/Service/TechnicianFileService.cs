@@ -115,7 +115,7 @@ namespace Service
             var serviceImageURL = await _blobStorageService.UploadFileAsync(
                 serviceRegisterDTO.ServiceImage!,
                 "services-documents",
-                $"{serviceRegisterDTO.ServiceImage?.FileName}");
+                $"{serviceRegisterDTO.ServiceImage?.FileName}{Guid.NewGuid()}");
 
             _logger.LogInformation("[FILE-SERVICE] Successfully uploaded service image. Generated URL: {ImageURL}",
                 serviceImageURL);
