@@ -12,5 +12,6 @@ namespace ServiceAbstraction
         Task<ServiceDTO> CreateServiceAsync(ServiceRegisterDTO serviceRegisterDTO);
         Task DeleteServiceAsync(int id);
         Task DeleteClientAsync(string userId);
+        Task UpdateServiceAsync(int id, ServiceUpdateDTO serviceUpdateDTO);
     }
 }

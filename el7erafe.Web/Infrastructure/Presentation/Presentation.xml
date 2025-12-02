@@ -78,11 +78,28 @@
             This endpoint allows administrators to permanently delete client accounts.
             Requires admin authorization to access.
             </remarks>
-            <param name="userId">The unique identifier of the user to delete</param>
+            <param name="id">The unique identifier of the user to delete</param>
             <returns>Returns success message upon successful deletion</returns>
             <response code="200">Returns when client is successfully deleted</response>
             <response code="403">Returns when unauthorized non-admin user attempts deletion</response>
             <response code="404">Returns when the specified user ID does not exist</response>
+        </member>
+        <member name="M:Presentation.Controllers.AdminDashboardController.UpdateServiceAsync(System.Int32,Shared.DataTransferObject.AdminDTOs.Dashboard.ServiceUpdateDTO)">
+            <summary>
+            Updates an existing service with new name and/or image.
+            </summary>
+            <remarks>
+            This endpoint allows administrators to update service details.
+            Both name and image are optional - at least one must be provided.
+            Service name must be unique across all services.
+            </remarks>
+            <param name="id">The ID of the service to update</param>
+            <param name="serviceUpdateDTO">Service update data containing optional new name and/or image</param>
+            <returns>Returns success status</returns>
+            <response code="200">Returns when service is successfully updated</response>
+            <response code="400">Returns when neither name nor image are provided</response>
+            <response code="404">Returns when service ID does not exist</response>
+            <response code="409">Returns when new service name conflicts with existing service</response>
         </member>
         <member name="M:Presentation.Controllers.AdminLoginController.AdminLoginAsync(Shared.DataTransferObject.AdminDTOs.LoginDTO.AdminLoginDTO)">
             <summary>

@@ -92,7 +92,7 @@ namespace Presentation.Controllers
 
             logger.LogInformation("[API] Calling adminDashboardService.CreateServiceAsync");
 
-            return StatusCode(201,await adminDashboardService.CreateServiceAsync(serviceRegisterDTO));
+            return StatusCode(201, await adminDashboardService.CreateServiceAsync(serviceRegisterDTO));
         }
 
         /// <summary>
@@ -143,6 +143,40 @@ namespace Presentation.Controllers
             logger.LogInformation("[API] Client successfully deleted. UserId: {UserId}", id);
 
             return Ok(new { message = "تم مسح العميل بنجاح" });
+        }
+
+        /// <summary>
+        /// Updates an existing service with new name and/or image.
+        /// </summary>
+        /// <remarks>
+        /// This endpoint allows administrators to update service details.
+        /// Both name and image are optional - at least one must be provided.
+        /// Service name must be unique across all services.
+        /// </remarks>
+        /// <param name="id">The ID of the service to update</param>
+        /// <param name="serviceUpdateDTO">Service update data containing optional new name and/or image</param>
+        /// <returns>Returns success status</returns>
+        /// <response code="200">Returns when service is successfully updated</response>
+        /// <response code="400">Returns when neither name nor image are provided</response>
+        /// <response code="404">Returns when service ID does not exist</response>
+        /// <response code="409">Returns when new service name conflicts with existing service</response>
+        [HttpPut("admin/services")]
+        public async Task<ActionResult> UpdateServiceAsync([FromQuery] int id, [FromForm] ServiceUpdateDTO serviceUpdateDTO)
+        {
+            if (string.IsNullOrEmpty(serviceUpdateDTO.service_name) && serviceUpdateDTO.service_image is null)
+            {
+                logger.LogWarning("[API] UpdateService failed: Neither name nor image provided for Service ID: {ServiceId}", id);
+                return BadRequest(new { message = "يجب توفير اسم الخدمة أو صورة على الأقل" });
+            }
+            logger.LogInformation("[API] UpdateService endpoint called for Service ID: {ServiceId}", id);
+
+            logger.LogInformation("[API] Calling adminDashboardService.UpdateServiceAsync for Service ID: {ServiceId}", id);
+
+            await adminDashboardService.UpdateServiceAsync(id, serviceUpdateDTO);
+
+            logger.LogInformation("[API] Service updated successfully for ID: {ServiceId}", id);
+
+            return Ok();
         }
     }
 }

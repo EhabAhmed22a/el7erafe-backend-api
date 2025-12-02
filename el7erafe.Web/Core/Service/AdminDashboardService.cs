@@ -9,6 +9,7 @@ namespace Service
 {
     public class AdminDashboardService(IClientRepository clientRepository, ITechnicianServicesRepository technicianServicesRepository,
         ITechnicianFileService fileService,
+        IBlobStorageRepository blobStorageRepository,
         ILogger<AdminDashboardService> logger) : IAdminDashboardService
     {
         public async Task<ClientListDTO> GetClientsAsync(int? pageNumber, int? pageSize)
@@ -85,8 +86,8 @@ namespace Service
                     pageNumber.HasValue && pageSize.HasValue);
 
                 IEnumerable<TechnicianService>? services = pageNumber.HasValue && pageSize.HasValue
-                    ? await technicianServicesRepository.GetPagedTechnicianServicesAsync(pageNumber.Value, pageSize.Value)
-                    : await technicianServicesRepository.GetAllTechnicianServicesAsync();
+                    ? await technicianServicesRepository.GetPagedAsync(pageNumber.Value, pageSize.Value)
+                    : await technicianServicesRepository.GetAllAsync();
 
                 logger.LogInformation("[SERVICE] Successfully retrieved services from repository. Services count: {ServicesCount}",
                     services?.Count() ?? 0);
@@ -136,7 +137,7 @@ namespace Service
             logger.LogInformation("[SERVICE] Checking if service already exists: {ServiceName}",
         serviceRegisterDTO.Name);
 
-            if (await technicianServicesRepository.ServiceExistsAsync(serviceRegisterDTO.Name))
+            if (await technicianServicesRepository.ExistsAsync(serviceRegisterDTO.Name))
             {
                 logger.LogWarning("[SERVICE] Service creation failed - already exists: {ServiceName}",
             serviceRegisterDTO.Name);
@@ -169,7 +170,7 @@ namespace Service
                 logger.LogInformation("[SERVICE] Creating technician service record: {ServiceName}",
                     serviceDTO.Name);
 
-                var createdService = await technicianServicesRepository.CreateServiceAsync(new TechnicianService()
+                var createdService = await technicianServicesRepository.CreateAsync(new TechnicianService()
                 {
                     NameAr = serviceDTO.Name,
                     ServiceImageURL = serviceDTO.ServiceImageURL
@@ -223,6 +224,67 @@ namespace Service
             }
 
             logger.LogInformation("[SERVICE] Client successfully deleted for user ID: {UserId}", userId);
+        }
+
+        public async Task UpdateServiceAsync(int id, ServiceUpdateDTO serviceUpdateDTO)
+        {
+            logger.LogInformation("[SERVICE] UpdateServiceAsync called for Service ID: {ServiceId}", id);
+
+            var isServiceAvailable = await technicianServicesRepository.ExistsAsync(id);
+            if (isServiceAvailable is false)
+            {
+                logger.LogWarning("[SERVICE] Service update failed: Service not found with ID: {ServiceId}", id);
+                throw new ServiceDoesNotExistException();
+            }
+
+            logger.LogInformation("[SERVICE] Service found with ID: {ServiceId}, retrieving details", id);
+            var existingService = await technicianServicesRepository.GetByIdAsync(id);
+
+            logger.LogInformation("[SERVICE] Creating update object for Service ID: {ServiceId}", id);
+            var updatedService = new TechnicianService()
+            {
+                Id = id,
+                NameAr = existingService!.NameAr,
+                ServiceImageURL = existingService!.ServiceImageURL,
+            };
+
+            if (!string.IsNullOrEmpty(serviceUpdateDTO.service_name))
+            {
+                logger.LogInformation("[SERVICE] New service name provided: {ServiceName}", serviceUpdateDTO.service_name);
+
+                if (await technicianServicesRepository.ExistsAsync(serviceUpdateDTO.service_name))
+                {
+                    logger.LogWarning("[SERVICE] Service update failed: Service name already exists: {ServiceName}", serviceUpdateDTO.service_name);
+                    throw new ServiceAlreadyRegisteredException();
+                }
+
+                updatedService.NameAr = serviceUpdateDTO.service_name;
+                logger.LogInformation("[SERVICE] Service name updated to: {ServiceName}", serviceUpdateDTO.service_name);
+            }
+
+            if (serviceUpdateDTO.service_image is not null)
+            {
+                logger.LogInformation("[SERVICE] New service image provided: {FileName} ({Size} bytes)",
+                    serviceUpdateDTO.service_image.FileName, serviceUpdateDTO.service_image.Length);
+
+                string imageURL = await blobStorageRepository.UploadFileAsync(serviceUpdateDTO.service_image,
+                    "services-documents",
+                    $"{serviceUpdateDTO.service_image.FileName}{Guid.NewGuid()}");
+
+                logger.LogInformation("[SERVICE] Image uploaded successfully. New URL: {ImageUrl}", imageURL);
+                updatedService.ServiceImageURL = imageURL;
+            }
+
+            logger.LogInformation("[SERVICE] Calling repository to update service with ID: {ServiceId}", id);
+            bool updated = await technicianServicesRepository.UpdateAsync(updatedService);
+
+            if (!updated)
+            {
+                logger.LogError("[SERVICE] Service update failed: Repository returned false for Service ID: {ServiceId}", id);
+                throw new TechnicalException();
+            }
+
+            logger.LogInformation("[SERVICE] Service updated successfully for ID: {ServiceId}", id);
         }
     }
 }
