@@ -13,6 +13,7 @@ namespace ServiceAbstraction
         Task DeleteServiceAsync(int id);
         Task DeleteClientAsync(string userId);
         Task UpdateServiceAsync(int id, ServiceUpdateDTO serviceUpdateDTO);
+        Task BlockUnblockClientAsync(BlockUnblockDTO blockDTO, string userId);
         Task<TechnicianListDTO> GetTechniciansAsync(int? pageNumber, int? pageSize);
         Task DeleteTechnicianAsync(string userId);
         Task<RejectionCommentsResponseDTO> GetRejectionComments();

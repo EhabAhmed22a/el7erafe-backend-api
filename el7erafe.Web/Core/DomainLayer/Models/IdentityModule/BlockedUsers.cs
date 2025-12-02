@@ -6,6 +6,7 @@ namespace DomainLayer.Models.IdentityModule
         public int Id { get; set; }
         public DateTime? EndDate { get; set; }
         public string UserId { get; set; } = null!;
+        public string? SuspensionReason { get; set; } = null!;
         public ApplicationUser User { get; set; } = null!;
     }
 }

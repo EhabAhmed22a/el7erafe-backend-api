@@ -11,9 +11,10 @@ namespace Service
     public class AdminDashboardService(IClientRepository clientRepository, ITechnicianServicesRepository technicianServicesRepository,
         ITechnicianFileService fileService,
         IBlobStorageRepository blobStorageRepository,
-        ILogger<AdminDashboardService> logger,
+        IBlockedUserRepository blockedUserRepository,
         ITechnicianRepository technicianRepository,
-        IRejectionCommentsRepository rejectionCommentsRepository) : IAdminDashboardService
+        IRejectionCommentsRepository rejectionCommentsRepository,
+        ILogger<AdminDashboardService> logger) : IAdminDashboardService
     {
         public async Task<ClientListDTO> GetClientsAsync(int? pageNumber, int? pageSize)
         {
@@ -290,6 +291,77 @@ namespace Service
             logger.LogInformation("[SERVICE] Service updated successfully for ID: {ServiceId}", id);
         }
 
+        public async Task BlockUnblockClientAsync(BlockUnblockDTO blockDTO, string userId)
+        {
+            var existingUser = await clientRepository.GetByUserIdAsync(userId);
+            if (existingUser is null)
+            {
+                throw new UserNotFoundException("المستخدم غير موجود");
+            }
+
+            if (blockDTO.IsBlocked is true && blockDTO.SuspendTo is not null)
+            {
+                if (await blockedUserRepository.IsBlockedAsync(userId))
+                {
+                    throw new BadRequestException(new List<string> { "المستخدم محظور مؤقتا بالفعل" });
+                }
+
+                if (await blockedUserRepository.IsPermBlockedAsync(userId))
+                {
+                    throw new BadRequestException(new List<string> { "المستخدم محظور دائما بالفعل" });
+                }
+
+                if (blockDTO.SuspendTo.Value.Date <= DateTime.UtcNow.Date)
+                {
+                    throw new BadRequestException(new List<string> { "تاريخ التعليق غير صحيح" });
+                }
+
+                var blockAudit = new BlockedUser()
+                {
+                    EndDate = blockDTO.SuspendTo,
+                    SuspensionReason = blockDTO.SuspensionReason,
+                    UserId = userId
+                };
+                await blockedUserRepository.AddAsync(blockAudit);
+            }
+
+            else if (blockDTO.IsBlocked is true && blockDTO.SuspendTo is null)
+            {
+                if (await blockedUserRepository.IsPermBlockedAsync(userId))
+                {
+                    throw new BadRequestException(new List<string> { "المستخدم محظور دائما بالفعل" });
+                }
+
+                var existingBlock = await blockedUserRepository.GetByUserIdAsync(userId);
+                if (existingBlock != null)
+                {
+                    existingBlock.EndDate = null;
+                    existingBlock.SuspensionReason = blockDTO.SuspensionReason;
+                    await blockedUserRepository.UpdateAsync(existingBlock);
+                }
+                else
+                {
+                    var blockAudit = new BlockedUser()
+                    {
+                        EndDate = null,
+                        SuspensionReason = blockDTO.SuspensionReason,
+                        UserId = userId
+                    };
+                    await blockedUserRepository.AddAsync(blockAudit);
+                }
+            }
+
+            else if (blockDTO.IsBlocked is false)
+            {
+                if (blockDTO.SuspendTo is not null || blockDTO.SuspensionReason is not null)
+                {
+                    throw new BadRequestException(new List<string> { "لا يمكن تحديد تاريخ التعليق أو السبب عندما يكون المستخدم غير محظور" });
+                }
+
+                if (!await blockedUserRepository.IsBlockedAsync(userId) && !await blockedUserRepository.IsPermBlockedAsync(userId))
+                    throw new BadRequestException(new List<string> { "المستخدم غير محظور بالفعل" });
+
+                await blockedUserRepository.RemoveAsync(userId);
         public async Task<TechnicianListDTO> GetTechniciansAsync(int? pageNumber, int? pageSize)
         {
             pageNumber = (pageNumber.HasValue && pageNumber.Value < 1) ? 1 : pageNumber;
@@ -386,3 +458,5 @@ namespace Service
         }
     }
 }
+
+

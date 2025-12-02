@@ -36,6 +36,10 @@ jobs:
       
       - name: Restore dependencies
         run: dotnet restore el7erafe.Web/el7erafe.Web.sln
+      # - name: Clean and Build
+      #   run: |
+      #     dotnet clean el7erafe.Web/el7erafe.Web.sln
+      #     dotnet build el7erafe.Web/el7erafe.Web.sln --no-restore  
         
       - name: Build
         run: dotnet build el7erafe.Web/el7erafe.Web.sln --no-restore
