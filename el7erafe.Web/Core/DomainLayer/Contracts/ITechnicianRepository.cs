@@ -19,6 +19,7 @@ namespace DomainLayer.Contracts
         Task<Governorate?> GetGovernorateByNameAsync(string nameAr);
         Task<City?> GetCityByNameAsync(string nameAr, int governorateId);
         Task<TechnicianService?> GetServiceByNameAsync(string nameAr);
+        Task<IEnumerable<Technician>?> GetPagedAsync(int pageNumber, int pageSize);
 
     }
 }
