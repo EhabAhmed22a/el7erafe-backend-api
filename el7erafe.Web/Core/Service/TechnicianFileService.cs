@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
 using Shared.DataTransferObject.AdminDTOs.Dashboard;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
+using Microsoft.AspNetCore.Http;
 namespace Service
 {
     public class TechnicianFileService : ITechnicianFileService
@@ -168,49 +169,6 @@ namespace Service
                 _logger.LogError(ex, "Error retrieving file properties for blob: {BlobName}", blobName);
                 throw;
             }
-        }
-
-        async Task<TechReUploadFilesUrlDTO> ITechnicianFileService.ProcessTechnicianFileReUpload(TechResubmitDTO techResubmitDTO)
-        {
-            string nationalIdFrontUrl = null;
-            string nationalIdBackUrl = null;
-            string criminalRecordUrl = null;
-
-            if (techResubmitDTO.NationalIdFront is null && techResubmitDTO.NationalIdBack is null && techResubmitDTO.CriminalRecord is null)
-            {
-                throw new Exception("يرجى ادخال البيانات المطلوبة");
-            }
-
-            if (techResubmitDTO.NationalIdFront is not null)
-            {
-                nationalIdFrontUrl = await _blobStorageService.UploadFileAsync(
-                    techResubmitDTO.NationalIdFront,
-                    "technician-documents",
-                    $"nationalidfront{Guid.NewGuid()}"
-                    );
-            }
-            if (techResubmitDTO.NationalIdBack is not null)
-            {
-                nationalIdBackUrl = await _blobStorageService.UploadFileAsync(
-                    techResubmitDTO.NationalIdBack,
-                    "technician-documents",
-                    $"nationalIdback{Guid.NewGuid()}"
-                    );
-            }
-            if (techResubmitDTO.CriminalRecord is not null)
-            {
-                criminalRecordUrl = await _blobStorageService.UploadFileAsync(
-                    techResubmitDTO.CriminalRecord,
-                    "technician-documents",
-                    $"criminalrecord{Guid.NewGuid()}"
-                    );
-            }
-            return new TechReUploadFilesUrlDTO()
-            {
-                NationalIdFrontUrl = nationalIdFrontUrl,
-                NationalIdBackUrl = nationalIdBackUrl, 
-                CriminalRecordUrl = criminalRecordUrl 
-            };
         }
     }
 }

@@ -585,7 +585,7 @@ namespace Service
                     {
                         UserId = technician.UserId,
                         EndDate = null,
-                        SuspensionReason = "Exceeded maximum rejection limit"
+                        SuspensionReason = "تجاوز الحد الأقصى لمرات الرفض",
                     };
                     technician.Status = TechnicianStatus.Blocked;
                     logger.LogInformation("[SERVICE] Technician with user ID: {UserId} has been blocked due to exceeding rejection limit", rejectTechDTO.id);
@@ -606,15 +606,14 @@ namespace Service
                     technician.Status = TechnicianStatus.Rejected;
                     logger.LogInformation("[SERVICE] Technician with user ID: {UserId} has been rejected", rejectTechDTO.id);
                     await rejectionRepository.CreateAsync(rejection);
-                    technician.RejectionId = rejection.Id;
                     technician.IsNationalIdFrontRejected = rejectTechDTO.is_front_rejected;
                     technician.IsNationalIdBackRejected = rejectTechDTO.is_back_rejected;
                     technician.IsCriminalHistoryRejected = rejectTechDTO.is_criminal_rejected;
                     await technicianRepository.UpdateAsync(technician);
+                    logger.LogInformation("[SERVICE] Rejection reason recorded for technician with user ID: {UserId}", rejectTechDTO.id);
                 }
             }
         }
-
     }
 }
 

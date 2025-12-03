@@ -41,7 +41,7 @@ namespace Presentation.Controllers
             return Ok(result);
         }
 
-        [HttpPut("technician/resubmit-documents")]
+        [HttpPatch("technician/resubmit-documents")]
         public async Task<ActionResult<TechResubmitResponseDTO>> Resubmission(TechResubmitDTO techResubmitDTO)
         {
             _logger.LogInformation("[CONTROLLER] Technician Resubmission with phone: {phone}", techResubmitDTO.PhoneNumber);
