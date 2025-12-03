@@ -56,6 +56,10 @@ namespace Persistance.Repositories
         {
             return await _context.Set<Technician>()
                 .Include(t => t.User)
+                .Include(t => t.Service)
+                .Include(t => t.City)
+                    .ThenInclude(city => city.Governorate)
+                .OrderBy(t => t.User.CreatedAt)
                 .Where(t => t.Status == status)
                 .ToListAsync();
         }
@@ -119,6 +123,20 @@ namespace Persistance.Repositories
                 .Include(c => c.Service)
                 .Include(c => c.City)
                     .ThenInclude(city => city.Governorate)
+                .OrderBy(c => c.User.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Technician>?> GetPagedByStatusAsync(TechnicianStatus status, int pageNumber, int pageSize)
+        {
+            return await context.Set<Technician>()
+                .Include(c => c.User)
+                .Include(c => c.Service)
+                .Include(c => c.City)
+                    .ThenInclude(city => city.Governorate)
+                .Where(c => c.Status == status)
                 .OrderBy(c => c.User.CreatedAt)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
