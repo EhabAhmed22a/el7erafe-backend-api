@@ -207,14 +207,14 @@ namespace Presentation.Controllers
 
             logger.LogInformation("[API] Technician successfully deleted. UserId: {UserId}", id);
 
-            return Ok(new { status = "success", message = "Technician has been deleted successfully." });
+            return Ok(new { status = "success", message = "تم حذف الفني بنجاح." });
         }
 
         [HttpGet("admin/rejection-reason")]
         public async Task<ActionResult> GetRejectionComments()
         {
             logger.LogInformation("[API] GetRejectionComments endpoint called.");
-            var response = await adminDashboardService.GetRejectionComments();
+            var response = await adminDashboardService.GetRejectionCommentsAsync();
             return Ok(response);
         }
 
@@ -223,7 +223,17 @@ namespace Presentation.Controllers
         {
             logger.LogInformation("[API] GetTechnicianRequests endpoint called. PageNumber: {PageNumber}, TechnicianStatus: {TechnicianStatus}",
                 pageNumber, technicianStatus);
-            return Ok(await adminDashboardService.GetTechnicianRequests(pageNumber, pageSize, technicianStatus));
+            return Ok(await adminDashboardService.GetTechnicianRequestsAsync(pageNumber, pageSize, technicianStatus));
+        }
+
+        [HttpPatch("admin/technicians/approve")]
+        public async Task<ActionResult> ApproveTechnicianAsync([FromQuery] string userId)
+        {
+            logger.LogInformation("[API] ApproveTechnician endpoint called for UserId: {UserId}", userId);
+            logger.LogInformation("[API] Calling adminDashboardService.ApproveTechnicianAsync for UserId: {UserId}", userId);
+            await adminDashboardService.ApproveTechnicianAsync(userId);
+            logger.LogInformation("[API] Technician successfully approved. UserId: {UserId}", userId);
+            return Ok(new { status = "success", message = "تمت الموافقة على الفني بنجاح." });
         }
     }
 }
