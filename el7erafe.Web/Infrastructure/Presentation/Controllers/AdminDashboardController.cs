@@ -1,5 +1,6 @@
 ﻿
 using System.ComponentModel.DataAnnotations;
+using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -215,6 +216,14 @@ namespace Presentation.Controllers
             logger.LogInformation("[API] GetRejectionComments endpoint called.");
             var response = await adminDashboardService.GetRejectionComments();
             return Ok(response);
+        }
+
+        [HttpGet("admin/technician-requests")]
+        public async Task<ActionResult> GetTechnicianRequests([FromQuery] int? pageNumber, [FromQuery] int? pageSize, [FromQuery][Required] TechnicianStatus technicianStatus)
+        {
+            logger.LogInformation("[API] GetTechnicianRequests endpoint called. PageNumber: {PageNumber}, TechnicianStatus: {TechnicianStatus}",
+                pageNumber, technicianStatus);
+            return Ok(await adminDashboardService.GetTechnicianRequests(pageNumber, pageSize, technicianStatus));
         }
     }
 }
