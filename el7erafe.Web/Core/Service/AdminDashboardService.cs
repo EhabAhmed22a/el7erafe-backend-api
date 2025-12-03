@@ -1,6 +1,7 @@
 ﻿using DomainLayer.Contracts;
 using DomainLayer.Exceptions;
 using DomainLayer.Models.IdentityModule;
+using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
 using Shared.DataTransferObject.AdminDTOs.Dashboard;
@@ -443,11 +444,11 @@ namespace Service
         {
             try
             {
-                logger.LogInformation("[SERVICE] Retrieving all services");
+                logger.LogInformation("[SERVICE] Retrieving all rejection comments");
                 var rejectionComments = await rejectionCommentsRepository.GetAllRejectionCommentsAsync();
                 if (rejectionComments == null || !rejectionComments.Any())
                 {
-                    logger.LogWarning("[SERVICE] No services found");
+                    logger.LogWarning("[SERVICE] No rejection comments found");
                     return new RejectionCommentsResponseDTO { data = new List<string>() };
                 }
 
@@ -456,8 +457,60 @@ namespace Service
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "[SERVICE] Error retrieving all services");
+                logger.LogError(ex, "[SERVICE] Error retrieving all rejection comments");
                 throw;
+            }
+        }
+
+        public async Task<TechnicianListDTO> GetTechnicianRequests(int? pageNumber, int? pageSize, TechnicianStatus technicianStatus)
+        {
+            pageNumber = (pageNumber.HasValue && pageNumber.Value < 1) ? 1 : pageNumber;
+            pageSize = (pageSize.HasValue && pageSize.Value < 1) ? 10 : pageSize;
+            logger.LogInformation("[SERVICE] GetTechnicianRequests method started. PageNumber: {PageNumber}, PageSize: {PageSize}",
+                pageNumber, pageSize);
+
+            try
+            {
+                logger.LogInformation("[SERVICE] Retrieving {TechncianStatus} technicians from repository. Using pagination: {UsePagination}",
+                    technicianStatus,pageNumber.HasValue && pageSize.HasValue);
+
+                IEnumerable<Technician>? technicians = pageNumber.HasValue && pageSize.HasValue
+                    ? await technicianRepository.GetPagedByStatusAsync(technicianStatus, pageNumber.Value, pageSize.Value)
+                    : await technicianRepository.GetAllByStatusAsync(technicianStatus);
+
+                logger.LogInformation("[SERVICE] Successfully retrieved technicians from repository. Technician count: {TechnicianCount}",technicians?.Count() ?? 0);
+                var technicianDTOs = new List<TechnicianDTO>();
+                foreach (var technician in technicians)
+                {
+                    technicianDTOs.Add(new TechnicianDTO()
+                    {
+                        id = technician.UserId,
+                        name = technician.Name,
+                        phone = technician.User?.PhoneNumber,
+                        governorate = technician.City.Governorate.NameAr,
+                        city = technician.City.NameAr,
+                        faceIdImage = technician.NationalIdFrontURL,
+                        backIdImage = technician.NationalIdBackURL,
+                        criminalRecordImage = technician.CriminalHistoryURL,
+                        serviceType = technician.Service.NameAr,
+                        approvalStatus = technician.Status.ToString(),
+                        is_Blocked = await blockedUserRepository.IsBlockedAsync(technician.UserId)
+                    });
+                }
+                logger.LogInformation("[SERVICE] Successfully mapped {TechnicianCount} Technicians to DTOs. Returning results",
+                    technicianDTOs.Count);
+                return new TechnicianListDTO() 
+                {
+                    Count = technicianDTOs.Count,
+                    Data = technicianDTOs
+                };
+            }
+            catch (Exception)
+            {
+
+                logger.LogError("[SERVICE] Error occurred while retrieving technicians. PageNumber: {PageNumber}, PageSize: {PageSize}, TechnicianStatus: {TechnicianStatus}",
+                        pageNumber, pageSize,technicianStatus);
+                throw new TechnicalException();
             }
         }
     }

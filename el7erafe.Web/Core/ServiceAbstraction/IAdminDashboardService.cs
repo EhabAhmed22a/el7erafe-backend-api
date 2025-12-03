@@ -1,7 +1,5 @@
-﻿
-using DomainLayer.Models.IdentityModule;
+﻿using DomainLayer.Models.IdentityModule.Enums;
 using Shared.DataTransferObject.AdminDTOs.Dashboard;
-using Shared.DataTransferObject.LoginDTOs;
 
 namespace ServiceAbstraction
 {
@@ -17,5 +15,6 @@ namespace ServiceAbstraction
         Task<TechnicianListDTO> GetTechniciansAsync(int? pageNumber, int? pageSize);
         Task DeleteTechnicianAsync(string userId);
         Task<RejectionCommentsResponseDTO> GetRejectionComments();
+        Task<TechnicianListDTO> GetTechnicianRequests(int? pageNumber, int? pageSize, TechnicianStatus technicianStatus);
     }
 }
