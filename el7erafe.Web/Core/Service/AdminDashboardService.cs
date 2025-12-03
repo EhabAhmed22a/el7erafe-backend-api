@@ -15,7 +15,8 @@ namespace Service
         IBlockedUserRepository blockedUserRepository,
         ITechnicianRepository technicianRepository,
         IRejectionCommentsRepository rejectionCommentsRepository,
-        ILogger<AdminDashboardService> logger) : IAdminDashboardService
+        ILogger<AdminDashboardService> logger,
+        IRejectionRepository rejectionRepository) : IAdminDashboardService
     {
         public async Task<ClientListDTO> GetClientsAsync(int? pageNumber, int? pageSize)
         {
@@ -544,6 +545,66 @@ namespace Service
                 technician.Status = TechnicianStatus.Accepted;
                 await technicianRepository.UpdateAsync(technician);
                 logger.LogInformation("[SERVICE] Technician with user ID: {UserId} has been approved successfully", userId);
+            }
+        }
+        public async Task RejectTechnicianAsync(RejectTechDTO rejectTechDTO)
+        {
+            logger.LogInformation("[SERVICE] Search for technician with user ID: {UserId}", rejectTechDTO.id);
+            var technician = await technicianRepository.GetByUserIdAsync(rejectTechDTO.id);
+            if (technician is null)
+            {
+                logger.LogWarning("[SERVICE] Technician rejection failed - User not found: {UserId}", rejectTechDTO.id);
+                throw new UserNotFoundException("المستخدم غير موجود");
+            }
+
+            if (technician.Status == TechnicianStatus.Rejected)
+            {
+                logger.LogWarning("[SERVICE] Technician rejection failed - Already rejected: {UserId}", rejectTechDTO.id);
+                throw new BadRequestException(new List<string> { "الفني مرفوض بالفعل" });
+            }
+            else if (technician.Status == TechnicianStatus.Blocked)
+            {
+                logger.LogWarning("[SERVICE] Technician rejection failed - Currently blocked: {UserId}", rejectTechDTO.id);
+                throw new BadRequestException(new List<string> { "الفني محظور ولا يمكن رفضه" });
+            }
+            else if (technician.Status == TechnicianStatus.Accepted)
+            {
+                logger.LogWarning("[SERVICE] Technician rejection failed - Already accepted: {UserId}", rejectTechDTO.id);
+                throw new BadRequestException(new List<string> { "الفني معتمد ولا يمكن رفضه" });
+            }
+            else
+            {
+                technician.Rejection_Count += 1;
+                if (technician.Rejection_Count >= 3)
+                {
+                    var blockedUser = new BlockedUser()
+                    {
+                        UserId = technician.UserId,
+                        EndDate = null,
+                        SuspensionReason = "Exceeded maximum rejection limit"
+                    };
+                    technician.Status = TechnicianStatus.Blocked;
+                    logger.LogInformation("[SERVICE] Technician with user ID: {UserId} has been blocked due to exceeding rejection limit", rejectTechDTO.id);
+                    await blockedUserRepository.AddAsync(blockedUser);
+                    technician.IsNationalIdFrontRejected = rejectTechDTO.is_front_rejected;
+                    technician.IsNationalIdBackRejected = rejectTechDTO.is_back_rejected;
+                    technician.IsCriminalHistoryRejected = rejectTechDTO.is_criminal_rejected;
+                }
+                else
+                {
+                    var rejection = new Rejection()
+                    {
+                        TechnicianId = technician.Id,
+                        Reason = rejectTechDTO.rejectionReason
+                    };
+                    technician.Status = TechnicianStatus.Rejected;
+                    logger.LogInformation("[SERVICE] Technician with user ID: {UserId} has been rejected", rejectTechDTO.id);
+                    await rejectionRepository.CreateAsync(rejection);
+                    technician.RejectionId = rejection.Id;
+                    technician.IsNationalIdFrontRejected = rejectTechDTO.is_front_rejected;
+                    technician.IsNationalIdBackRejected = rejectTechDTO.is_back_rejected;
+                    technician.IsCriminalHistoryRejected = rejectTechDTO.is_criminal_rejected;
+                }
             }
         }
 
