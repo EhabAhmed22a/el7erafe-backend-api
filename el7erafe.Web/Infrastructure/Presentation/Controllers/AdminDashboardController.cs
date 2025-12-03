@@ -226,7 +226,7 @@ namespace Presentation.Controllers
             return Ok(await adminDashboardService.GetTechnicianRequestsAsync(pageNumber, pageSize, technicianStatus));
         }
 
-        [HttpPatch("admin/technicians")]
+        [HttpPatch("admin/technicians/approve")]
         public async Task<ActionResult> ApproveTechnicianAsync([FromQuery] string userId)
         {
             logger.LogInformation("[API] ApproveTechnician endpoint called for UserId: {UserId}", userId);

@@ -536,6 +536,11 @@ namespace Service
                     logger.LogWarning("[SERVICE] Technician approval failed - Currently blocked: {UserId}", userId);
                     throw new BadRequestException(new List<string> { "الفني محظور ولا يمكن الموافقة عليه" });
                 }
+                else if (technician.Status == TechnicianStatus.Rejected)
+                {
+                    logger.LogWarning("[SERVICE] Technician approval failed - Previously rejected: {UserId}", userId);
+                    throw new BadRequestException(new List<string> { "الفني مرفوض ولا يمكن الموافقة عليه الا بعد تحديث البيانات الخاصه به" });
+                }
                 else
                 {
                     technician.Status = TechnicianStatus.Accepted;
