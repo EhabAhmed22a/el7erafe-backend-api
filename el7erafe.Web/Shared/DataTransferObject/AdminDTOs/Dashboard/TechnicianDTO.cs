@@ -12,5 +12,7 @@ namespace Shared.DataTransferObject.AdminDTOs.Dashboard
         public string backIdImage { get; set; } = default!;
         public string criminalRecordImage { get; set; } = default!;
         public string serviceType { get; set; } = default!;
+        public string approvalStatus { get; set; } = default!;
+        public bool is_Blocked { get; set; }
     }
 }

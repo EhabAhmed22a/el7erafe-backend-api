@@ -479,18 +479,24 @@ namespace Service
                     : await technicianRepository.GetAllByStatusAsync(technicianStatus);
 
                 logger.LogInformation("[SERVICE] Successfully retrieved technicians from repository. Technician count: {TechnicianCount}",technicians?.Count() ?? 0);
-                var technicianDTOs = technicians.Select(technician => new TechnicianDTO()
+                var technicianDTOs = new List<TechnicianDTO>();
+                foreach (var technician in technicians)
                 {
-                    id = technician.UserId,
-                    name = technician.Name,
-                    phone = technician.User?.PhoneNumber,
-                    governorate = technician.City.Governorate.NameAr,
-                    city = technician.City.NameAr,
-                    faceIdImage = technician.NationalIdFrontURL,
-                    backIdImage = technician.NationalIdBackURL,
-                    criminalRecordImage = technician.CriminalHistoryURL,
-                    serviceType = technician.Service.NameAr
-                }).ToList();
+                    technicianDTOs.Add(new TechnicianDTO()
+                    {
+                        id = technician.UserId,
+                        name = technician.Name,
+                        phone = technician.User?.PhoneNumber,
+                        governorate = technician.City.Governorate.NameAr,
+                        city = technician.City.NameAr,
+                        faceIdImage = technician.NationalIdFrontURL,
+                        backIdImage = technician.NationalIdBackURL,
+                        criminalRecordImage = technician.CriminalHistoryURL,
+                        serviceType = technician.Service.NameAr,
+                        approvalStatus = technician.Status.ToString(),
+                        is_Blocked = await blockedUserRepository.IsBlockedAsync(technician.UserId)
+                    });
+                }
                 logger.LogInformation("[SERVICE] Successfully mapped {TechnicianCount} Technicians to DTOs. Returning results",
                     technicianDTOs.Count);
                 return new TechnicianListDTO() 
