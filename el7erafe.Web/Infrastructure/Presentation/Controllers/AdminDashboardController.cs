@@ -207,7 +207,7 @@ namespace Presentation.Controllers
 
             logger.LogInformation("[API] Technician successfully deleted. UserId: {UserId}", id);
 
-            return Ok(new { status = "success", message = "Technician has been deleted successfully." });
+            return Ok(new { status = "success", message = "تم حذف الفني بنجاح." });
         }
 
         [HttpGet("admin/rejection-reason")]
