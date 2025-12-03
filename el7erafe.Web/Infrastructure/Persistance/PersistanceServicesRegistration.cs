@@ -43,6 +43,7 @@ namespace Persistance
             services.AddScoped<ITechnicianServicesRepository, TechnicianServicesRepository>();
             services.AddScoped<IBlockedUserRepository, BlockedUserRepository>();
             services.AddScoped<IRejectionCommentsRepository, RejectionCommentsRepository>();
+            services.AddScoped<IRejectionRepository, RejectionRepository>();
 
             return services;
         }

@@ -574,6 +574,10 @@ namespace Service
             }
             else
             {
+                if (rejectTechDTO.is_front_rejected == false && rejectTechDTO.is_back_rejected == false && rejectTechDTO.is_criminal_rejected == false)
+                {
+                    throw new BadRequestException(new List<string> { "يجب رفض صورة واحدة على الأقل" });
+                }
                 technician.Rejection_Count += 1;
                 if (technician.Rejection_Count >= 3)
                 {
@@ -589,6 +593,8 @@ namespace Service
                     technician.IsNationalIdFrontRejected = rejectTechDTO.is_front_rejected;
                     technician.IsNationalIdBackRejected = rejectTechDTO.is_back_rejected;
                     technician.IsCriminalHistoryRejected = rejectTechDTO.is_criminal_rejected;
+                    await technicianRepository.UpdateAsync(technician);
+                    throw new BadRequestException(new List<string> { "تم حظر الفني لتجاوزه عدد مرات الرفض" });
                 }
                 else
                 {
@@ -604,6 +610,7 @@ namespace Service
                     technician.IsNationalIdFrontRejected = rejectTechDTO.is_front_rejected;
                     technician.IsNationalIdBackRejected = rejectTechDTO.is_back_rejected;
                     technician.IsCriminalHistoryRejected = rejectTechDTO.is_criminal_rejected;
+                    await technicianRepository.UpdateAsync(technician);
                 }
             }
         }
