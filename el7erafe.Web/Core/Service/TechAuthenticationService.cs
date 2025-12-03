@@ -265,17 +265,17 @@ namespace Service
 
                 if (technician.NationalIdFrontURL != oldNationalIdFrontUrl)
                 {
-                    technician.IsNationalIdFrontVerified = false;
+                    technician.IsNationalIdFrontRejected = false;
                     await _blobStorageRepository.DeleteFileAsync(oldNationalIdFrontUrl, "technician-documents");
                 }
                 if (technician.NationalIdBackURL != oldNationalIdBackUrl)
                 {
-                    technician.IsNationalIdBackVerified = false;
+                    technician.IsNationalIdBackRejected = false;
                     await _blobStorageRepository.DeleteFileAsync(oldNationalIdBackUrl, "technician-documents");
                 }
                 if (technician.CriminalHistoryURL != oldCriminalRecordUrl)
                 {
-                    technician.IsCriminalHistoryVerified = false;
+                    technician.IsCriminalHistoryRejected = false;
                     await _blobStorageRepository.DeleteFileAsync(oldCriminalRecordUrl, "technician-documents");
                 }
                 await _technicianRepository.UpdateAsync(technician);
