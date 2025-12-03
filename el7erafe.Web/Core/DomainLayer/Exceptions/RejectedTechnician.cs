@@ -21,8 +21,8 @@ public class RejectedTechnician : Exception
         CityName = technician.City?.NameAr ?? string.Empty;
         GovernorateName = technician.City?.Governorate?.NameAr ?? string.Empty;
         ServiceName = technician.Service?.NameAr ?? string.Empty;
-        IsNationalIdFrontVerified = technician.IsNationalIdFrontVerified;
-        IsNationalIdBackVerified = technician.IsNationalIdBackVerified;
-        IsCriminalHistoryVerified = technician.IsCriminalHistoryVerified;
+        IsNationalIdFrontVerified = technician.IsNationalIdFrontRejected;
+        IsNationalIdBackVerified = technician.IsNationalIdBackRejected;
+        IsCriminalHistoryVerified = technician.IsCriminalHistoryRejected;
     }
 }

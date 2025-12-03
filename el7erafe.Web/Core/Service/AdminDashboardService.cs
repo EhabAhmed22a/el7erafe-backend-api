@@ -440,7 +440,7 @@ namespace Service
             logger.LogInformation("[SERVICE] Technician successfully deleted for user ID: {UserId}", userId);
         }
 
-        public async Task<RejectionCommentsResponseDTO> GetRejectionComments()
+        public async Task<RejectionCommentsResponseDTO> GetRejectionCommentsAsync()
         {
             try
             {
@@ -462,7 +462,7 @@ namespace Service
             }
         }
 
-        public async Task<TechnicianListDTO> GetTechnicianRequests(int? pageNumber, int? pageSize, TechnicianStatus technicianStatus)
+        public async Task<TechnicianListDTO> GetTechnicianRequestsAsync(int? pageNumber, int? pageSize, TechnicianStatus technicianStatus)
         {
             pageNumber = (pageNumber.HasValue && pageNumber.Value < 1) ? 1 : pageNumber;
             pageSize = (pageSize.HasValue && pageSize.Value < 1) ? 10 : pageSize;
@@ -472,13 +472,13 @@ namespace Service
             try
             {
                 logger.LogInformation("[SERVICE] Retrieving {TechncianStatus} technicians from repository. Using pagination: {UsePagination}",
-                    technicianStatus,pageNumber.HasValue && pageSize.HasValue);
+                    technicianStatus, pageNumber.HasValue && pageSize.HasValue);
 
                 IEnumerable<Technician>? technicians = pageNumber.HasValue && pageSize.HasValue
                     ? await technicianRepository.GetPagedByStatusAsync(technicianStatus, pageNumber.Value, pageSize.Value)
                     : await technicianRepository.GetAllByStatusAsync(technicianStatus);
 
-                logger.LogInformation("[SERVICE] Successfully retrieved technicians from repository. Technician count: {TechnicianCount}",technicians?.Count() ?? 0);
+                logger.LogInformation("[SERVICE] Successfully retrieved technicians from repository. Technician count: {TechnicianCount}", technicians?.Count() ?? 0);
                 var technicianDTOs = new List<TechnicianDTO>();
                 foreach (var technician in technicians)
                 {
@@ -499,7 +499,7 @@ namespace Service
                 }
                 logger.LogInformation("[SERVICE] Successfully mapped {TechnicianCount} Technicians to DTOs. Returning results",
                     technicianDTOs.Count);
-                return new TechnicianListDTO() 
+                return new TechnicianListDTO()
                 {
                     Count = technicianDTOs.Count,
                     Data = technicianDTOs
@@ -509,10 +509,44 @@ namespace Service
             {
 
                 logger.LogError("[SERVICE] Error occurred while retrieving technicians. PageNumber: {PageNumber}, PageSize: {PageSize}, TechnicianStatus: {TechnicianStatus}",
-                        pageNumber, pageSize,technicianStatus);
+                        pageNumber, pageSize, technicianStatus);
                 throw new TechnicalException();
             }
         }
+
+        public async Task ApproveTechnicianAsync(string userId)
+        {
+            logger.LogInformation("[SERVICE] Search for technician with user ID: {UserId}", userId);
+            var technician = await technicianRepository.GetByUserIdAsync(userId);
+            if (technician is null)
+            {
+                logger.LogWarning("[SERVICE] Technician approval failed - User not found: {UserId}", userId);
+                throw new UserNotFoundException("المستخدم غير موجود");
+            }
+
+            if (technician.Status == TechnicianStatus.Accepted)
+            {
+                logger.LogWarning("[SERVICE] Technician approval failed - Already approved: {UserId}", userId);
+                throw new BadRequestException(new List<string> { "الفني معتمد بالفعل" });
+            }
+            else if (technician.Status == TechnicianStatus.Blocked)
+            {
+                logger.LogWarning("[SERVICE] Technician approval failed - Currently blocked: {UserId}", userId);
+                throw new BadRequestException(new List<string> { "الفني محظور ولا يمكن الموافقة عليه" });
+            }
+            else if (technician.Status == TechnicianStatus.Rejected)
+            {
+                logger.LogWarning("[SERVICE] Technician approval failed - Previously rejected: {UserId}", userId);
+                throw new BadRequestException(new List<string> { "الفني مرفوض ولا يمكن الموافقة عليه الا بعد تحديث البيانات الخاصه به" });
+            }
+            else
+            {
+                technician.Status = TechnicianStatus.Accepted;
+                await technicianRepository.UpdateAsync(technician);
+                logger.LogInformation("[SERVICE] Technician with user ID: {UserId} has been approved successfully", userId);
+            }
+        }
+
     }
 }
 
