@@ -1,11 +1,12 @@
 ﻿
-using System.ComponentModel.DataAnnotations;
+using DomainLayer.Models.IdentityModule;
 using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
 using Shared.DataTransferObject.AdminDTOs.Dashboard;
+using System.ComponentModel.DataAnnotations;
 
 namespace Presentation.Controllers
 {
@@ -244,6 +245,13 @@ namespace Presentation.Controllers
             await adminDashboardService.RejectTechnicianAsync(rejectTechDTO);
             logger.LogInformation("[API] Technician successfully rejected. UserId: {UserId}", rejectTechDTO.id);
             return Ok(new { status = "success", message = "تم رفض الفني بنجاح." });
+        }
+
+        [HttpPatch("admin/technicians/status/{technicianId:guid}")]
+        public async Task<ActionResult> BlockUnblockTechnicianAsync(BlockUnblockDTO blockUnblockDTO, Guid technicianId)
+        {
+            await adminDashboardService.BlockUnblockTechnicianAsync(blockUnblockDTO, technicianId.ToString());
+            return Ok();
         }
     }
 }
