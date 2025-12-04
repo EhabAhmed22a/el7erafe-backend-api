@@ -1,5 +1,5 @@
-
-﻿using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs.Models;
+using Microsoft.AspNetCore.Http;
 using Shared.DataTransferObject.AdminDTOs.Dashboard;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
 
@@ -9,7 +9,6 @@ namespace ServiceAbstraction
     {
         Task<TechRegisterToReturnDTO> ProcessTechnicianFilesAsync(TechRegisterDTO techRegisterDTO);
         Task<ServiceDTO> ProcessServiceFilesAsync(ServiceRegisterDTO serviceRegisterDTO);
-        Task<TechReUploadFilesUrlDTO> ProcessTechnicianFileReUpload(TechResubmitDTO techResubmitDTO);
         Task<Stream> GetFileStreamAsync(string blobName);
         Task<BlobProperties> GetFilePropertiesAsync(string blobName);
     }

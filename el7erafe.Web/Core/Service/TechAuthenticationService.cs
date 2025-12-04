@@ -18,7 +18,8 @@ namespace Service
         ILogger<TechAuthenticationService> _logger,
         IConfiguration _configuration,
         IUserTokenRepository _userTokenRepository,
-        IBlobStorageRepository _blobStorageRepository) : ITechAuthenticationService
+        IBlobStorageRepository _blobStorageRepository,
+        IRejectionRepository _rejectionRepository) : ITechAuthenticationService
     {
         public async Task<TechDTO> techRegisterAsync(TechRegisterDTO techRegisterDTO)
         {
@@ -213,7 +214,7 @@ namespace Service
             }
         }
 
-        async Task<TechResubmitResponseDTO> ITechAuthenticationService.TechnicianResubmitDocumentsAsync(TechResubmitDTO techResubmitDTO)
+        public async Task<TechResubmitResponseDTO> TechnicianResubmitDocumentsAsync(TechResubmitDTO techResubmitDTO)
         {
             _logger.LogInformation("[SERVICE] Checking User Existance: {Phone}", techResubmitDTO.PhoneNumber);
 
@@ -243,42 +244,64 @@ namespace Service
             else
             {
                 _logger.LogInformation("[SERVICE] Uploading technician re-submitted documents to secure cloud storage for: {PhoneNumber}", techResubmitDTO.PhoneNumber);
-
-                TechReUploadFilesUrlDTO processedData;
-                try
+                if (techResubmitDTO.NationalIdFront is null && techResubmitDTO.NationalIdBack is null && techResubmitDTO.CriminalRecord is null)
                 {
-                    processedData = await _fileService.ProcessTechnicianFileReUpload(techResubmitDTO);
+                    throw new Exception("يرجى ادخال البيانات المطلوبة");
                 }
-                catch (Exception ex)
-                {
-                    throw;
-                }
-                _logger.LogInformation("[SERVICE] All technician re-submitted documents securely stored in cloud storage successfully for: {PhoneNumber}", techResubmitDTO.PhoneNumber);
-                var oldNationalIdFrontUrl = technician.NationalIdFrontURL;
-                var oldNationalIdBackUrl = technician.NationalIdBackURL;
-                var oldCriminalRecordUrl = technician.CriminalHistoryURL;
 
-                technician.NationalIdFrontURL = processedData.NationalIdFrontUrl ?? technician.NationalIdFrontURL;
-                technician.NationalIdBackURL = processedData.NationalIdBackUrl ?? technician.NationalIdBackURL;
-                technician.CriminalHistoryURL = processedData.CriminalRecordUrl ?? technician.CriminalHistoryURL;
-                technician.Status = TechnicianStatus.Pending;
+                if (techResubmitDTO.NationalIdFront is not null && !technician.IsNationalIdFrontRejected) throw new Exception("لا يمكن إعادة رفع صورة الهوية الأمامية لأنها غير مرفوضة");
+                if (techResubmitDTO.NationalIdBack is not null && !technician.IsNationalIdBackRejected) throw new Exception("لا يمكن إعادة رفع صورة الهوية الخلفية لأنها غير مرفوضة");
+                if (techResubmitDTO.CriminalRecord is not null && !technician.IsCriminalHistoryRejected) throw new Exception("لا يمكن إعادة رفع السجل الجنائي لأنه غير مرفوض");
 
-                if (technician.NationalIdFrontURL != oldNationalIdFrontUrl)
+                if (techResubmitDTO.NationalIdFront is null && technician.IsNationalIdFrontRejected) throw new Exception("يرجى رفع صورة الهوية الأمامية المرفوضة"); 
+                if (techResubmitDTO.NationalIdBack is null && technician.IsNationalIdBackRejected) throw new Exception("يرجى رفع صورة الهوية الخلفية المرفوضة");
+                if (techResubmitDTO.CriminalRecord is null && technician.IsCriminalHistoryRejected) throw new Exception("يرجى رفع صورة الفيش الجنائي المرفوض");
+
+                if (techResubmitDTO.NationalIdFront is not null && technician.IsNationalIdFrontRejected)
                 {
+                    var nationalIdFrontUrl = await _blobStorageRepository.UploadFileAsync(
+                        techResubmitDTO.NationalIdFront,
+                        "technician-documents",
+                        $"nationalidfront{Guid.NewGuid()}"
+                    );
+                    await _blobStorageRepository.DeleteFileAsync(technician.NationalIdFrontURL, "technician-documents");
+                    technician.NationalIdFrontURL = nationalIdFrontUrl;
                     technician.IsNationalIdFrontRejected = false;
-                    await _blobStorageRepository.DeleteFileAsync(oldNationalIdFrontUrl, "technician-documents");
                 }
-                if (technician.NationalIdBackURL != oldNationalIdBackUrl)
+
+                if (techResubmitDTO.NationalIdBack is not null && technician.IsNationalIdBackRejected)
                 {
+                    var nationalIdBackUrl = await _blobStorageRepository.UploadFileAsync(
+                        techResubmitDTO.NationalIdBack,
+                        "technician-documents",
+                        $"nationalidback{Guid.NewGuid()}"
+                    );
+                    await _blobStorageRepository.DeleteFileAsync(technician.NationalIdBackURL, "technician-documents");
+                    technician.NationalIdBackURL = nationalIdBackUrl;
                     technician.IsNationalIdBackRejected = false;
-                    await _blobStorageRepository.DeleteFileAsync(oldNationalIdBackUrl, "technician-documents");
                 }
-                if (technician.CriminalHistoryURL != oldCriminalRecordUrl)
+
+                if (techResubmitDTO.CriminalRecord is not null && technician.IsCriminalHistoryRejected)
                 {
+                    var criminalRecordUrl = await _blobStorageRepository.UploadFileAsync(
+                        techResubmitDTO.CriminalRecord,
+                        "technician-documents",
+                        $"criminalrecord{Guid.NewGuid()}"
+                    );
+                    await _blobStorageRepository.DeleteFileAsync(technician.CriminalHistoryURL, "technician-documents");
+                    technician.CriminalHistoryURL = criminalRecordUrl;
                     technician.IsCriminalHistoryRejected = false;
-                    await _blobStorageRepository.DeleteFileAsync(oldCriminalRecordUrl, "technician-documents");
                 }
+                technician.Status = TechnicianStatus.Pending;
                 await _technicianRepository.UpdateAsync(technician);
+
+                var rejection = await _rejectionRepository.GetByTechIdAsync(technician.Id);
+
+                if (rejection is not null)
+                {
+                    await _rejectionRepository.DeleteAsync(rejection.Id);
+                }
+
                 var CreateToken = new CreateToken(_userManager, _configuration);
                 string token = await CreateToken.CreateTokenAsync(user);
 
