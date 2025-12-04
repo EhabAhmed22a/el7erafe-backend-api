@@ -235,5 +235,15 @@ namespace Presentation.Controllers
             logger.LogInformation("[API] Technician successfully approved. UserId: {UserId}", userId);
             return Ok(new { status = "success", message = "تمت الموافقة على الفني بنجاح." });
         }
+
+        [HttpPatch("admin/technician/reject")]
+        public async Task<ActionResult> RejectTechnicianAsync(RejectTechDTO rejectTechDTO)
+        {
+            logger.LogInformation("[API] RejectTechnician endpoint called for UserId: {UserId}", rejectTechDTO.id);
+            logger.LogInformation("[API] Calling adminDashboardService.RejectTechnicianAsync for UserId: {UserId}", rejectTechDTO.id);
+            await adminDashboardService.RejectTechnicianAsync(rejectTechDTO);
+            logger.LogInformation("[API] Technician successfully rejected. UserId: {UserId}", rejectTechDTO.id);
+            return Ok(new { status = "success", message = "تم رفض الفني بنجاح." });
+        }
     }
 }

@@ -48,5 +48,12 @@ namespace Persistance.Repositories
             return await _dbContext.SaveChangesAsync();
 
         }
+
+        public async Task<Rejection?> GetByTechIdAsync(int Techid)
+        {
+            return await _dbContext.Rejections
+                .Include(r => r.Technician)
+                .FirstOrDefaultAsync(r => r.TechnicianId == Techid);
+        }
     }
 }

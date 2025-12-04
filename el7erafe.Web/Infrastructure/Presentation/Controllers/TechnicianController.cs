@@ -13,7 +13,6 @@ namespace Presentation.Controllers
     public class TechnicianController(ITechAuthenticationService _techAuthenticationService,
         ILogger<TechnicianController> _logger) : ControllerBase
     {
-        [AllowAnonymous] // ← This will now work
         [HttpPost("auth/register/technician")]
         public async Task<ActionResult<TechDTO>> Register(TechRegisterDTO techRegisterDTO)
         {
@@ -41,7 +40,7 @@ namespace Presentation.Controllers
             return Ok(result);
         }
 
-        [HttpPut("technician/resubmit-documents")]
+        [HttpPatch("technician/resubmit-documents")]
         public async Task<ActionResult<TechResubmitResponseDTO>> Resubmission(TechResubmitDTO techResubmitDTO)
         {
             _logger.LogInformation("[CONTROLLER] Technician Resubmission with phone: {phone}", techResubmitDTO.PhoneNumber);
