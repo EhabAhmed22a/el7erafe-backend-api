@@ -13,7 +13,6 @@ namespace Presentation.Controllers
     public class TechnicianController(ITechAuthenticationService _techAuthenticationService,
         ILogger<TechnicianController> _logger) : ControllerBase
     {
-        [AllowAnonymous] // ← This will now work
         [HttpPost("auth/register/technician")]
         public async Task<ActionResult<TechDTO>> Register(TechRegisterDTO techRegisterDTO)
         {

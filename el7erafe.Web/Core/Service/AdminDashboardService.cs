@@ -16,7 +16,8 @@ namespace Service
         ITechnicianRepository technicianRepository,
         IRejectionCommentsRepository rejectionCommentsRepository,
         ILogger<AdminDashboardService> logger,
-        IRejectionRepository rejectionRepository) : IAdminDashboardService
+        IRejectionRepository rejectionRepository,
+        IUserTokenRepository userTokenRepository) : IAdminDashboardService
     {
         public async Task<ClientListDTO> GetClientsAsync(int? pageNumber, int? pageSize)
         {
@@ -594,6 +595,7 @@ namespace Service
                     technician.IsNationalIdBackRejected = rejectTechDTO.is_back_rejected;
                     technician.IsCriminalHistoryRejected = rejectTechDTO.is_criminal_rejected;
                     await technicianRepository.UpdateAsync(technician);
+                    await userTokenRepository.DeleteUserTokenAsync(technician.UserId);
                     throw new BadRequestException(new List<string> { "تم حظر الفني لتجاوزه عدد مرات الرفض" });
                 }
                 else
@@ -610,6 +612,7 @@ namespace Service
                     technician.IsNationalIdBackRejected = rejectTechDTO.is_back_rejected;
                     technician.IsCriminalHistoryRejected = rejectTechDTO.is_criminal_rejected;
                     await technicianRepository.UpdateAsync(technician);
+                    await userTokenRepository.DeleteUserTokenAsync(technician.UserId);
                     logger.LogInformation("[SERVICE] Rejection reason recorded for technician with user ID: {UserId}", rejectTechDTO.id);
                 }
             }

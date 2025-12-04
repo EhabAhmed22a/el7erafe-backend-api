@@ -253,6 +253,10 @@ namespace Service
                 if (techResubmitDTO.NationalIdBack is not null && !technician.IsNationalIdBackRejected) throw new Exception("لا يمكن إعادة رفع صورة الهوية الخلفية لأنها غير مرفوضة");
                 if (techResubmitDTO.CriminalRecord is not null && !technician.IsCriminalHistoryRejected) throw new Exception("لا يمكن إعادة رفع السجل الجنائي لأنه غير مرفوض");
 
+                if (techResubmitDTO.NationalIdFront is null && technician.IsNationalIdFrontRejected) throw new Exception("يرجى رفع صورة الهوية الأمامية المرفوضة"); 
+                if (techResubmitDTO.NationalIdBack is null && technician.IsNationalIdBackRejected) throw new Exception("يرجى رفع صورة الهوية الخلفية المرفوضة");
+                if (techResubmitDTO.CriminalRecord is null && technician.IsCriminalHistoryRejected) throw new Exception("يرجى رفع صورة الفيش الجنائي المرفوض");
+
                 if (techResubmitDTO.NationalIdFront is not null && technician.IsNationalIdFrontRejected)
                 {
                     var nationalIdFrontUrl = await _blobStorageRepository.UploadFileAsync(
