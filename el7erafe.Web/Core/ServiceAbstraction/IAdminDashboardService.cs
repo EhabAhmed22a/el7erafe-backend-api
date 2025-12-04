@@ -18,5 +18,6 @@ namespace ServiceAbstraction
         Task<TechnicianListDTO> GetTechnicianRequestsAsync(int? pageNumber, int? pageSize, TechnicianStatus technicianStatus);
         Task ApproveTechnicianAsync(string userId);
         Task RejectTechnicianAsync(RejectTechDTO rejectTechDTO);
+        Task BlockUnblockTechnicianAsync(BlockUnblockDTO blockDTO, string userId);
     }
 }
