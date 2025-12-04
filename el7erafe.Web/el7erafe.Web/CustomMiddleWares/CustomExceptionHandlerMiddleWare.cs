@@ -61,7 +61,7 @@ namespace el7erafe.Web.CustomMiddleWares
                 { } when ex is ForgotPasswordDisallowed or ResetTokenExpiredException or ForbiddenAccessException => StatusCodes.Status403Forbidden,
                 UnverifiedClientLogin unverifiedClientLogin => GetEmail(unverifiedClientLogin, Response),
                 RejectedTechnician rejectedTechnician => CreateRejectionResponse(rejectedTechnician, Response),
-                PendingTechnicianRequest pendingTechnicianRequest => GetTempToken(pendingTechnicianRequest, Response),
+                PendingTechnicianRequest => 460,
                 OtpAlreadySent => StatusCodes.Status429TooManyRequests,
                 BlockedTechnician => 462,
                 BlockedUserException => 470,
@@ -74,12 +74,6 @@ namespace el7erafe.Web.CustomMiddleWares
                 Response.ErrorMessage = ex.Message;
 
             await httpContext.Response.WriteAsJsonAsync(Response);
-        }
-
-        private static int GetTempToken(PendingTechnicianRequest pendingTechnicianRequest, ErrorToReturn response)
-        {
-            response.tempToken = pendingTechnicianRequest._tempToken;
-            return 460;
         }
 
         private static int CreateRejectionResponse(RejectedTechnician rejectedTechnician, ErrorToReturn response)

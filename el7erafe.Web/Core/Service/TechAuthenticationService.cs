@@ -195,12 +195,11 @@ namespace Service
 
                 case TechnicianStatus.Pending:
                     _logger.LogWarning("[SERVICE] Technician pending approval: {UserId}", userId);
-                    var userToken = await _userTokenRepository.GetUserTokenAsync(userId);
-                    throw new PendingTechnicianRequest(userToken.Token);
+                    throw new PendingTechnicianRequest();
 
                 case TechnicianStatus.Rejected:
                     _logger.LogWarning("[SERVICE] Technician rejected: {UserId}", userId);
-                    await _userTokenRepository.DeleteUserTokenAsync(userId);
+                    //await _userTokenRepository.DeleteUserTokenAsync(userId);
                     throw new RejectedTechnician(technician);
 
                 case TechnicianStatus.Blocked:
@@ -302,21 +301,25 @@ namespace Service
                     await _rejectionRepository.DeleteAsync(rejection.Id);
                 }
 
-                var CreateToken = new CreateToken(_userManager, _configuration);
-                string token = await CreateToken.CreateTokenAsync(user);
-
-                var TechToken = new UserToken
+                var token = await _userTokenRepository.GetUserTokenAsync(technician.UserId);
+                if (token is null) 
                 {
-                    Token = token,
-                    Type = TokenType.TempToken,
-                    UserId = user.Id
-                };
-                await _userTokenRepository.CreateUserTokenAsync(TechToken);
+                    var createToken = new CreateToken(_userManager, _configuration);
+                    var tempToken = await createToken.CreateTokenAsync(user);
+                    token = new UserToken
+                    {
+                        Token = tempToken,
+                        Type = TokenType.TempToken,
+                        UserId = user.Id
+                    };
+                    await _userTokenRepository.CreateUserTokenAsync(token);
+                }
+
                 _logger.LogInformation("[SERVICE] Technician re-submission completed for: {PhoneNumber}", techResubmitDTO.PhoneNumber);
                 return new TechResubmitResponseDTO
                 {
                     message = "تم إعادة إرسال المستندات بنجاح. يرجى انتظار المراجعة.",
-                    tempToken = token
+                    tempToken = token.Token
                 };
             }
         }
