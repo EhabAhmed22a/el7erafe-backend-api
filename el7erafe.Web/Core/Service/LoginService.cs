@@ -142,7 +142,7 @@ namespace Service
                         Type = TokenType.TempToken,
                         UserId = user.Id
                     });
-                    throw new PendingTechnicianRequest();
+                    throw new PendingTechnicianRequest(accessToken);
                 }
 
                 else if (technician.Status == TechnicianStatus.Rejected)
