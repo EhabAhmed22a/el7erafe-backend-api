@@ -1,7 +1,12 @@
 ﻿
 namespace DomainLayer.Exceptions
 {
-    public sealed class PendingTechnicianRequest(): Exception("يرجى انتظار موافقة مسؤول على ملفاتك الشخصية للمتابعة في تسجيل الدخول.")
+    public class PendingTechnicianRequest : Exception
     {
+        public string _tempToken { get; set; }
+        public PendingTechnicianRequest(string tempToken) : base("يرجى انتظار موافقة مسؤول على ملفاتك الشخصية للمتابعة في تسجيل الدخول.")
+        {
+            _tempToken = tempToken;
+        }
     }
 }

@@ -195,7 +195,7 @@ namespace Service
 
                 case TechnicianStatus.Pending:
                     _logger.LogWarning("[SERVICE] Technician pending approval: {UserId}", userId);
-                    throw new PendingTechnicianRequest();
+                    throw new PendingTechnicianRequestWithoutTempToken();
 
                 case TechnicianStatus.Rejected:
                     _logger.LogWarning("[SERVICE] Technician rejected: {UserId}", userId);
