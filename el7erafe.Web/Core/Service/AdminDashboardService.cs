@@ -432,14 +432,31 @@ namespace Service
         public async Task DeleteTechnicianAsync(string userId)
         {
             logger.LogInformation("[SERVICE] DeleteTechnicianAsync called for user ID: {UserId}", userId);
+            logger.LogInformation("[SERVICE] Find technician for user ID: {UserId}", userId);
+            var technician = await technicianRepository.GetByUserIdAsync(userId);
+            if (technician is null)
+            {
+                logger.LogWarning("[SERVICE] Technician deletion failed - User not found: {UserId}", userId);
+                throw new UserNotFoundException("المستخدم غير موجود");
+            }
+
+            string nationalIdFrontBlobName = technician.NationalIdFrontURL;
+            string nationalIdBackBlobName = technician.NationalIdBackURL;
+            string criminalHistoryBlobName = technician.CriminalHistoryURL;
+
             logger.LogInformation("[SERVICE] Attempting to delete technician from repository for user ID: {UserId}", userId);
             var technicianDeleted = await technicianRepository.DeleteAsync(userId);
             if (technicianDeleted == 0)
             {
                 logger.LogWarning("[SERVICE] Technician deletion failed - User not found: {UserId}", userId);
-                throw new UserNotFoundException("المستخدم غير موجود");
+                throw new TechnicalException();
             }
             logger.LogInformation("[SERVICE] Technician successfully deleted for user ID: {UserId}", userId);
+            logger.LogInformation("[SERVICE] Attempting to delete technician documents from blob storage");
+            await blobStorageRepository.DeleteFileAsync(nationalIdFrontBlobName, "technician-documents");
+            await blobStorageRepository.DeleteFileAsync(nationalIdBackBlobName, "technician-documents");
+            await blobStorageRepository.DeleteFileAsync(criminalHistoryBlobName, "technician-documents");
+            logger.LogInformation("[SERVICE] Technician documents successfully deleted from blob storage");
         }
 
         public async Task<RejectionCommentsResponseDTO> GetRejectionCommentsAsync()
