@@ -1,5 +1,7 @@
 ﻿
 using DomainLayer.Contracts;
+using DomainLayer.Exceptions;
+using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
 using Shared.DataTransferObject.LogoutDTOs;
@@ -11,25 +13,24 @@ namespace Service
     {
         public async Task<LogoutResponseDto> LogoutAsync(string userId)
         {
-            try
+            _logger.LogInformation("[AUTH] Processing logout request");
+            var logout = await _userTokenRepository.GetUserTokenAsync(userId);
+            if (logout?.Type != TokenType.Token)
             {
-                _logger.LogInformation("[AUTH] Processing logout request");
-                await _userTokenRepository.DeleteUserTokenAsync(userId);
-
-                _logger.LogInformation("[AUTH] Logout successful for user: {UserId}", userId);
-
-                return new LogoutResponseDto
-                {
-                    Success = true,
-                    Message = "تم تسجيل الخروج بنجاح",
-                    LogoutTime = DateTime.UtcNow
-                };
+                _logger.LogWarning("[AUTH] Invalid token type for logout for user: {UserId}", userId);
+                throw new UnauthorizedLogoutException("نوع الجلسة غير صالحة لتسجيل الخروج");
             }
-            catch (Exception ex)
+
+            await _userTokenRepository.DeleteUserTokenAsync(userId);
+            _logger.LogInformation("[AUTH] Logout successful for user: {UserId}", userId);
+
+            return new LogoutResponseDto
             {
-                _logger.LogError(ex, "[AUTH] Error during logout");
-                throw;
-            }
+                Success = true,
+                Message = "تم تسجيل الخروج بنجاح",
+                LogoutTime = DateTime.UtcNow
+            };
         }
     }
 }
+
