@@ -19,6 +19,18 @@ namespace el7erafe.Web
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddControllers();
+            builder.Services.AddCors(options =>
+            {
+                if (builder.Environment.IsDevelopment())
+                    options.AddPolicy("DevPolicy", policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+                else
+                    options.AddPolicy("ProdPolicy",
+            policy => policy
+                .WithOrigins("https://7otob3den.com")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials());
+            });
 
             #region Json Options
             builder.Services.ConfigureHttpJsonOptions(options =>
@@ -86,13 +98,13 @@ namespace el7erafe.Web
             #endregion
 
             var app = builder.Build();
-
             await app.SeedDatabaseAsync();
 
             #region Configure the HTTP request pipeline.
             app.UseMiddleware<CustomExceptionHandlerMiddleWare>();
-            
-                if (app.Environment.IsDevelopment())
+            app.UseCors(app.Environment.IsDevelopment() ? "DevPolicy" : "ProdPolicy");
+
+            if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
                 app.UseSwagger();
@@ -101,10 +113,6 @@ namespace el7erafe.Web
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
-            app.MapControllers(); 
-            
-
-            app.UseHttpsRedirection();
 
 
             app.MapControllers();
