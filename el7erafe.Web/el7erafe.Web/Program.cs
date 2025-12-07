@@ -21,15 +21,15 @@ namespace el7erafe.Web
             builder.Services.AddControllers();
             builder.Services.AddCors(options =>
             {
-                if (builder.Environment.IsDevelopment())
-                    options.AddPolicy("DevPolicy", policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
-                else
-                    options.AddPolicy("ProdPolicy",
-            policy => policy
-                .WithOrigins("https://7otob3den.com")
-                .AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowCredentials());
+                options.AddPolicy("CorsPolicy",
+        policy => policy
+            .WithOrigins("http://localhost:4200",
+                         "https://localhost:4200",
+                         "https://7otob3den.com",
+                         "https://www.7otob3den.com")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials());
             });
 
             #region Json Options
@@ -102,7 +102,7 @@ namespace el7erafe.Web
 
             #region Configure the HTTP request pipeline.
             app.UseMiddleware<CustomExceptionHandlerMiddleWare>();
-            app.UseCors(app.Environment.IsDevelopment() ? "DevPolicy" : "ProdPolicy");
+            app.UseCors("CorsPolicy");
 
             if (app.Environment.IsDevelopment())
             {
