@@ -57,7 +57,7 @@ namespace Service
             var userToken = await userTokenRepository.GetUserTokenAsync(user.Id);
             if (userToken is not null)
             {
-                throw new AlreadyLoggedInException();
+                await userTokenRepository.DeleteUserTokenAsync(user.Id);
             }
 
             if (await blockedUserRepository.IsBlockedAsync(user.Id))

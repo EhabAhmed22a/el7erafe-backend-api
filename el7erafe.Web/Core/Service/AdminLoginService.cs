@@ -50,8 +50,8 @@ namespace Service
             var userToken = await userTokenRepository.GetUserTokenAsync(user.Id);
             if (userToken is not null && user.UserType == UserTypeEnum.Admin)
             {
-                logger.LogWarning("[SERVICE] Admin login rejected: User already logged in. UserId: {UserId}", user.Id);
-                throw new AlreadyLoggedInException();
+                logger.LogWarning("[SERVICE] Delete admin old token. UserId: {UserId}", user.Id);
+                await userTokenRepository.DeleteUserTokenAsync(user.Id);
             }
 
             if (user.UserType != UserTypeEnum.Admin)
