@@ -641,6 +641,16 @@ namespace Service
                 throw new UserNotFoundException("المستخدم غير موجود");
             }
 
+            if (blockDTO.IsBlocked is true && existingUser.Status == TechnicianStatus.Pending)
+            {
+                throw new BadRequestException(new List<string> { "لا يمكن حظر الفني المعلق، يجب قبوله أولاً" });
+            }
+
+            if (blockDTO.IsBlocked is true && existingUser.Status == TechnicianStatus.Rejected)
+            {
+                throw new BadRequestException(new List<string> { "لا يمكن حظر الفني المرفوض" });
+            }
+            
             if (blockDTO.IsBlocked is true && blockDTO.SuspendTo is not null)
             {
                 if (await blockedUserRepository.IsBlockedAsync(userId))
@@ -666,6 +676,8 @@ namespace Service
                 };
 
                 await blockedUserRepository.AddAsync(blockAudit);
+                existingUser.Status = TechnicianStatus.Blocked;
+                await technicianRepository.UpdateAsync(existingUser);
             }
 
             else if (blockDTO.IsBlocked is true && blockDTO.SuspendTo is null)
@@ -693,6 +705,8 @@ namespace Service
                     };
                     await blockedUserRepository.AddAsync(blockAudit);
                 }
+                existingUser.Status = TechnicianStatus.Blocked;
+                await technicianRepository.UpdateAsync(existingUser);
             }
 
             else if (blockDTO.IsBlocked is false)
@@ -706,6 +720,17 @@ namespace Service
                     throw new BadRequestException(new List<string> { "المستخدم غير محظور بالفعل" });
 
                 await blockedUserRepository.RemoveAsync(userId);
+                if (!existingUser.IsNationalIdFrontRejected && !existingUser.IsNationalIdBackRejected && !existingUser.IsCriminalHistoryRejected)
+                {
+                    existingUser.Status = TechnicianStatus.Accepted;
+                    await technicianRepository.UpdateAsync(existingUser);
+                }
+                else
+                {
+                    existingUser.Status = TechnicianStatus.Rejected;
+                    existingUser.Rejection_Count = 0;
+                    await technicianRepository.UpdateAsync(existingUser);
+                }
             }
         }
     }
