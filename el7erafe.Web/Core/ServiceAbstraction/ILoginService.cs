@@ -9,6 +9,6 @@ namespace ServiceAbstraction
     {
         Task<UserDTO> LoginAsync(LoginDTO loginDTO);
         Task<OtpResponseDTO> ForgetPasswordAsync(ResendOtpRequestDTO forgetPasswordDTO);
-        Task<UserDTO> ResetPasswordAsync(ResetPasswordDTO resetPasswordDTO, string userId, TimeSpan timeDifference);
+        Task ResetPasswordAsync(ResetPasswordDTO resetPasswordDTO, string userId, TimeSpan timeDifference);
     }
 }

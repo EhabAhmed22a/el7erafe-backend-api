@@ -129,8 +129,8 @@ namespace Presentation.Controllers
                 tokenIssuedAt, currentTime, timeDifference.TotalMinutes);
 
             logger.LogInformation("[API] Calling loginService.ResetPasswordAsync for user: {UserId}", userId);
-
-            return Ok(await loginService.ResetPasswordAsync(resetPasswordDTO, userId, currentTime - tokenIssuedAt));
+            await loginService.ResetPasswordAsync(resetPasswordDTO, userId, currentTime - tokenIssuedAt);
+            return Ok(new {message = "تم تغيير كلمة السر بنجاح. يمكنك الآن تسجيل الدخول"});
         }
     }
 }

@@ -214,7 +214,7 @@ namespace Service
             };
         }
 
-        public async Task<UserDTO> ResetPasswordAsync(ResetPasswordDTO resetPasswordDTO, string userId, TimeSpan timeDifference)
+        public async Task ResetPasswordAsync(ResetPasswordDTO resetPasswordDTO, string userId, TimeSpan timeDifference)
         {
             try
             {
@@ -266,14 +266,6 @@ namespace Service
                 var client = await clientRepository.GetByUserIdAsync(userId);
                 if (client is null)
                     throw new TechnicalException();
-
-                return new UserDTO
-                {
-                    userId = user.Id,
-                    userName = client!.Name,
-                    type = 'C',
-                    token = token
-                };
             }
             catch (Exception ex)
             {
