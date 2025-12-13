@@ -109,7 +109,6 @@ namespace Service
 
             user.EmailConfirmed = true;
             await userManager.UpdateAsync(user);
-            await userManager.AddToRoleAsync(user, "Client");
 
             var client = await clientRepository.GetByUserIdAsync(user.Id);
             if (client is null)

@@ -6,8 +6,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Service.Helpers;
 using ServiceAbstraction;
+using Shared.DataTransferObject.ClientIdentityDTOs;
 using Shared.DataTransferObject.LoginDTOs;
+using Shared.DataTransferObject.OtpDTOs;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
 
 namespace Service
@@ -19,9 +22,10 @@ namespace Service
         IConfiguration _configuration,
         IUserTokenRepository _userTokenRepository,
         IBlobStorageRepository _blobStorageRepository,
-        IRejectionRepository _rejectionRepository) : ITechAuthenticationService
+        IRejectionRepository _rejectionRepository,
+        OtpHelper otpHelper) : ITechAuthenticationService
     {
-        public async Task<TechDTO> techRegisterAsync(TechRegisterDTO techRegisterDTO)
+        public async Task<OtpResponseDTO> techRegisterAsync(TechRegisterDTO techRegisterDTO)
         {
 
             _logger.LogInformation("[SERVICE] Checking phone number uniqueness: {Phone}", techRegisterDTO.PhoneNumber);
@@ -33,6 +37,14 @@ namespace Service
                 throw new PhoneNumberAlreadyExists(techRegisterDTO.PhoneNumber);
             }
 
+            _logger.LogInformation("[SERVICE] Checking email uniqueness: {Email}", techRegisterDTO.Email);
+            var userFound = await _technicianRepository.EmailExistsAsync(techRegisterDTO.Email);
+
+            if (userFound)
+            {
+                _logger.LogWarning("[SERVICE] Duplicate email detected: {Email}", techRegisterDTO.Email);
+                throw new EmailAlreadyExists(techRegisterDTO.Email);
+            }
 
 
             var governorate = await _technicianRepository.GetGovernorateByNameAsync(techRegisterDTO.Governorate);
@@ -67,7 +79,8 @@ namespace Service
                 UserName = techRegisterDTO.PhoneNumber,
                 PhoneNumber = techRegisterDTO.PhoneNumber,
                 UserType = UserTypeEnum.Technician,
-                EmailConfirmed = true
+                Email = techRegisterDTO.Email,
+                EmailConfirmed = false
             };
 
             var result = await _userManager.CreateAsync(user, techRegisterDTO.Password);
@@ -108,27 +121,103 @@ namespace Service
             };
 
             await _technicianRepository.CreateAsync(technician);
-
             await _userManager.AddToRoleAsync(user, "Technician");
 
-            _logger.LogInformation("[SERVICE] Technician registration completed for: {PhoneNumber}", techRegisterDTO.PhoneNumber);
+            await otpHelper.SendOTP(user);
 
-            var CreateToken = new CreateToken(_userManager, _configuration);
-            string token = await CreateToken.CreateTokenAsync(user);
+            _logger.LogInformation("[Service] User created(unconfirmed) and OTP sent: {Email}", techRegisterDTO.Email);
 
-            var TechToken = new UserToken
+            _logger.LogInformation("[SERVICE] Technician registration completed for: {Email}", techRegisterDTO.Email);
+
+            return new OtpResponseDTO
             {
-                Token = token,
-                Type = TokenType.TempToken,
-                UserId = user.Id
+                Message = "تم إرسال الرمز إلى بريدك الإلكتروني. يرجى التحقق لإكمال التسجيل حتى تتمكن من تسجيل الدخول بنجاح."
             };
+        }
 
-            await _userTokenRepository.CreateUserTokenAsync(TechToken);
+        public async Task<UserDTO> ConfirmEmailAsync(OtpVerificationDTO otpVerificationDTO)
+        {
+            _logger.LogInformation("[Service] Completing registration with OTP for: {Email}", otpVerificationDTO.Email);
 
-            return new TechDTO
+            var user = await _userManager.FindByEmailAsync(otpVerificationDTO.Email);
+
+            if (user is null) throw new UserNotFoundException("المستخدم غير موجود.");
+
+            _logger.LogInformation("[Service] Checking if email is already verified: {Email}", otpVerificationDTO.Email);
+            if (user.EmailConfirmed)
             {
-                tempToken = token
-            };
+                _logger.LogWarning("[Service] Email already verified: {Email}", otpVerificationDTO.Email);
+                throw new EmailAlreadyVerified("الحساب مفعل بالفعل. يرجى تسجيل الدخول");
+            }
+
+            var identifier = otpHelper.GetOtpIdentifier(user.Id);
+
+            var result = await otpHelper.VerifyOtp(identifier, otpVerificationDTO.OtpCode);
+
+            if (!result)
+            {
+                throw new InvalidOtpException();
+            }
+
+            user.EmailConfirmed = true;
+            await _userManager.UpdateAsync(user);
+
+            _logger.LogInformation("[Service] Email verified successfully: {Email}", otpVerificationDTO.Email);
+            var technician = await _technicianRepository.GetFullTechnicianByUserIdAsync(user.Id);
+            if (technician is null) throw new UserNotFoundException("المستخدم غير موجود.");
+
+            switch (technician.Status)
+            {
+                case TechnicianStatus.Accepted:
+                    _logger.LogInformation("[SERVICE] Technician approved: {UserId}", technician.UserId);
+
+                    var usertoken = await _userTokenRepository.GetUserTokenAsync(technician.UserId);
+
+                    var createToken = new CreateToken(_userManager, _configuration);
+                    var accessToken = await createToken.CreateTokenAsync(user);
+
+                    await _userTokenRepository.CreateUserTokenAsync(new UserToken
+                    {
+                        Token = accessToken,
+                        Type = TokenType.Token,
+                        UserId = user.Id
+                    });
+
+                    return new UserDTO
+                    {
+                        token = accessToken,
+                        userId = technician.UserId,
+                        userName = technician.Name,
+                        type = 'T'
+                    };
+
+                case TechnicianStatus.Pending:
+                    _logger.LogWarning("[SERVICE] Technician pending approval: {UserId}", technician.UserId);
+                    var CreateToken = new CreateToken(_userManager, _configuration);
+                    string token = await CreateToken.CreateTokenAsync(user);
+
+                    var TechToken = new UserToken
+                    {
+                        Token = token,
+                        Type = TokenType.TempToken,
+                        UserId = user.Id
+                    };
+                    await _userTokenRepository.CreateUserTokenAsync(TechToken);
+                    throw new PendingTechnicianRequest(token);
+
+                case TechnicianStatus.Rejected:
+                    _logger.LogWarning("[SERVICE] Technician rejected: {UserId}", technician.UserId);
+                    throw new RejectedTechnician(technician);
+
+                case TechnicianStatus.Blocked:
+                    _logger.LogWarning("[SERVICE] Technician is blocked: {UserId}", technician.UserId);
+                    throw new BlockedTechnician();
+
+                default:
+                    _logger.LogWarning("[SERVICE] Unknown technician status: {Status} for user: {UserId}", technician.Status, technician.UserId);
+                    throw new BlockedTechnician();
+            }
+
         }
 
         public async Task<UserDTO> CheckTechnicianApprovalAsync(string userId)
@@ -252,7 +341,7 @@ namespace Service
                 if (techResubmitDTO.NationalIdBack is not null && !technician.IsNationalIdBackRejected) throw new Exception("لا يمكن إعادة رفع صورة الهوية الخلفية لأنها غير مرفوضة");
                 if (techResubmitDTO.CriminalRecord is not null && !technician.IsCriminalHistoryRejected) throw new Exception("لا يمكن إعادة رفع السجل الجنائي لأنه غير مرفوض");
 
-                if (techResubmitDTO.NationalIdFront is null && technician.IsNationalIdFrontRejected) throw new Exception("يرجى رفع صورة الهوية الأمامية المرفوضة"); 
+                if (techResubmitDTO.NationalIdFront is null && technician.IsNationalIdFrontRejected) throw new Exception("يرجى رفع صورة الهوية الأمامية المرفوضة");
                 if (techResubmitDTO.NationalIdBack is null && technician.IsNationalIdBackRejected) throw new Exception("يرجى رفع صورة الهوية الخلفية المرفوضة");
                 if (techResubmitDTO.CriminalRecord is null && technician.IsCriminalHistoryRejected) throw new Exception("يرجى رفع صورة الفيش الجنائي المرفوض");
 
@@ -302,7 +391,7 @@ namespace Service
                 }
 
                 var token = await _userTokenRepository.GetUserTokenAsync(technician.UserId);
-                if (token is null) 
+                if (token is null)
                 {
                     var createToken = new CreateToken(_userManager, _configuration);
                     var tempToken = await createToken.CreateTokenAsync(user);
@@ -323,5 +412,6 @@ namespace Service
                 };
             }
         }
+
     }
 }

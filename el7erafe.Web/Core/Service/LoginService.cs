@@ -73,21 +73,21 @@ namespace Service
 
             logger.LogInformation("[SERVICE] Password verification successful for user: {UserId}", user.Id);
 
+            if (!user.EmailConfirmed)
+            {
+                logger.LogWarning("[SERVICE] Email is not verified for user: {UserId}, sending OTP", user.Id);
+
+                await otpHelper.SendOTP(user);
+
+                logger.LogWarning("[SERVICE] Throwing UnverifiedClientLogin for user: {UserId}", user.Id);
+                throw new UnverifiedClientLogin(user.Email!);
+            }
+
+            logger.LogInformation("[SERVICE] User email is verified, proceeding with login for user: {UserId}", user.Id);
+
             if (user.UserType == UserTypeEnum.Client)
             {
                 logger.LogInformation("[SERVICE] Processing client login flow for user: {UserId}", user.Id);
-
-                if (!user.EmailConfirmed)
-                {
-                    logger.LogWarning("[SERVICE] Client email not verified for user: {UserId}, sending OTP", user.Id);
-
-                    await otpHelper.SendOTP(user);
-
-                    logger.LogWarning("[SERVICE] Throwing UnverifiedClientLogin for user: {UserId}", user.Id);
-                    throw new UnverifiedClientLogin(user.Email!);
-                }
-
-                logger.LogInformation("[SERVICE] Client email verified, proceeding with login for user: {UserId}", user.Id);
 
                 logger.LogInformation("[SERVICE] Retrieving client details for user: {UserId}", user.Id);
                 var client = await clientRepository.GetByUserIdAsync(user.Id);
@@ -255,17 +255,6 @@ namespace Service
                 }
 
                 await userTokenRepository.DeleteUserTokenAsync(userId);
-                var token = await new CreateToken(userManager, configuration).CreateTokenAsync(user);
-                await userTokenRepository.CreateUserTokenAsync(new UserToken
-                {
-                    Token = token,
-                    Type = TokenType.Token,
-                    UserId = user.Id
-                });
-
-                var client = await clientRepository.GetByUserIdAsync(userId);
-                if (client is null)
-                    throw new TechnicalException();
             }
             catch (Exception ex)
             {

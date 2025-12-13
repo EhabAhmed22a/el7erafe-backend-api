@@ -142,5 +142,10 @@ namespace Persistance.Repositories
                 .Take(pageSize)
                 .ToListAsync();
         }
+
+        public async Task<bool> EmailExistsAsync(string email)
+        {
+            return await _context.Set<ApplicationUser>().AnyAsync(t => t.Email == email);
+        }
     }
 }
