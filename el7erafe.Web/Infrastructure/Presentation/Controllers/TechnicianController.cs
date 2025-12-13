@@ -16,7 +16,7 @@ namespace Presentation.Controllers
         ILogger<TechnicianController> _logger) : ControllerBase
     {
         [HttpPost("auth/register/technician")]
-        public async Task<ActionResult<TechDTO>> Register(TechRegisterDTO techRegisterDTO)
+        public async Task<ActionResult<OtpResponseDTO>> Register(TechRegisterDTO techRegisterDTO)
         {
             _logger.LogInformation("[API] Starting registration with OTP for: {Email}", techRegisterDTO.Email);
             var technician = await _techAuthenticationService.techRegisterAsync(techRegisterDTO);
