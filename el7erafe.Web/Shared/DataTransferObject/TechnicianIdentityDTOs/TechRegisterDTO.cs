@@ -16,6 +16,10 @@ namespace Shared.DataTransferObject.TechnicianIdentityDTOs
         [StringLength(11, MinimumLength = 11, ErrorMessage = "يجب أن يكون رقم الهاتف 11 رقماً بالضبط")]
         public string PhoneNumber { get; set; } = default!;
 
+        [Required(ErrorMessage = "البريد الإلكتروني مطلوب")]
+        [EmailAddress(ErrorMessage = "يرجى إدخال بريد إلكتروني صحيح")]
+        public string Email { get; set; } = null!;
+
         [Required(ErrorMessage = "كلمة المرور مطلوبة")]
         public string Password { get; set; } = default!;
 
