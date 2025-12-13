@@ -37,6 +37,14 @@ namespace Service
                 throw new PhoneNumberAlreadyExists(techRegisterDTO.PhoneNumber);
             }
 
+            _logger.LogInformation("[SERVICE] Checking email uniqueness: {Email}", techRegisterDTO.Email);
+            var userFound = await _technicianRepository.EmailExistsAsync(techRegisterDTO.Email);
+
+            if (userFound)
+            {
+                _logger.LogWarning("[SERVICE] Duplicate email detected: {Email}", techRegisterDTO.Email);
+                throw new EmailAlreadyExists(techRegisterDTO.Email);
+            }
 
 
             var governorate = await _technicianRepository.GetGovernorateByNameAsync(techRegisterDTO.Governorate);
@@ -142,6 +150,107 @@ namespace Service
             //{
             //    tempToken = token
             //};
+
+        }
+
+        public async Task<UserDTO> ConfirmEmailAsync(OtpVerificationDTO otpVerificationDTO)
+        {
+            _logger.LogInformation("[Service] Completing registration with OTP for: {Email}", otpVerificationDTO.Email);
+
+            var user = await _userManager.FindByEmailAsync(otpVerificationDTO.Email);
+
+            if (user is null) throw new UserNotFoundException("المستخدم غير موجود.");
+
+            _logger.LogInformation("[Service] Checking if email is already verified: {Email}", otpVerificationDTO.Email);
+            if (user.EmailConfirmed)
+            {
+                _logger.LogWarning("[Service] Email already verified: {Email}", otpVerificationDTO.Email);
+                throw new EmailAlreadyVerified("الحساب مفعل بالفعل. يرجى تسجيل الدخول");
+            }
+
+            var identifier = otpHelper.GetOtpIdentifier(user.Id);
+
+            var result = await otpHelper.VerifyOtp(identifier, otpVerificationDTO.OtpCode);
+
+            if (!result)
+            {
+                throw new InvalidOtpException();
+            }
+
+            user.EmailConfirmed = true;
+            await _userManager.UpdateAsync(user);
+
+            _logger.LogInformation("[Service] Email verified successfully: {Email}", otpVerificationDTO.Email);
+            var technician = await _technicianRepository.GetFullTechnicianByUserIdAsync(user.Id);
+            if (technician is null) throw new UserNotFoundException("المستخدم غير موجود.");
+
+            switch (technician.Status)
+            {
+                case TechnicianStatus.Accepted:
+                    _logger.LogInformation("[SERVICE] Technician approved: {UserId}", technician.UserId);
+
+                    var usertoken = await _userTokenRepository.GetUserTokenAsync(technician.UserId);
+
+                    if (usertoken.Type == TokenType.Token)
+                    {
+                        _logger.LogInformation("[SERVICE] Existing regular token found for user: {UserId}", technician.UserId);
+                        return new UserDTO
+                        {
+                            token = usertoken.Token,
+                            userId = technician.UserId,
+                            userName = technician.Name,
+                            type = 'T'
+                        };
+                    }
+                    else
+                    {
+                        await _userTokenRepository.DeleteUserTokenAsync(technician.UserId);
+
+                        var createToken = new CreateToken(_userManager, _configuration);
+                        var accessToken = await createToken.CreateTokenAsync(user);
+
+                        await _userTokenRepository.CreateUserTokenAsync(new UserToken
+                        {
+                            Token = accessToken,
+                            Type = TokenType.Token,
+                            UserId = user.Id
+                        });
+
+                        return new UserDTO
+                        {
+                            token = accessToken,
+                            userId = technician.UserId,
+                            userName = technician.Name,
+                            type = 'T'
+                        };
+                    }
+
+                case TechnicianStatus.Pending:
+                    _logger.LogWarning("[SERVICE] Technician pending approval: {UserId}", technician.UserId);
+                    var CreateToken = new CreateToken(_userManager, _configuration);
+                    string token = await CreateToken.CreateTokenAsync(user);
+
+                    var TechToken = new UserToken
+                    {
+                        Token = token,
+                        Type = TokenType.TempToken,
+                        UserId = user.Id
+                    };
+                    await _userTokenRepository.CreateUserTokenAsync(TechToken);
+                    throw new PendingTechnicianRequest(token);
+
+                case TechnicianStatus.Rejected:
+                    _logger.LogWarning("[SERVICE] Technician rejected: {UserId}", technician.UserId);
+                    throw new RejectedTechnician(technician);
+
+                case TechnicianStatus.Blocked:
+                    _logger.LogWarning("[SERVICE] Technician is blocked: {UserId}", technician.UserId);
+                    throw new BlockedTechnician();
+
+                default:
+                    _logger.LogWarning("[SERVICE] Unknown technician status: {Status} for user: {UserId}", technician.Status, technician.UserId);
+                    throw new BlockedTechnician();
+            }
 
         }
 
@@ -337,5 +446,6 @@ namespace Service
                 };
             }
         }
+
     }
 }

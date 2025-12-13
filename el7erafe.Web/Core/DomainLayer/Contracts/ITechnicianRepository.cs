@@ -7,6 +7,7 @@ namespace DomainLayer.Contracts
     {
         Task<Technician> CreateAsync(Technician technician); //Create technician 
         Task<Technician?> GetByIdAsync(int id); //Get technician by id
+        Task<bool> EmailExistsAsync(string email);
         Task<Technician?> GetByUserIdAsync(string userId); //Get technician by userId
         Task<Technician?> GetFullTechnicianByUserIdAsync(string userId); //Get full technician details by userId
         Task<IEnumerable<Technician>?> GetAllAsync(); //Get all technicians
@@ -21,5 +22,6 @@ namespace DomainLayer.Contracts
         Task<TechnicianService?> GetServiceByNameAsync(string nameAr);
         Task<IEnumerable<Technician>?> GetPagedAsync(int pageNumber, int pageSize);
         Task<IEnumerable<Technician>?> GetPagedByStatusAsync(TechnicianStatus status, int pageNumber, int pageSize);
+
     }
 }

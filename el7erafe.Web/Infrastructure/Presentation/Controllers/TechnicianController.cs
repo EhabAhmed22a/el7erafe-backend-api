@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
+using Shared.DataTransferObject.ClientIdentityDTOs;
 using Shared.DataTransferObject.LoginDTOs;
+using Shared.DataTransferObject.OtpDTOs;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
 using System.Security.Claims;
 
@@ -16,11 +18,19 @@ namespace Presentation.Controllers
         [HttpPost("auth/register/technician")]
         public async Task<ActionResult<TechDTO>> Register(TechRegisterDTO techRegisterDTO)
         {
-            _logger.LogInformation("[API] Registering Technician with phone: {Phone}", techRegisterDTO.PhoneNumber);
+            _logger.LogInformation("[API] Starting registration with OTP for: {Email}", techRegisterDTO.Email);
             var technician = await _techAuthenticationService.techRegisterAsync(techRegisterDTO);
 
             _logger.LogInformation("[API] Technician registered successfully");
             return CreatedAtAction(nameof(Register), technician);
+        }
+
+        [HttpPost("technician/confirm-email")]
+        public async Task<ActionResult<UserDTO>> ConfirmEmail(OtpVerificationDTO otpVerificationDTO)
+        {
+            _logger.LogInformation("[API] Completing registration with OTP for: {Email}", otpVerificationDTO.Email);
+            var technician = await _techAuthenticationService.ConfirmEmailAsync(otpVerificationDTO);
+            return Ok(technician);
         }
 
         [HttpGet("technician/check-approval")]
