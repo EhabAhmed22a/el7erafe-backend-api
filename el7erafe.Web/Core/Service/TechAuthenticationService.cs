@@ -6,8 +6,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Service.Helpers;
 using ServiceAbstraction;
+using Shared.DataTransferObject.ClientIdentityDTOs;
 using Shared.DataTransferObject.LoginDTOs;
+using Shared.DataTransferObject.OtpDTOs;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
 
 namespace Service
@@ -19,9 +22,10 @@ namespace Service
         IConfiguration _configuration,
         IUserTokenRepository _userTokenRepository,
         IBlobStorageRepository _blobStorageRepository,
-        IRejectionRepository _rejectionRepository) : ITechAuthenticationService
+        IRejectionRepository _rejectionRepository,
+        OtpHelper otpHelper) : ITechAuthenticationService
     {
-        public async Task<TechDTO> techRegisterAsync(TechRegisterDTO techRegisterDTO)
+        public async Task<OtpResponseDTO> techRegisterAsync(TechRegisterDTO techRegisterDTO)
         {
 
             _logger.LogInformation("[SERVICE] Checking phone number uniqueness: {Phone}", techRegisterDTO.PhoneNumber);
@@ -67,7 +71,8 @@ namespace Service
                 UserName = techRegisterDTO.PhoneNumber,
                 PhoneNumber = techRegisterDTO.PhoneNumber,
                 UserType = UserTypeEnum.Technician,
-                EmailConfirmed = true
+                Email = techRegisterDTO.Email,
+                EmailConfirmed = false
             };
 
             var result = await _userManager.CreateAsync(user, techRegisterDTO.Password);
@@ -108,27 +113,36 @@ namespace Service
             };
 
             await _technicianRepository.CreateAsync(technician);
-
             await _userManager.AddToRoleAsync(user, "Technician");
 
-            _logger.LogInformation("[SERVICE] Technician registration completed for: {PhoneNumber}", techRegisterDTO.PhoneNumber);
+            await otpHelper.SendOTP(user);
 
-            var CreateToken = new CreateToken(_userManager, _configuration);
-            string token = await CreateToken.CreateTokenAsync(user);
+            _logger.LogInformation("[Service] User created(unconfirmed) and OTP sent: {Email}", techRegisterDTO.Email);
 
-            var TechToken = new UserToken
+            _logger.LogInformation("[SERVICE] Technician registration completed for: {Email}", techRegisterDTO.Email);
+
+            return new OtpResponseDTO
             {
-                Token = token,
-                Type = TokenType.TempToken,
-                UserId = user.Id
+                Message = "تم إرسال الرمز إلى بريدك الإلكتروني. يرجى التحقق لإكمال التسجيل حتى تتمكن من تسجيل الدخول بنجاح."
             };
 
-            await _userTokenRepository.CreateUserTokenAsync(TechToken);
+            //var CreateToken = new CreateToken(_userManager, _configuration);
+            //string token = await CreateToken.CreateTokenAsync(user);
 
-            return new TechDTO
-            {
-                tempToken = token
-            };
+            //var TechToken = new UserToken
+            //{
+            //    Token = token,
+            //    Type = TokenType.TempToken,
+            //    UserId = user.Id
+            //};
+
+            //await _userTokenRepository.CreateUserTokenAsync(TechToken);
+
+            //return new TechDTO
+            //{
+            //    tempToken = token
+            //};
+
         }
 
         public async Task<UserDTO> CheckTechnicianApprovalAsync(string userId)
