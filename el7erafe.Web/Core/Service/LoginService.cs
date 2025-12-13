@@ -255,17 +255,6 @@ namespace Service
                 }
 
                 await userTokenRepository.DeleteUserTokenAsync(userId);
-                var token = await new CreateToken(userManager, configuration).CreateTokenAsync(user);
-                await userTokenRepository.CreateUserTokenAsync(new UserToken
-                {
-                    Token = token,
-                    Type = TokenType.Token,
-                    UserId = user.Id
-                });
-
-                var client = await clientRepository.GetByUserIdAsync(userId);
-                if (client is null)
-                    throw new TechnicalException();
             }
             catch (Exception ex)
             {
