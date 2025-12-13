@@ -133,24 +133,6 @@ namespace Service
             {
                 Message = "تم إرسال الرمز إلى بريدك الإلكتروني. يرجى التحقق لإكمال التسجيل حتى تتمكن من تسجيل الدخول بنجاح."
             };
-
-            //var CreateToken = new CreateToken(_userManager, _configuration);
-            //string token = await CreateToken.CreateTokenAsync(user);
-
-            //var TechToken = new UserToken
-            //{
-            //    Token = token,
-            //    Type = TokenType.TempToken,
-            //    UserId = user.Id
-            //};
-
-            //await _userTokenRepository.CreateUserTokenAsync(TechToken);
-
-            //return new TechDTO
-            //{
-            //    tempToken = token
-            //};
-
         }
 
         public async Task<UserDTO> ConfirmEmailAsync(OtpVerificationDTO otpVerificationDTO)
@@ -191,39 +173,23 @@ namespace Service
 
                     var usertoken = await _userTokenRepository.GetUserTokenAsync(technician.UserId);
 
-                    if (usertoken.Type == TokenType.Token)
+                    var createToken = new CreateToken(_userManager, _configuration);
+                    var accessToken = await createToken.CreateTokenAsync(user);
+
+                    await _userTokenRepository.CreateUserTokenAsync(new UserToken
                     {
-                        _logger.LogInformation("[SERVICE] Existing regular token found for user: {UserId}", technician.UserId);
-                        return new UserDTO
-                        {
-                            token = usertoken.Token,
-                            userId = technician.UserId,
-                            userName = technician.Name,
-                            type = 'T'
-                        };
-                    }
-                    else
+                        Token = accessToken,
+                        Type = TokenType.Token,
+                        UserId = user.Id
+                    });
+
+                    return new UserDTO
                     {
-                        await _userTokenRepository.DeleteUserTokenAsync(technician.UserId);
-
-                        var createToken = new CreateToken(_userManager, _configuration);
-                        var accessToken = await createToken.CreateTokenAsync(user);
-
-                        await _userTokenRepository.CreateUserTokenAsync(new UserToken
-                        {
-                            Token = accessToken,
-                            Type = TokenType.Token,
-                            UserId = user.Id
-                        });
-
-                        return new UserDTO
-                        {
-                            token = accessToken,
-                            userId = technician.UserId,
-                            userName = technician.Name,
-                            type = 'T'
-                        };
-                    }
+                        token = accessToken,
+                        userId = technician.UserId,
+                        userName = technician.Name,
+                        type = 'T'
+                    };
 
                 case TechnicianStatus.Pending:
                     _logger.LogWarning("[SERVICE] Technician pending approval: {UserId}", technician.UserId);
@@ -375,7 +341,7 @@ namespace Service
                 if (techResubmitDTO.NationalIdBack is not null && !technician.IsNationalIdBackRejected) throw new Exception("لا يمكن إعادة رفع صورة الهوية الخلفية لأنها غير مرفوضة");
                 if (techResubmitDTO.CriminalRecord is not null && !technician.IsCriminalHistoryRejected) throw new Exception("لا يمكن إعادة رفع السجل الجنائي لأنه غير مرفوض");
 
-                if (techResubmitDTO.NationalIdFront is null && technician.IsNationalIdFrontRejected) throw new Exception("يرجى رفع صورة الهوية الأمامية المرفوضة"); 
+                if (techResubmitDTO.NationalIdFront is null && technician.IsNationalIdFrontRejected) throw new Exception("يرجى رفع صورة الهوية الأمامية المرفوضة");
                 if (techResubmitDTO.NationalIdBack is null && technician.IsNationalIdBackRejected) throw new Exception("يرجى رفع صورة الهوية الخلفية المرفوضة");
                 if (techResubmitDTO.CriminalRecord is null && technician.IsCriminalHistoryRejected) throw new Exception("يرجى رفع صورة الفيش الجنائي المرفوض");
 
@@ -425,7 +391,7 @@ namespace Service
                 }
 
                 var token = await _userTokenRepository.GetUserTokenAsync(technician.UserId);
-                if (token is null) 
+                if (token is null)
                 {
                     var createToken = new CreateToken(_userManager, _configuration);
                     var tempToken = await createToken.CreateTokenAsync(user);
