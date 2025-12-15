@@ -59,7 +59,7 @@ namespace el7erafe.Web.CustomMiddleWares
                 or ServiceAlreadyRegisteredException => StatusCodes.Status409Conflict,
                 InvalidOtpException => StatusCodes.Status400BadRequest,
                 { } when ex is ForgotPasswordDisallowed or ResetTokenExpiredException or ForbiddenAccessException => StatusCodes.Status403Forbidden,
-                UnverifiedClientLogin unverifiedClientLogin => GetEmail(unverifiedClientLogin, Response),
+                UnverifiedException unverifiedLogin => GetEmail(unverifiedLogin, Response),
                 RejectedTechnician rejectedTechnician => CreateRejectionResponse(rejectedTechnician, Response),
                 PendingTechnicianRequest pendingTechnicianRequest => GetTempToken(pendingTechnicianRequest, Response),
                 OtpAlreadySent => StatusCodes.Status429TooManyRequests,
@@ -94,10 +94,14 @@ namespace el7erafe.Web.CustomMiddleWares
             };
             return 461;
         }
-        private static int GetEmail(UnverifiedClientLogin unverifiedClientLogin, ErrorToReturn response)
+        private static int GetEmail(UnverifiedException unverifiedLogin, ErrorToReturn response)
         {
-            response.email = unverifiedClientLogin._email;
-            return 452;
+            response.email = unverifiedLogin._email;
+            return unverifiedLogin switch
+            {
+                UnverifiedTechnicianLogin => 453,
+                _ => 452
+            };
         }
         private static int GetTempToken(PendingTechnicianRequest pendingTechnicianRequest, ErrorToReturn response)
         {
