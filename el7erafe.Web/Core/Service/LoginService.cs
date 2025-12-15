@@ -79,11 +79,12 @@ namespace Service
 
                 await otpHelper.SendOTP(user);
 
-                logger.LogWarning("[SERVICE] Throwing UnverifiedClientLogin for user: {UserId}", user.Id);
-                throw new UnverifiedClientLogin(user.Email!);
+                logger.LogWarning("[SERVICE] Throwing UnverfiedException for user: {UserId}", user.Id);
+                UnverifiedException exception = user.UserType == UserTypeEnum.Client ? new UnverifiedClientLogin(user?.Email!) : new UnverifiedTechnicianLogin(user?.Email!);
+                throw exception;
             }
 
-            logger.LogInformation("[SERVICE] User email is verified, proceeding with login for user: {UserId}", user.Id);
+            logger.LogInformation("[SERVICE] User email is verified, proceeding with login for user: {UserId}", user?.Id);
 
             if (user.UserType == UserTypeEnum.Client)
             {
