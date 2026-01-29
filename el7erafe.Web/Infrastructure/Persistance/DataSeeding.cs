@@ -70,7 +70,7 @@ namespace Persistance
                         PhoneNumber = "01552207282", 
                         UserType = UserTypeEnum.Admin
                     };
-                    var result2 = await userManager.CreateAsync(admin2, "kareemPanda123$");
+                    var result2 = await userManager.CreateAsync(admin2, "kareemPanda123#");
                     if (result2.Succeeded)
                     {
                         await _dbContext.Admins.AddAsync(new Admin()
