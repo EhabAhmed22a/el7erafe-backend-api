@@ -29,6 +29,11 @@ namespace Persistance.Repositories
             return await dbContext.Set<BlockedUser>().AnyAsync(u => u.UserId == userId && u.EndDate != null);
         }
 
+        public async Task<bool> IsPermOrTempBlockedAsync(string userId)
+        {
+            return await dbContext.Set<BlockedUser>().AnyAsync(u => u.UserId == userId);
+        }
+
         public async Task UpdateAsync(BlockedUser blockedUser)
         {
             dbContext.Set<BlockedUser>().Update(blockedUser);
