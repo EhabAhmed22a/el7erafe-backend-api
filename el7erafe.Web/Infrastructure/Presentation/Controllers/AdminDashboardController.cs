@@ -185,7 +185,7 @@ namespace Presentation.Controllers
         public async Task<ActionResult> BlockUnblockClientAsync(BlockUnblockDTO blockUnblockDTO, Guid clientId)
         {
             await adminDashboardService.BlockUnblockClientAsync(blockUnblockDTO, clientId.ToString());
-            return Ok();
+            return Ok(new {Message = "تم حظر العميل."});
         }
 
         [HttpGet("technicians")]
@@ -251,7 +251,7 @@ namespace Presentation.Controllers
         public async Task<ActionResult> BlockUnblockTechnicianAsync(BlockUnblockDTO blockUnblockDTO, Guid technicianId)
         {
             await adminDashboardService.BlockUnblockTechnicianAsync(blockUnblockDTO, technicianId.ToString());
-            return Ok();
+            return Ok(new { Message = "تم حظر الفني." });
         }
     }
 }

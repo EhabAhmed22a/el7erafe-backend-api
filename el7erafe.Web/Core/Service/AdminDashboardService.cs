@@ -60,7 +60,7 @@ namespace Service
                     EmailConfirmed = client.User?.EmailConfirmed ?? false,
                     PhoneNumber = client.User?.PhoneNumber,
                     CreatedAt = client.User?.CreatedAt,
-                    IsBlocked = blockedUserRepository.IsBlockedAsync(client.User?.Id!).Result
+                    IsBlocked = blockedUserRepository.IsPermOrTempBlockedAsync(client.User?.Id!).Result
                 }).ToList();
 
                 logger.LogInformation("[SERVICE] Successfully mapped {ClientCount} clients to DTOs. Returning results",
@@ -315,9 +315,9 @@ namespace Service
                     throw new BadRequestException(new List<string> { "المستخدم محظور دائما بالفعل" });
                 }
 
-                if (blockDTO.SuspendTo.Value.Date <= DateTime.UtcNow.Date)
+                if (blockDTO.SuspendTo.Value <= DateTime.UtcNow)
                 {
-                    throw new BadRequestException(new List<string> { "تاريخ التعليق غير صحيح" });
+                    throw new BadRequestException(new List<string> { "تاريخ التعليق يجب ان يكون من اليوم او ايام قادمه" });
                 }
 
                 var blockAudit = new BlockedUser()
@@ -409,7 +409,8 @@ namespace Service
                     faceIdImage = technician.NationalIdFrontURL,
                     backIdImage = technician.NationalIdBackURL,
                     criminalRecordImage = technician.CriminalHistoryURL,
-                    serviceType = technician.Service.NameAr
+                    serviceType = technician.Service.NameAr,
+                    IsBlocked = blockedUserRepository.IsPermOrTempBlockedAsync(technician.UserId).Result
                 }).ToList();
 
                 logger.LogInformation("[SERVICE] Successfully mapped {TechnicianCount} Technicians to DTOs. Returning results",
@@ -512,8 +513,7 @@ namespace Service
                         backIdImage = technician.NationalIdBackURL,
                         criminalRecordImage = technician.CriminalHistoryURL,
                         serviceType = technician.Service.NameAr,
-                        approvalStatus = technician.Status.ToString(),
-                        is_Blocked = await blockedUserRepository.IsBlockedAsync(technician.UserId)
+                        IsBlocked = await blockedUserRepository.IsBlockedAsync(technician.UserId)
                     });
                 }
                 logger.LogInformation("[SERVICE] Successfully mapped {TechnicianCount} Technicians to DTOs. Returning results",
@@ -663,9 +663,9 @@ namespace Service
                     throw new BadRequestException(new List<string> { "المستخدم محظور دائما بالفعل" });
                 }
 
-                if (blockDTO.SuspendTo.Value.Date <= DateTime.UtcNow.Date)
+                if (blockDTO.SuspendTo.Value <= DateTime.UtcNow)
                 {
-                    throw new BadRequestException(new List<string> { "تاريخ التعليق غير صحيح" });
+                    throw new BadRequestException(new List<string> { "تاريخ التعليق يجب ان يكون من اليوم او ايام قادمه" });
                 }
 
                 var blockAudit = new BlockedUser()
