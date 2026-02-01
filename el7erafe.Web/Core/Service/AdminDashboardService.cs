@@ -381,8 +381,8 @@ namespace Service
                     pageNumber.HasValue && pageSize.HasValue);
 
                 IEnumerable<Technician>? technicians = pageNumber.HasValue
-                    ? await technicianRepository.GetPagedAsync(pageNumber.Value, pageSize.Value)
-                    : await technicianRepository.GetAllAsync();
+                    ? await technicianRepository.GetPagedByStatusAsync(TechnicianStatus.Accepted, pageNumber.Value, pageSize.Value)
+                    : await technicianRepository.GetAllByStatusAsync(TechnicianStatus.Accepted);
 
                 logger.LogInformation("[SERVICE] Successfully retrieved Technicians from repository. Technician count: {TechnicianCount}",
                     technicians?.Count() ?? 0);
