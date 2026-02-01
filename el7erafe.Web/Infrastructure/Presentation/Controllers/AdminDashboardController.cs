@@ -118,7 +118,7 @@ namespace Presentation.Controllers
             await adminDashboardService.DeleteServiceAsync(id);
 
             logger.LogInformation("DELETE request completed successfully for service ID: {id}", id);
-            return Ok();
+            return Ok(new {Message = "تم حذف الخدمة بنجاح." });
         }
 
         /// <summary>
@@ -178,14 +178,20 @@ namespace Presentation.Controllers
 
             logger.LogInformation("[API] Service updated successfully for ID: {ServiceId}", id);
 
-            return Ok();
+            return Ok(new {message = "تم تعديل الخدمة بنجاح" });
         }
 
         [HttpPatch("admin/clients/{clientId:guid}/status")]
         public async Task<ActionResult> BlockUnblockClientAsync(BlockUnblockDTO blockUnblockDTO, Guid clientId)
         {
             await adminDashboardService.BlockUnblockClientAsync(blockUnblockDTO, clientId.ToString());
-            return Ok(new {Message = "تم حظر العميل."});
+
+            string message = blockUnblockDTO.IsBlocked ?
+                (blockUnblockDTO.SuspendTo.HasValue
+                                    ? "تم حظر المستخدم مؤقتًا بنجاح"
+                                    : "تم حظر المستخدم دائمًا بنجاح")
+                :"تم إلغاء حظر المستخدم بنجاح";
+            return Ok(new { Message = message });
         }
 
         [HttpGet("technicians")]
@@ -251,7 +257,14 @@ namespace Presentation.Controllers
         public async Task<ActionResult> BlockUnblockTechnicianAsync(BlockUnblockDTO blockUnblockDTO, Guid technicianId)
         {
             await adminDashboardService.BlockUnblockTechnicianAsync(blockUnblockDTO, technicianId.ToString());
-            return Ok(new { Message = "تم حظر الفني." });
+
+            string message = blockUnblockDTO.IsBlocked ?
+                (blockUnblockDTO.SuspendTo.HasValue
+                                    ? "تم حظر الفني مؤقتًا بنجاح"
+                                    : "تم حظر الفني دائمًا بنجاح")
+                : "تم إلغاء حظر الفني بنجاح";
+
+            return Ok(new { Message = message });
         }
     }
 }

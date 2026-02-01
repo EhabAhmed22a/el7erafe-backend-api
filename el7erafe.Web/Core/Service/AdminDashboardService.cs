@@ -687,6 +687,7 @@ namespace Service
                     throw new BadRequestException(new List<string> { "المستخدم محظور دائما بالفعل" });
                 }
 
+
                 var existingBlock = await blockedUserRepository.GetByUserIdAsync(userId);
                 if (existingBlock != null)
                 {
