@@ -49,6 +49,7 @@ namespace Persistance.Repositories
                 .Include(c => c.Service)
                 .Include(c => c.City)
                     .ThenInclude(city => city.Governorate)
+                .Where(t => t.Status != TechnicianStatus.Pending)
                 .ToListAsync();
         }
 
@@ -123,6 +124,7 @@ namespace Persistance.Repositories
                 .Include(c => c.Service)
                 .Include(c => c.City)
                     .ThenInclude(city => city.Governorate)
+                .Where(t => t.Status != TechnicianStatus.Pending)
                 .OrderBy(c => c.User.CreatedAt)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
