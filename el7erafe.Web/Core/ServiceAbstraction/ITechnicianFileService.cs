@@ -9,7 +9,7 @@ namespace ServiceAbstraction
     {
         Task<TechRegisterToReturnDTO> ProcessTechnicianFilesAsync(TechRegisterDTO techRegisterDTO);
         Task<ServiceDTO> ProcessServiceFilesAsync(ServiceRegisterDTO serviceRegisterDTO);
-        Task<Stream> GetFileStreamAsync(string blobName);
-        Task<BlobProperties> GetFilePropertiesAsync(string blobName);
+        Task<Stream> GetFileStreamAsync(string blobName, string containerName);
+        Task<BlobProperties> GetFilePropertiesAsync(string blobName, string containerName);
     }
 }

@@ -10,6 +10,7 @@ using ServiceAbstraction;
 using Shared.DataTransferObject.AdminDTOs.Dashboard;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
 using Microsoft.AspNetCore.Http;
+using DomainLayer.Exceptions;
 namespace Service
 {
     public class TechnicianFileService : ITechnicianFileService
@@ -128,14 +129,14 @@ namespace Service
             };
         }
 
-        public async Task<Stream> GetFileStreamAsync(string blobName)
+        public async Task<Stream> GetFileStreamAsync(string blobName, string containerName)
         {
             try
             {
                 if (string.IsNullOrEmpty(blobName))
                     throw new ArgumentException("Blob name cannot be null or empty");
 
-                var containerClient = _blobServiceClient.GetBlobContainerClient("technician-documents");
+                var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
                 var blobClient = containerClient.GetBlobClient(blobName);
 
                 if (!await blobClient.ExistsAsync())
@@ -143,26 +144,34 @@ namespace Service
 
                 return await blobClient.OpenReadAsync();
             }
+            catch (TechnicalException ex)
+            {
+                throw new TechnicalException();
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving file stream for blob: {BlobName}", blobName);
                 throw;
             }
         }
-        public async Task<BlobProperties> GetFilePropertiesAsync(string blobName)
+        public async Task<BlobProperties> GetFilePropertiesAsync(string blobName, string containerName)
         {
             try
             {
                 if (string.IsNullOrEmpty(blobName))
                     throw new ArgumentException("Blob name cannot be null or empty");
 
-                var containerClient = _blobServiceClient.GetBlobContainerClient("technician-documents");
+                var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
                 var blobClient = containerClient.GetBlobClient(blobName);
 
                 if (!await blobClient.ExistsAsync())
                     throw new FileNotFoundException($"File not found in blob storage: {blobName}");
 
                 return await blobClient.GetPropertiesAsync();
+            }
+            catch (TechnicalException ex)
+            {
+                throw new TechnicalException();
             }
             catch (Exception ex)
             {
