@@ -77,6 +77,12 @@ namespace Service
         public async Task<TechRegisterToReturnDTO> ProcessTechnicianFilesAsync(TechRegisterDTO techRegisterDTO)
         {
             // Save files to blob storage and get URLs
+            var profilePicture = await _blobStorageService.UploadFileAsync(
+                techRegisterDTO.ProfilePicture,
+                "technician-documents",
+                $"profilepicture{Guid.NewGuid()}"
+            );
+
             var nationalIdFrontUrl = await _blobStorageService.UploadFileAsync(
                 techRegisterDTO.NationalIdFront,
                 "technician-documents",
@@ -101,6 +107,7 @@ namespace Service
                 Name = techRegisterDTO.Name,
                 PhoneNumber = techRegisterDTO.PhoneNumber,
                 Password = techRegisterDTO.Password,
+                ProfilePicturePath = profilePicture,
                 NationalIdFrontPath = nationalIdFrontUrl,
                 NationalIdBackPath = nationalIdBackUrl,
                 CriminalRecordPath = criminalRecordUrl,
