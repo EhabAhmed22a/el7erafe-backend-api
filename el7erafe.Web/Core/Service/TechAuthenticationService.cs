@@ -111,6 +111,7 @@ namespace Service
             var technician = new Technician
             {
                 Name = processedData.Name,
+                ProfilePictureURL = processedData.ProfilePicturePath,
                 NationalIdFrontURL = processedData.NationalIdFrontPath,
                 NationalIdBackURL = processedData.NationalIdBackPath,
                 CriminalHistoryURL = processedData.CriminalRecordPath,

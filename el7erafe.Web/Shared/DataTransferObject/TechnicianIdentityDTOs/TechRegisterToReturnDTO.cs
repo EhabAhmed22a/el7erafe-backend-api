@@ -7,6 +7,7 @@ namespace Shared.DataTransferObject.TechnicianIdentityDTOs
         public string PhoneNumber { get; set; } = default!;
         public string Email { get; set; } = default!;
         public string Password { get; set; } = default!;
+        public string ProfilePicturePath { get; set; } = default!;
         public string NationalIdFrontPath { get; set; } = default!;  
         public string NationalIdBackPath { get; set; } = default!;
         public string CriminalRecordPath { get; set; } = default!;
