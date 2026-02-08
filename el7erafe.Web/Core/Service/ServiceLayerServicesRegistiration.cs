@@ -20,6 +20,7 @@ namespace Service
             services.AddScoped<ILogoutService, LogoutService>();
             services.AddScoped<IAdminLoginService, AdminLoginService>();
             services.AddScoped<IAdminDashboardService, AdminDashboardService>();
+            services.AddScoped<IClientService, ClientService>();
             return services;
         }
     }
