@@ -117,14 +117,19 @@ namespace Service
 
         public async Task<ServiceDTO> ProcessServiceFilesAsync(ServiceRegisterDTO serviceRegisterDTO)
         {
-            _logger.LogInformation("[FILE-SERVICE] Uploading service image. File Name: {FileName}, File Size: {FileSize} bytes",
-           serviceRegisterDTO.ServiceImage?.FileName,
-           serviceRegisterDTO.ServiceImage?.Length);
 
-            var serviceImageURL = await _blobStorageService.UploadFileAsync(
+            const string containerName = "services-documents";
+
+            _logger.LogInformation("[FILE-SERVICE] Uploading service image. File Name: {FileName}, File Size: {FileSize} bytes",
+            serviceRegisterDTO.ServiceImage.FileName,
+            serviceRegisterDTO.ServiceImage.Length);
+
+            var serviceImage = await _blobStorageService.UploadFileAsync(
                 serviceRegisterDTO.ServiceImage!,
-                "services-documents",
-                $"{serviceRegisterDTO.ServiceImage?.FileName}{Guid.NewGuid()}");
+                containerName,
+                $"{serviceRegisterDTO.ServiceImage.FileName}_{Guid.NewGuid()}");
+
+            var serviceImageURL = await GetImageURI(serviceImage, "services-documents");
 
             _logger.LogInformation("[FILE-SERVICE] Successfully uploaded service image. Generated URL: {ImageURL}",
                 serviceImageURL);
