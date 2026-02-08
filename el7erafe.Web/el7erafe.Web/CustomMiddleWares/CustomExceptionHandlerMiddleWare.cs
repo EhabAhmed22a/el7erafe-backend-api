@@ -52,7 +52,7 @@ namespace el7erafe.Web.CustomMiddleWares
 
             httpContext.Response.StatusCode = ex switch
             {
-                NotFoundException => StatusCodes.Status404NotFound,
+                { } when ex is NotFoundException or FileNotFoundException => StatusCodes.Status404NotFound,
                 UnauthorizedException => StatusCodes.Status401Unauthorized,
                 BadRequestException badRequestException => GetBadRequestErrors(badRequestException, Response),
                 { } when ex is AlreadyExistException or EmailAlreadyVerified or TechnicianAcceptedOrPendingException

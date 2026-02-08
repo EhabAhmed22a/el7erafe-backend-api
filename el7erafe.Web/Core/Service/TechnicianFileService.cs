@@ -186,5 +186,36 @@ namespace Service
                 throw;
             }
         }
+
+        public async Task<string> GetImageURI(string blobName, string containerName)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(blobName))
+                    throw new ArgumentException("Blob name cannot be null or empty");
+
+                if (string.IsNullOrEmpty(containerName))
+                    throw new ArgumentException("Container name cannot be null or empty");
+
+                return await GetBlobUriAsync(containerName, blobName);
+            }
+            catch (Exception ex) when (ex is not FileNotFoundException && ex is not ArgumentException)
+            {
+                _logger.LogError(ex, "Error retrieving image URI for blob: {BlobName} in container: {ContainerName}",
+                    blobName, containerName);
+                throw new TechnicalException();
+            }
+        }
+
+        private async Task<string> GetBlobUriAsync(string containerName, string blobName)
+        {
+            var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+            var blobClient = containerClient.GetBlobClient(blobName);
+
+            if (!await blobClient.ExistsAsync())
+                throw new FileNotFoundException($"Image '{blobName}' not found in container '{containerName}'");
+
+            return blobClient.Uri.AbsoluteUri;
+        }
     }
 }
