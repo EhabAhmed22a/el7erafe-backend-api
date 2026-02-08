@@ -23,6 +23,10 @@ namespace Shared.DataTransferObject.TechnicianIdentityDTOs
         [Required(ErrorMessage = "كلمة المرور مطلوبة")]
         public string Password { get; set; } = default!;
 
+        [Required(ErrorMessage = "الصورة الشخصية مطلوبة")]
+        [ValidateFile(1 * 1024 * 1024, new[] { ".png", ".jpg", ".jpeg" })]
+        public IFormFile ProfilePicture { get; set; } = default!;
+
         [Required(ErrorMessage = "صورة بطاقة الرقم القومي (الوجه الأمامي) مطلوبة")]
         [ValidateFile(1 * 1024 * 1024, new[] { ".png", ".jpg", ".jpeg" })]
         public IFormFile NationalIdFront { get; set; } = default!;
