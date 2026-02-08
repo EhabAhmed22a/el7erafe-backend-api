@@ -1,11 +1,13 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
 
 namespace Presentation.Controllers
 {
     [ApiController]
     [Route("api")]
+    [Authorize(AuthenticationSchemes = "Bearer", Roles = "Client")]
     public class ClientController(IClientService _clientService, ILogger<ClientController> _logger) : ControllerBase
     {
         [HttpGet("/cf/services")]
