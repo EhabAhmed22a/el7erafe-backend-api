@@ -1,8 +1,10 @@
 ﻿
+using Shared.DataTransferObject.ClientDTOs;
+
 namespace ServiceAbstraction
 {
     public interface IClientService
     {
-       public 
+        Task<ServiceListDto> GetClientServicesAsync();
     }
 }
