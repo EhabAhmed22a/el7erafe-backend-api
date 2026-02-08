@@ -351,7 +351,7 @@ namespace Service
                     var nationalIdFrontUrl = await _blobStorageRepository.UploadFileAsync(
                         techResubmitDTO.NationalIdFront,
                         "technician-documents",
-                        $"nationalidfront{Guid.NewGuid()}"
+                        $"nationalidfront_{Guid.NewGuid()}"
                     );
                     await _blobStorageRepository.DeleteFileAsync(technician.NationalIdFrontURL, "technician-documents");
                     technician.NationalIdFrontURL = nationalIdFrontUrl;
@@ -363,7 +363,7 @@ namespace Service
                     var nationalIdBackUrl = await _blobStorageRepository.UploadFileAsync(
                         techResubmitDTO.NationalIdBack,
                         "technician-documents",
-                        $"nationalidback{Guid.NewGuid()}"
+                        $"nationalidback_{Guid.NewGuid()}"
                     );
                     await _blobStorageRepository.DeleteFileAsync(technician.NationalIdBackURL, "technician-documents");
                     technician.NationalIdBackURL = nationalIdBackUrl;
@@ -375,7 +375,7 @@ namespace Service
                     var criminalRecordUrl = await _blobStorageRepository.UploadFileAsync(
                         techResubmitDTO.CriminalRecord,
                         "technician-documents",
-                        $"criminalrecord{Guid.NewGuid()}"
+                        $"criminalrecord_{Guid.NewGuid()}"
                     );
                     await _blobStorageRepository.DeleteFileAsync(technician.CriminalHistoryURL, "technician-documents");
                     technician.CriminalHistoryURL = criminalRecordUrl;
