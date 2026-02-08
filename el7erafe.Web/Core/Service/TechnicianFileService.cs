@@ -80,25 +80,25 @@ namespace Service
             var profilePicture = await _blobStorageService.UploadFileAsync(
                 techRegisterDTO.ProfilePicture,
                 "technician-documents",
-                $"profilepicture{Guid.NewGuid()}"
+                $"profilepicture_{Guid.NewGuid()}"
             );
 
             var nationalIdFrontUrl = await _blobStorageService.UploadFileAsync(
                 techRegisterDTO.NationalIdFront,
                 "technician-documents",
-                $"nationalidfront{Guid.NewGuid()}"
+                $"nationalidfront_{Guid.NewGuid()}"
             );
 
             var nationalIdBackUrl = await _blobStorageService.UploadFileAsync(
                 techRegisterDTO.NationalIdBack,
                 "technician-documents",
-                $"nationalidback{Guid.NewGuid()}"
+                $"nationalidback_{Guid.NewGuid()}"
             );
 
             var criminalRecordUrl = await _blobStorageService.UploadFileAsync(
                 techRegisterDTO.CriminalRecord,
                 "technician-documents",
-                $"criminalrecord{Guid.NewGuid()}"
+                $"criminalrecord_{Guid.NewGuid()}"
             );
 
             // Return the processed DTO with blob URLs
