@@ -11,5 +11,6 @@ namespace ServiceAbstraction
         Task<ServiceDTO> ProcessServiceFilesAsync(ServiceRegisterDTO serviceRegisterDTO);
         Task<Stream> GetFileStreamAsync(string blobName, string containerName);
         Task<BlobProperties> GetFilePropertiesAsync(string blobName, string containerName);
+        Task<string> GetImageURI(string blobName, string containerName);
     }
 }
