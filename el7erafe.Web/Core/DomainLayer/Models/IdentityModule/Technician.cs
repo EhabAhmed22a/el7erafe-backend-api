@@ -6,6 +6,7 @@ namespace DomainLayer.Models.IdentityModule
     {
         public int Id { get; set; }
         public string Name { get; set; } = default!;
+        public string ProfilePictureURL { get; set; } = default!;
         public string NationalIdFrontURL { get; set; } = default!;
         public bool  IsNationalIdFrontRejected { get; set; } = false;
         public string NationalIdBackURL { get; set; } = default!;
