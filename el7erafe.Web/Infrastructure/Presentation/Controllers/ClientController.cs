@@ -13,17 +13,10 @@ namespace Presentation.Controllers
         [HttpGet("/cf/services")]
         public async Task<ActionResult<string>> GetServicesAsync()
         {
-            try
-            {
-                _logger.LogInformation("[CONTROLLER] Getting all services");
-                var services = await _clientService.GetClientServicesAsync();
-                return Ok(services);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[CONTROLLER] Error while getting client services");
-                return StatusCode(500, "An unexpected error occurred.");
-            }
+            _logger.LogInformation("[CONTROLLER] Getting all services");
+            var services = await _clientService.GetClientServicesAsync();
+            _logger.LogInformation("[CONTROLLER] successfully Getting all services");
+            return Ok(services);
         }
     }
 }
