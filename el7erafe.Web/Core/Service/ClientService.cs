@@ -19,7 +19,7 @@ namespace Service
                 {
                     Id = s.Id,
                     Name = s.NameAr,
-                    ImageURL = s.ServiceImageURL
+                    ImageURL = s?.ServiceImageURL
                 }).ToList()
             };
 

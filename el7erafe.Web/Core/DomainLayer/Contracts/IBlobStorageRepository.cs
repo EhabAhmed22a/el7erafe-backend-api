@@ -7,5 +7,6 @@ namespace DomainLayer.Contracts
         Task DeleteFileAsync(string fileName, string containerName);
         Task<bool> FileExistsAsync(string fileName, string containerName);
         Task<Stream> DownloadFileAsync(string fileName, string containerName);
+        string ExtractFileNameFromUrl(string url);
     }
 }

@@ -5,6 +5,6 @@ namespace Shared.DataTransferObject.ClientDTOs
     {
         public int Id { get; set; }
         public string Name { get; set; } = default!; 
-        public string ImageURL { get; set; } = default!; 
+        public string? ImageURL { get; set; } = default!; 
     }
 }

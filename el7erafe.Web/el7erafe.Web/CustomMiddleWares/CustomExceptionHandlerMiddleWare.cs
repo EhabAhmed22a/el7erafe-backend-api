@@ -137,7 +137,6 @@ namespace el7erafe.Web.CustomMiddleWares
             return authHeader.Split(' ') switch
             {
                 ["Bearer", var token] => token.Trim(),
-                ["bearer", var token] => token.Trim(),
                 _ => null
             };
         }
