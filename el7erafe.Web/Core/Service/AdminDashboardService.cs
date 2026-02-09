@@ -275,6 +275,13 @@ namespace Service
                 logger.LogInformation("[SERVICE] New service image provided: {FileName} ({Size} bytes)",
                     serviceUpdateDTO.service_image.FileName, serviceUpdateDTO.service_image.Length);
 
+                if (existingService.ServiceImageURL is not null)
+                {
+                    logger.LogInformation("[SERVICE] Deleting old service image: {ImageUrl}", existingService.ServiceImageURL);
+                    var oldImageBlobName = blobStorageRepository.ExtractFileNameFromUrl(existingService.ServiceImageURL);
+                    await blobStorageRepository.DeleteFileAsync(oldImageBlobName, "services-documents");
+                }
+
                 string image = await blobStorageRepository.UploadFileAsync(serviceUpdateDTO.service_image,
                     "services-documents",
                     $"{serviceUpdateDTO.service_image.FileName}_{Guid.NewGuid()}");

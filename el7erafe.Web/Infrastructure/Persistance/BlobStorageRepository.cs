@@ -77,5 +77,21 @@ namespace Persistance
             var response = await blobClient.DownloadAsync();
             return response.Value.Content;
         }
+
+        public string ExtractFileNameFromUrl(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+                throw new ArgumentException("url cannot be null or empty", nameof(url));
+
+            if (Uri.TryCreate(url, UriKind.Absolute, out var uri))
+            {
+                var path = uri.AbsolutePath.TrimEnd('/');
+                var lastSegment = path.Split('/', StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
+                return lastSegment ?? string.Empty;
+            }
+
+            var idx = url.LastIndexOf('/');
+            return idx >= 0 ? url[(idx + 1)..] : url;
+        }
     }
 }
