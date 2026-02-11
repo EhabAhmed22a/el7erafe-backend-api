@@ -28,8 +28,8 @@ namespace Presentation.Controllers
             }
         }
 
-        [HttpPost("/cf/reservations/quick")]
-        public async Task<IActionResult> QuickReserve(ServiceRequestRegDTO requestRegDTO)
+        [HttpPost("cf/reservations/quick")]
+        public async Task<IActionResult> QuickReserve([FromForm] ServiceRequestRegDTO requestRegDTO)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 

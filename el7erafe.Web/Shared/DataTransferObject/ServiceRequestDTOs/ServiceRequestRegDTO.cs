@@ -14,14 +14,14 @@ namespace Shared.DataTransferObject.ServiceRequestDTOs
 
         [Required(ErrorMessage = "الخدمة مطلوبة")]
         [Range(1, int.MaxValue, ErrorMessage = "الرجاء اختيار خدمة صالحة")]
-        public int ServiceId { get; set; }
+        public int? ServiceId { get; set; }
 
         [MaxLength(5, ErrorMessage = "الحد الأقصى للصور هو '٥'")]
         public List<IFormFile>? Images { get; set; }
 
         [Required(ErrorMessage = "المدينة مطلوبة")]
         [Range(1, int.MaxValue, ErrorMessage = "الرجاء اختيار مدينة صالحة")]
-        public int CityId { get; set; }
+        public int? CityId { get; set; }
 
         [Required(ErrorMessage = "عنوان الشارع مطلوب")]
         [StringLength(200, MinimumLength = 5,
@@ -33,7 +33,7 @@ namespace Shared.DataTransferObject.ServiceRequestDTOs
 
         [Required(ErrorMessage = "التاريخ مطلوب")]
         [FutureDate]
-        public DateOnly ServiceDate { get; set; } = default!;
+        public DateOnly? ServiceDate { get; set; }
 
         public bool AllDayAvailability { get; set; } = true;
 

@@ -8,6 +8,11 @@ namespace Persistance.Repositories
 {
     public class CityRepository (ApplicationDbContext dbContext): ICityRepository
     {
+        public async Task<bool> ExistsAsync(int id)
+        {
+            return await dbContext.Set<City>().AnyAsync(c => c.Id == id);
+        }
+
         public async Task<City?> GetCityNameById(int id)
         {
             return await dbContext.Set<City>()

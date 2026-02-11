@@ -7,5 +7,6 @@ namespace DomainLayer.Contracts
     {
         Task<City?> GetCityNameById(int id);
         Task<Governorate?> GetGovernateByCityId(int id);
+        Task<bool> ExistsAsync(int id);
     }
 }

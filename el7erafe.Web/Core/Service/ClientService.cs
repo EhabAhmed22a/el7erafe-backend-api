@@ -1,6 +1,7 @@
 ﻿using DomainLayer.Contracts;
 using DomainLayer.Exceptions;
 using DomainLayer.Models;
+using Microsoft.EntityFrameworkCore;
 using ServiceAbstraction;
 using Shared.DataTransferObject.ClientDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
@@ -10,7 +11,9 @@ namespace Service
     public class ClientService(ITechnicianServicesRepository technicianServicesRepository,
             IClientRepository clientRepository,
             IBlobStorageRepository blobStorageRepository,
-            IServiceRequestRepository serviceRequestRepository) : IClientService
+            IServiceRequestRepository serviceRequestRepository,
+            ITechnicianServicesRepository servicesRepository,
+            ICityRepository cityRepository) : IClientService
     {
         public async Task<ServiceListDto> GetClientServicesAsync()
         {
@@ -47,35 +50,41 @@ namespace Service
             if (client is null)
                 throw new ForbiddenAccessException("هذا الإجراء متاح للعملاء فقط");
 
+            if (!await servicesRepository.ExistsAsync((int)regDTO.ServiceId) || !await cityRepository.ExistsAsync((int)regDTO.CityId))
+                throw new TechnicalException();
+
             int clientId = client.Id;
             if (await serviceRequestRepository.IsServiceAlreadyReq(clientId, regDTO.ServiceId))
                 throw new ServiceAlreadyRequestedException();
 
             //******Still some Logic to be added after Implementing Reservations in the application******//
 
-            string? lastImageURL = null;
-            if (regDTO.Images is not null && regDTO.Images.Count > 0)
-            {
-                var fileNames = await blobStorageRepository.UploadMultipleFilesAsync(regDTO.Images, "service-request-images", $"{regDTO.ServiceId}_{clientId}");
-                lastImageURL = fileNames.LastOrDefault();
-            }
-
             var serviceReq = new ServiceRequest()
             {
                 Description = regDTO!.Description,
-                CityId = regDTO!.CityId,
-                ServiceId = regDTO!.ServiceId,
+                CityId = (int) regDTO!.CityId,
+                ServiceId = (int) regDTO!.ServiceId,
                 SpecialSign = regDTO!.SpecialSign,
                 Street = regDTO!.Street,
-                ServiceDate = regDTO!.ServiceDate,
-                LastImageURL = lastImageURL,
+                ServiceDate = (DateOnly) regDTO!.ServiceDate,
                 AvailableFrom = regDTO!.AvailableFrom,
                 AvailableTo = regDTO!.AvailableTo,
                 CreatedAt = DateTime.UtcNow,
                 ClientId = clientId
             };
 
-            await serviceRequestRepository.CreateAsync(serviceReq);
+            var serviceRequest = await serviceRequestRepository.CreateAsync(serviceReq);
+
+            string? lastImageURL = null;
+            if (regDTO.Images is not null && regDTO.Images.Count > 0)
+            {
+                var fileNames = await blobStorageRepository.UploadMultipleFilesAsync(regDTO.Images, "service-request-images", $"{serviceRequest.Id}_{clientId}");
+                lastImageURL = fileNames.LastOrDefault();
+            }
+            
+            serviceRequest.LastImageURL = lastImageURL;
+            if (!await serviceRequestRepository.UpdateAsync(serviceRequest))
+                throw new TechnicalException();
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using DomainLayer.Contracts;
 using DomainLayer.Models;
+using DomainLayer.Models.IdentityModule;
 using Microsoft.EntityFrameworkCore;
 using Persistance.Databases;
 
@@ -24,7 +25,7 @@ namespace Persistance.Repositories
                     .AnyAsync(sr => sr.ClientId == clientId && sr.AvailableFrom.OverlapsWith(sr.AvailableTo, AvailableFrom, AvailableTo) && sr.ServiceDate == Date);
         }
 
-        public async Task<bool> IsServiceAlreadyReq(int clientId, int serviceId)
+        public async Task<bool> IsServiceAlreadyReq(int? clientId, int? serviceId)
         {
             return await dbContext
                 .Set<ServiceRequest>()
@@ -36,6 +37,20 @@ namespace Persistance.Repositories
             await dbContext.Set<ServiceRequest>().AddAsync(serviceRequest);
             await dbContext.SaveChangesAsync();
             return serviceRequest;
+        }
+
+        public async Task<bool> UpdateAsync(ServiceRequest serviceRequest)
+        {
+            var existingService = await dbContext.Set<ServiceRequest>()
+            .FirstOrDefaultAsync(c => c.Id == serviceRequest.Id);
+
+            if (existingService is null)
+                return false;
+
+            dbContext.Entry(existingService).CurrentValues.SetValues(existingService);
+
+            await dbContext.SaveChangesAsync();
+            return true;
         }
     }
 
