@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
+using Shared.DataTransferObject.ServiceRequestDTOs;
 
 namespace Presentation.Controllers
 {
@@ -24,6 +26,18 @@ namespace Presentation.Controllers
                 _logger.LogError(ex, "[CONTROLLER] Error while getting client services");
                 return StatusCode(500, "An unexpected error occurred.");
             }
+        }
+
+        [HttpPost("/cf/reservations/quick")]
+        public async Task<IActionResult> QuickReserve(ServiceRequestRegDTO requestRegDTO)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            var result = await _clientService.QuickReserve(requestRegDTO, userId);
+            return Ok(result);
         }
     }
 }

@@ -20,5 +20,7 @@ namespace DomainLayer.Models
         public Technician? Technician { get; set; }
         public int? TechnicianId { get; set; }
         public string? LastImageURL { get; set; }
+        public Client Client { get; set; } = default!;
+        public int ClientId { get; set; }
     }
 }
