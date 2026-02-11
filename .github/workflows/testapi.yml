@@ -1,0 +1,74 @@
+
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "newifra" ]
+  # pull_request:
+  #   branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 9.0.x
+      
+      - name: Restore dependencies
+        run: dotnet restore el7erafe.Web/el7erafe.Web.sln
+      # - name: Clean and Build
+      #   run: |
+      #     dotnet clean el7erafe.Web/el7erafe.Web.sln
+      #     dotnet build el7erafe.Web/el7erafe.Web.sln --no-restore  
+        
+      - name: Build
+        run: dotnet build el7erafe.Web/el7erafe.Web.sln --no-restore
+
+      - name: Install EF Core tools
+        run: dotnet tool install --global dotnet-ef --version 9.0.9
+      
+      
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: "dfab7ec0-0cf7-4bbc-830f-ea96ee518e8d"
+          tenant-id: "2db6e7e6-ce5c-4fa4-a482-b332622a38b3"
+          subscription-id: "8d923dc5-56ad-4308-ba82-27bca93bbdf5"
+
+      - name: Run EF Migrations
+        run: dotnet ef database update --project el7erafe.Web/Infrastructure/Persistance/Persistance.csproj --startup-project el7erafe.Web/el7erafe.Web/el7erafe.Web.csproj
+        env:
+          ConnectionStrings__DefaultConnection: Server=tcp:el7rafe-db-server.database.windows.net,1433;Initial Catalog=El7rafeDB;Persist Security Info=False;User ID=YOUR_SP_CLIENT_ID;Password=AQi8Q~jbUvy8UeNQwvimc8y4tA5vF6Onksi2dccf;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Authentication="Active Directory Service Principal";
+          
+      - name: Check for message.txt
+        run: test -f el7erafe.Web/el7erafe.Web/data/message.txt || (echo "message.txt not found!" && exit 1)  
+        
+      - name: Publish
+        run: dotnet publish el7erafe.Web/el7erafe.Web/el7erafe.Web.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp --self-contained false
+        
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'el7rafeApp' # Replace with your app service name
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }} # Add a secret in your repository settings with the publish profile
+          package: '${{env.DOTNET_ROOT}}/myapp'
