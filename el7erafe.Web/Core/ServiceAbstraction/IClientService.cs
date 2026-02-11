@@ -7,6 +7,6 @@ namespace ServiceAbstraction
     public interface IClientService
     {
         Task<ServiceListDto> GetClientServicesAsync();
-        Task<ServiceReqDTO> QuickReserve(ServiceRequestRegDTO requestRegDTO, string userId);
+        Task QuickReserve(ServiceRequestRegDTO requestRegDTO, string userId);
     }
 }

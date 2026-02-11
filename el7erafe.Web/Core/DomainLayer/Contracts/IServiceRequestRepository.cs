@@ -7,7 +7,7 @@ namespace DomainLayer.Contracts
     {
         Task<ServiceRequest> GetServiceById(int id);
         Task<bool> IsServiceAlreadyReq(int clientId, int serviceId);
-        Task<bool> IsTimeConflicted(int clientId, TimeOnly? AvailableFrom, TimeOnly? AvailableTo);
+        Task<bool> IsTimeConflicted(int clientId, TimeOnly? AvailableFrom, TimeOnly? AvailableTo, DateOnly Date);
         Task<TimeOnly?> GetServiceTime(int clientId);
         Task<ServiceRequest> CreateAsync(ServiceRequest serviceRequest);
     }

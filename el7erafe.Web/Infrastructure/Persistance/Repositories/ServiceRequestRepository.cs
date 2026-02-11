@@ -17,11 +17,11 @@ namespace Persistance.Repositories
             throw new NotImplementedException();
         }
 
-        public async Task<bool> IsTimeConflicted(int clientId, TimeOnly? AvailableFrom, TimeOnly? AvailableTo)
+        public async Task<bool> IsTimeConflicted(int clientId, TimeOnly? AvailableFrom, TimeOnly? AvailableTo, DateOnly Date)
         {
             return await dbContext
                     .Set<ServiceRequest>()
-                    .AnyAsync(sr => sr.ClientId == clientId && sr.AvailableFrom.OverlapsWith(sr.AvailableTo, AvailableFrom, AvailableTo));
+                    .AnyAsync(sr => sr.ClientId == clientId && sr.AvailableFrom.OverlapsWith(sr.AvailableTo, AvailableFrom, AvailableTo) && sr.ServiceDate == Date);
         }
 
         public async Task<bool> IsServiceAlreadyReq(int clientId, int serviceId)

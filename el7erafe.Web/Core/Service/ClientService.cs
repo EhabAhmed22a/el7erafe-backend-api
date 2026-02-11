@@ -10,9 +10,7 @@ namespace Service
     public class ClientService(ITechnicianServicesRepository technicianServicesRepository,
             IClientRepository clientRepository,
             IBlobStorageRepository blobStorageRepository,
-            IServiceRequestRepository serviceRequestRepository,
-            ICityRepository cityRepository,
-            ITechnicianServicesRepository servicesRepository) : IClientService
+            IServiceRequestRepository serviceRequestRepository) : IClientService
     {
         public async Task<ServiceListDto> GetClientServicesAsync()
         {
@@ -34,7 +32,7 @@ namespace Service
             return result;
         }
 
-        public async Task<ServiceReqDTO> QuickReserve(ServiceRequestRegDTO regDTO, string userId)
+        public async Task QuickReserve(ServiceRequestRegDTO regDTO, string userId)
         {
             if (regDTO.AllDayAvailability && (regDTO.AvailableFrom.HasValue || regDTO.AvailableTo.HasValue))
                 throw new UnprocessableEntityException("عند اختيار 'متاح طوال اليوم'، يجب إرسال حقلي وقت البداية والنهاية فارغين");
@@ -47,18 +45,11 @@ namespace Service
 
             var client = await clientRepository.GetByUserIdAsync(userId);
             if (client is null)
-                throw new TechnicalException();
+                throw new ForbiddenAccessException("هذا الإجراء متاح للعملاء فقط");
 
             int clientId = client.Id;
             if (await serviceRequestRepository.IsServiceAlreadyReq(clientId, regDTO.ServiceId))
                 throw new ServiceAlreadyRequestedException();
-
-            var allDayAvail = regDTO.AllDayAvailability is true;
-            if (!allDayAvail)
-            {
-                if (!await serviceRequestRepository.IsTimeConflicted(clientId, regDTO.AvailableFrom, regDTO.AvailableTo))
-                    throw new ServiceRequestTimeConflictException();
-            }
 
             //******Still some Logic to be added after Implementing Reservations in the application******//
 
@@ -84,25 +75,7 @@ namespace Service
                 ClientId = clientId
             };
 
-            var city = await cityRepository.GetCityNameById(regDTO.CityId);
-            var governate = await cityRepository.GetGovernateByCityId(regDTO.CityId);
-            var service = await servicesRepository.GetByIdAsync(regDTO.ServiceId);
-
-            return new ServiceReqDTO()
-            {
-                Description = regDTO.Description,
-                City = city?.NameAr,
-                ServiceName = service?.NameAr,
-                SpecialSign = regDTO.SpecialSign,
-                Street = regDTO.Street,
-                ServiceDate = regDTO.ServiceDate,
-                ImageURL = lastImageURL,
-                AvailableFrom = regDTO!.AvailableFrom,
-                AvailableTo = regDTO!.AvailableTo,
-                Governate = governate?.NameAr,
-                AllDayAvailability = allDayAvail
-                //,Images = 
-            };
+            await serviceRequestRepository.CreateAsync(serviceReq);
         }
     }
 }

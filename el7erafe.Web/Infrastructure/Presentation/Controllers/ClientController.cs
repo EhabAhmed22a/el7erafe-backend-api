@@ -36,8 +36,8 @@ namespace Presentation.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("المستخدم غير موجود");
 
-            var result = await _clientService.QuickReserve(requestRegDTO, userId);
-            return Ok(result);
+            await _clientService.QuickReserve(requestRegDTO, userId);
+            return Ok(new {message = "تم الحجز بنجاح"});
         }
     }
 }
