@@ -67,7 +67,8 @@ jobs:
         run: dotnet publish el7erafe.Web/el7erafe.Web/el7erafe.Web.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp --self-contained false
         
       - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v3
+        uses: azure/webapps-deploy@v3 # Use v3 for Service Principal support
         with:
-          app-name: 'el7rafeApp' # Replace with your app service name
+          app-name: 'el7rafeApp' 
           package: '${{env.DOTNET_ROOT}}/myapp'
+          # No publish-profile needed!
