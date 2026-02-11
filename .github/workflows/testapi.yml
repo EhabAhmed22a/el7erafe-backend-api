@@ -51,9 +51,9 @@ jobs:
       - name: Azure login
         uses: azure/login@v2
         with:
-          client-id: "dfab7ec0-0cf7-4bbc-830f-ea96ee518e8d"
-          tenant-id: "2db6e7e6-ce5c-4fa4-a482-b332622a38b3"
-          subscription-id: "8d923dc5-56ad-4308-ba82-27bca93bbdf5"
+          client-id: ${{ secrets.AZURE_CLIENT_ID2 }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID2 }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID2 }}
 
       - name: Run EF Migrations
         run: dotnet ef database update --project el7erafe.Web/Infrastructure/Persistance/Persistance.csproj --startup-project el7erafe.Web/el7erafe.Web/el7erafe.Web.csproj
