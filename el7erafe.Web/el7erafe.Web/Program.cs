@@ -2,6 +2,7 @@ using Azure.Identity;
 using Azure.Storage.Blobs;
 using el7erafe.Web.CustomMiddleWares;
 using el7erafe.Web.Extensions;
+using el7erafe.Web.Filters;
 using Persistance;
 using Persistance.Databases;
 using Serilog;
@@ -18,7 +19,14 @@ namespace el7erafe.Web
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers(options =>
+            {
+                options.Filters.Add<CustomValidationFilter>();
+            })
+            .ConfigureApiBehaviorOptions(options =>
+            {
+                options.SuppressModelStateInvalidFilter = true; // Disable default
+            });
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy",

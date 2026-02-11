@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Persistance.Databases;
 
@@ -11,9 +12,11 @@ using Persistance.Databases;
 namespace Persistance.Identity.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260211000735_Added Service Requests Table")]
+    partial class AddedServiceRequestsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -391,9 +394,6 @@ namespace Persistance.Identity.Migrations
                     b.Property<int>("CityId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ClientId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -423,8 +423,6 @@ namespace Persistance.Identity.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CityId");
-
-                    b.HasIndex("ClientId");
 
                     b.HasIndex("ServiceId");
 
@@ -576,12 +574,6 @@ namespace Persistance.Identity.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("DomainLayer.Models.IdentityModule.Client", "Client")
-                        .WithMany()
-                        .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("DomainLayer.Models.IdentityModule.TechnicianService", "Service")
                         .WithMany()
                         .HasForeignKey("ServiceId")
@@ -593,8 +585,6 @@ namespace Persistance.Identity.Migrations
                         .HasForeignKey("TechnicianId");
 
                     b.Navigation("City");
-
-                    b.Navigation("Client");
 
                     b.Navigation("Service");
 
