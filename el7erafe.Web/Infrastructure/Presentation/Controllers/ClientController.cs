@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
+using Shared.DataTransferObject.ServiceRequestDTOs;
 
 namespace Presentation.Controllers
 {
@@ -17,6 +19,18 @@ namespace Presentation.Controllers
             var services = await _clientService.GetClientServicesAsync();
             _logger.LogInformation("[CONTROLLER] successfully Getting all services");
             return Ok(services);
+        }
+
+        [HttpPost("cf/reservations/quick")]
+        public async Task<IActionResult> QuickReserve([FromForm] ServiceRequestRegDTO requestRegDTO)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            await _clientService.QuickReserve(requestRegDTO, userId);
+            return Ok(new {message = "تم الحجز بنجاح"});
         }
     }
 }

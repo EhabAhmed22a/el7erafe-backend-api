@@ -58,7 +58,7 @@ namespace Service
             {
                 logger.LogWarning("[SERVICE] Admin login denied: Non-admin user attempted admin login. UserId: {UserId}, UserType: {UserType}",
                     user.Id, user.UserType);
-                throw new ForbiddenAccessException();
+                throw new ForbiddenAccessException("غير مسموح بالدخول إلا للمسؤولين");
             }
 
             logger.LogInformation("[SERVICE] User is admin, retrieving admin details for user: {UserId}", user.Id);

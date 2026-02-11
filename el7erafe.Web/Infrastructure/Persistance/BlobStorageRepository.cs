@@ -56,6 +56,43 @@ namespace Persistance
             return fileName;
         }
 
+        public async Task<List<string>> UploadMultipleFilesAsync(List<IFormFile> files, string containerName, string? customFileNames = null)
+        {
+            if (files == null || files.Count == 0)
+                throw new ArgumentException("No files provided");
+
+            var uploadedFileNames = new List<string>();
+            var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+
+            for (int i = 0; i < files.Count; i++)
+            {
+                var file = files[i];
+
+                if (file == null || file.Length == 0)
+                    continue;
+
+                var fileExtension = Path.GetExtension(file.FileName);
+                var fileName = customFileNames is not null
+                    ? $"{customFileNames}_{i+1}{fileExtension}"
+                    : $"{Guid.NewGuid()}{fileExtension}";
+
+                var blobClient = containerClient.GetBlobClient(fileName);
+
+                using var stream = file.OpenReadStream();
+                await blobClient.UploadAsync(stream, new BlobUploadOptions
+                {
+                    HttpHeaders = new BlobHttpHeaders
+                    {
+                        ContentType = file.ContentType
+                    }
+                });
+
+                uploadedFileNames.Add(fileName);
+            }
+
+            return uploadedFileNames;
+        }
+
         public async Task DeleteFileAsync(string fileName, string containerName)
         {
             var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
