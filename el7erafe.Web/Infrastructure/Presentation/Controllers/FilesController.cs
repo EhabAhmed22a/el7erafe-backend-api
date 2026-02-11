@@ -27,8 +27,8 @@ namespace Presentation.Controllers
                 _logger.LogInformation("Requesting technician file: {BlobName}", blobName);
 
                 // Get file properties first to check content type
-                var properties = await _fileService.GetFilePropertiesAsync(blobName);
-                var fileStream = await _fileService.GetFileStreamAsync(blobName);
+                var properties = await _fileService.GetFilePropertiesAsync(blobName, "technician-documents");
+                var fileStream = await _fileService.GetFileStreamAsync(blobName, "technician-documents");
 
                 if (download)
                 {
@@ -52,6 +52,16 @@ namespace Presentation.Controllers
                 _logger.LogError(ex, "Error serving file: {BlobName}", blobName);
                 return StatusCode(500, new { error = "Error retrieving file" });
             }
+        }
+
+        [HttpGet("service-image/{blobName}")]
+        public async Task<IActionResult> GetServiceImageUriAsync(string blobName)
+        {
+            _logger.LogInformation("Requesting technician file: {BlobName}", blobName);
+
+            var uri = await _fileService.GetImageURI(blobName, "services-documents");
+
+            return Ok(new { URL = uri });
         }
     }
 }

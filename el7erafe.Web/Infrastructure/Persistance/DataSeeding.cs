@@ -44,7 +44,7 @@ namespace Persistance
                 }
                 if (!await _dbContext.Admins.AnyAsync())
                 {
-                    var user = new ApplicationUser
+                    var admin1 = new ApplicationUser
                     {
                         UserName = "ahmedSalah",
                         Email = "temp@temp.com",
@@ -52,15 +52,33 @@ namespace Persistance
                         PhoneNumber = "01201884828", 
                         UserType = UserTypeEnum.Admin
                     };
-                    var result = await userManager.CreateAsync(user, "ahmedSalah123$");
+                    var result = await userManager.CreateAsync(admin1, "ahmedSalah123$");
                     if (result.Succeeded)
                     {
                         await _dbContext.Admins.AddAsync(new Admin()
                         {
                             Name = "Ahmed Salah",
-                            UserId = user.Id,
+                            UserId = admin1.Id,
                         });
-                        await userManager.AddToRoleAsync(user, "Admin");
+                        await userManager.AddToRoleAsync(admin1, "Admin");
+                    }
+                    var admin2 = new ApplicationUser
+                    {
+                        UserName = "kareemShawki",
+                        Email = "temp1@temp.com",
+                        EmailConfirmed = true,
+                        PhoneNumber = "01552207282", 
+                        UserType = UserTypeEnum.Admin
+                    };
+                    var result2 = await userManager.CreateAsync(admin2, "kareemPanda123#");
+                    if (result2.Succeeded)
+                    {
+                        await _dbContext.Admins.AddAsync(new Admin()
+                        {
+                            Name = "Kareem Shawki",
+                            UserId = admin2.Id,
+                        });
+                        await userManager.AddToRoleAsync(admin2, "Admin");
                     }
                 }
                 if (!await _dbContext.rejectionComments.AnyAsync())

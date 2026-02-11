@@ -52,7 +52,7 @@ namespace el7erafe.Web.CustomMiddleWares
 
             httpContext.Response.StatusCode = ex switch
             {
-                NotFoundException => StatusCodes.Status404NotFound,
+                { } when ex is NotFoundException or FileNotFoundException => StatusCodes.Status404NotFound,
                 UnauthorizedException => StatusCodes.Status401Unauthorized,
                 BadRequestException badRequestException => GetBadRequestErrors(badRequestException, Response),
                 { } when ex is AlreadyExistException or EmailAlreadyVerified or TechnicianAcceptedOrPendingException
@@ -137,7 +137,6 @@ namespace el7erafe.Web.CustomMiddleWares
             return authHeader.Split(' ') switch
             {
                 ["Bearer", var token] => token.Trim(),
-                ["bearer", var token] => token.Trim(),
                 _ => null
             };
         }

@@ -10,6 +10,7 @@ using ServiceAbstraction;
 using Shared.DataTransferObject.AdminDTOs.Dashboard;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
 using Microsoft.AspNetCore.Http;
+using DomainLayer.Exceptions;
 namespace Service
 {
     public class TechnicianFileService : ITechnicianFileService
@@ -76,22 +77,28 @@ namespace Service
         public async Task<TechRegisterToReturnDTO> ProcessTechnicianFilesAsync(TechRegisterDTO techRegisterDTO)
         {
             // Save files to blob storage and get URLs
+            var profilePicture = await _blobStorageService.UploadFileAsync(
+                techRegisterDTO.ProfilePicture,
+                "technician-documents",
+                $"profilepicture_{Guid.NewGuid()}"
+            );
+
             var nationalIdFrontUrl = await _blobStorageService.UploadFileAsync(
                 techRegisterDTO.NationalIdFront,
                 "technician-documents",
-                $"nationalidfront{Guid.NewGuid()}"
+                $"nationalidfront_{Guid.NewGuid()}"
             );
 
             var nationalIdBackUrl = await _blobStorageService.UploadFileAsync(
                 techRegisterDTO.NationalIdBack,
                 "technician-documents",
-                $"nationalidback{Guid.NewGuid()}"
+                $"nationalidback_{Guid.NewGuid()}"
             );
 
             var criminalRecordUrl = await _blobStorageService.UploadFileAsync(
                 techRegisterDTO.CriminalRecord,
                 "technician-documents",
-                $"criminalrecord{Guid.NewGuid()}"
+                $"criminalrecord_{Guid.NewGuid()}"
             );
 
             // Return the processed DTO with blob URLs
@@ -100,6 +107,7 @@ namespace Service
                 Name = techRegisterDTO.Name,
                 PhoneNumber = techRegisterDTO.PhoneNumber,
                 Password = techRegisterDTO.Password,
+                ProfilePicturePath = profilePicture,
                 NationalIdFrontPath = nationalIdFrontUrl,
                 NationalIdBackPath = nationalIdBackUrl,
                 CriminalRecordPath = criminalRecordUrl,
@@ -109,14 +117,19 @@ namespace Service
 
         public async Task<ServiceDTO> ProcessServiceFilesAsync(ServiceRegisterDTO serviceRegisterDTO)
         {
-            _logger.LogInformation("[FILE-SERVICE] Uploading service image. File Name: {FileName}, File Size: {FileSize} bytes",
-           serviceRegisterDTO.ServiceImage?.FileName,
-           serviceRegisterDTO.ServiceImage?.Length);
 
-            var serviceImageURL = await _blobStorageService.UploadFileAsync(
+            const string containerName = "services-documents";
+
+            _logger.LogInformation("[FILE-SERVICE] Uploading service image. File Name: {FileName}, File Size: {FileSize} bytes",
+            serviceRegisterDTO.ServiceImage.FileName,
+            serviceRegisterDTO.ServiceImage.Length);
+
+            var serviceImage = await _blobStorageService.UploadFileAsync(
                 serviceRegisterDTO.ServiceImage!,
-                "services-documents",
-                $"{serviceRegisterDTO.ServiceImage?.FileName}{Guid.NewGuid()}");
+                containerName,
+                $"{serviceRegisterDTO.ServiceImage.FileName}_{Guid.NewGuid()}");
+
+            var serviceImageURL = await GetImageURI(serviceImage, "services-documents");
 
             _logger.LogInformation("[FILE-SERVICE] Successfully uploaded service image. Generated URL: {ImageURL}",
                 serviceImageURL);
@@ -128,14 +141,14 @@ namespace Service
             };
         }
 
-        public async Task<Stream> GetFileStreamAsync(string blobName)
+        public async Task<Stream> GetFileStreamAsync(string blobName, string containerName)
         {
             try
             {
                 if (string.IsNullOrEmpty(blobName))
                     throw new ArgumentException("Blob name cannot be null or empty");
 
-                var containerClient = _blobServiceClient.GetBlobContainerClient("technician-documents");
+                var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
                 var blobClient = containerClient.GetBlobClient(blobName);
 
                 if (!await blobClient.ExistsAsync())
@@ -143,20 +156,24 @@ namespace Service
 
                 return await blobClient.OpenReadAsync();
             }
+            catch (TechnicalException ex)
+            {
+                throw new TechnicalException();
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving file stream for blob: {BlobName}", blobName);
                 throw;
             }
         }
-        public async Task<BlobProperties> GetFilePropertiesAsync(string blobName)
+        public async Task<BlobProperties> GetFilePropertiesAsync(string blobName, string containerName)
         {
             try
             {
                 if (string.IsNullOrEmpty(blobName))
                     throw new ArgumentException("Blob name cannot be null or empty");
 
-                var containerClient = _blobServiceClient.GetBlobContainerClient("technician-documents");
+                var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
                 var blobClient = containerClient.GetBlobClient(blobName);
 
                 if (!await blobClient.ExistsAsync())
@@ -164,11 +181,46 @@ namespace Service
 
                 return await blobClient.GetPropertiesAsync();
             }
+            catch (TechnicalException ex)
+            {
+                throw new TechnicalException();
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving file properties for blob: {BlobName}", blobName);
                 throw;
             }
+        }
+
+        public async Task<string> GetImageURI(string blobName, string containerName)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(blobName))
+                    throw new ArgumentException("Blob name cannot be null or empty");
+
+                if (string.IsNullOrEmpty(containerName))
+                    throw new ArgumentException("Container name cannot be null or empty");
+
+                return await GetBlobUriAsync(containerName, blobName);
+            }
+            catch (Exception ex) when (ex is not FileNotFoundException && ex is not ArgumentException)
+            {
+                _logger.LogError(ex, "Error retrieving image URI for blob: {BlobName} in container: {ContainerName}",
+                    blobName, containerName);
+                throw new TechnicalException();
+            }
+        }
+
+        private async Task<string> GetBlobUriAsync(string containerName, string blobName)
+        {
+            var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+            var blobClient = containerClient.GetBlobClient(blobName);
+
+            if (!await blobClient.ExistsAsync())
+                throw new FileNotFoundException($"Image '{blobName}' not found in container '{containerName}'");
+
+            return blobClient.Uri.AbsoluteUri;
         }
     }
 }
