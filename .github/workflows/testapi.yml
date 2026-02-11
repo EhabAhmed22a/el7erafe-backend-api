@@ -67,8 +67,7 @@ jobs:
         run: dotnet publish el7erafe.Web/el7erafe.Web/el7erafe.Web.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp --self-contained false
         
       - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v2
+        uses: azure/webapps-deploy@v3
         with:
           app-name: 'el7rafeApp' # Replace with your app service name
-          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }} # Add a secret in your repository settings with the publish profile
           package: '${{env.DOTNET_ROOT}}/myapp'
