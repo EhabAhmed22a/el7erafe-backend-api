@@ -1,7 +1,7 @@
 ﻿
 namespace DomainLayer.Exceptions
 {
-    public class ForbiddenAccessException(): Exception("غير مسموح بالدخول إلا للمسؤولين")
+    public class ForbiddenAccessException(string message): Exception(message)
     {
     }
 }

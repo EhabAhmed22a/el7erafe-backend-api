@@ -56,9 +56,11 @@ namespace el7erafe.Web.CustomMiddleWares
                 UnauthorizedException => StatusCodes.Status401Unauthorized,
                 BadRequestException badRequestException => GetBadRequestErrors(badRequestException, Response),
                 { } when ex is AlreadyExistException or EmailAlreadyVerified or TechnicianAcceptedOrPendingException
-                or ServiceAlreadyRegisteredException => StatusCodes.Status409Conflict,
+                or ServiceAlreadyRegisteredException or ServiceAlreadyRequestedException
+                or ServiceRequestTimeConflictException => StatusCodes.Status409Conflict,
                 InvalidOtpException => StatusCodes.Status400BadRequest,
                 { } when ex is ForgotPasswordDisallowed or ResetTokenExpiredException or ForbiddenAccessException => StatusCodes.Status403Forbidden,
+                UnprocessableEntityException => StatusCodes.Status422UnprocessableEntity,
                 UnverifiedException unverifiedLogin => GetEmail(unverifiedLogin, Response),
                 RejectedTechnician rejectedTechnician => CreateRejectionResponse(rejectedTechnician, Response),
                 PendingTechnicianRequest pendingTechnicianRequest => GetTempToken(pendingTechnicianRequest, Response),
