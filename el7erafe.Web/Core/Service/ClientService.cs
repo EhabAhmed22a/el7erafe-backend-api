@@ -78,7 +78,7 @@ namespace Service
             string? lastImageURL = null;
             if (regDTO.Images is not null && regDTO.Images.Count > 0)
             {
-                var fileNames = await blobStorageRepository.UploadMultipleFilesAsync(regDTO.Images, "service-request-images", $"{serviceRequest.Id}_{clientId}");
+                var fileNames = await blobStorageRepository.UploadMultipleFilesAsync(regDTO.Images, "service-requests-images", $"{serviceRequest.Id}_{clientId}");
                 lastImageURL = fileNames.LastOrDefault();
             }
             
