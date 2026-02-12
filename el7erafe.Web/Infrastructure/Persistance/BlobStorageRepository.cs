@@ -62,8 +62,15 @@ namespace Persistance
                 throw new ArgumentException("No files provided");
 
             var uploadedFileNames = new List<string>();
-            var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
-
+            BlobContainerClient? containerClient = null;
+            try
+            {
+                containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"1_ {containerClient}");
+            }
             for (int i = 0; i < files.Count; i++)
             {
                 var file = files[i];
@@ -76,16 +83,30 @@ namespace Persistance
                     ? $"{customFileNames}_{i+1}{fileExtension}"
                     : $"{Guid.NewGuid()}{fileExtension}";
 
-                var blobClient = containerClient.GetBlobClient(fileName);
-
-                using var stream = file.OpenReadStream();
-                await blobClient.UploadAsync(stream, new BlobUploadOptions
+                BlobClient? blobClient = null;
+                try
                 {
-                    HttpHeaders = new BlobHttpHeaders
+                    blobClient = containerClient.GetBlobClient(fileName);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception($"2_{blobClient}");
+                }
+                using var stream = file.OpenReadStream();
+                try
+                {
+                    await blobClient.UploadAsync(stream, new BlobUploadOptions
                     {
-                        ContentType = file.ContentType
-                    }
-                });
+                        HttpHeaders = new BlobHttpHeaders
+                        {
+                            ContentType = file.ContentType
+                        }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("3");
+                }
 
                 uploadedFileNames.Add(fileName);
             }
