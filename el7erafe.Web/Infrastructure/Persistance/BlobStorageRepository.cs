@@ -28,7 +28,7 @@ namespace Persistance
                     throw new InvalidOperationException("AzureBlobStorage AccountName is not configured for production environment.");
                 }
                 var blobServiceUri = new Uri($"https://{accountName}.blob.core.windows.net");
-                _blobServiceClient = new BlobServiceClient(blobServiceUri, new DefaultAzureCredential());
+                _blobServiceClient = new BlobServiceClient(blobServiceUri, new ManagedIdentityCredential());
             }
         }
 
