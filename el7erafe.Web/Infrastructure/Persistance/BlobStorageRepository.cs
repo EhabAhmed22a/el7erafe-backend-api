@@ -23,6 +23,10 @@ namespace Persistance
             else
             {
                 var accountName = configuration.GetValue<string>("AzureBlobStorage:AccountName");
+                if (string.IsNullOrEmpty(accountName))
+                {
+                    throw new InvalidOperationException("AzureBlobStorage AccountName is not configured for production environment.");
+                }
                 var blobServiceUri = new Uri($"https://{accountName}.blob.core.windows.net");
                 _blobServiceClient = new BlobServiceClient(blobServiceUri, new DefaultAzureCredential());
             }
@@ -62,15 +66,8 @@ namespace Persistance
                 throw new ArgumentException("No files provided");
 
             var uploadedFileNames = new List<string>();
-            BlobContainerClient? containerClient = null;
-            try
-            {
-                containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"1_ {containerClient}");
-            }
+            var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+
             for (int i = 0; i < files.Count; i++)
             {
                 var file = files[i];
@@ -83,30 +80,16 @@ namespace Persistance
                     ? $"{customFileNames}_{i+1}{fileExtension}"
                     : $"{Guid.NewGuid()}{fileExtension}";
 
-                BlobClient? blobClient = null;
-                try
-                {
-                    blobClient = containerClient.GetBlobClient(fileName);
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception($"2_{blobClient}");
-                }
+                var blobClient = containerClient.GetBlobClient(fileName);
+
                 using var stream = file.OpenReadStream();
-                try
+                await blobClient.UploadAsync(stream, new BlobUploadOptions
                 {
-                    await blobClient.UploadAsync(stream, new BlobUploadOptions
+                    HttpHeaders = new BlobHttpHeaders
                     {
-                        HttpHeaders = new BlobHttpHeaders
-                        {
-                            ContentType = file.ContentType
-                        }
-                    });
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception("3");
-                }
+                        ContentType = file.ContentType
+                    }
+                });
 
                 uploadedFileNames.Add(fileName);
             }
