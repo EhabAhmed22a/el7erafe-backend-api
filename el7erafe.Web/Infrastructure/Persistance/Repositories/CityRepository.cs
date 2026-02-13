@@ -26,5 +26,9 @@ namespace Persistance.Repositories
                 return null;
             return await dbContext.Set<Governorate>().FirstOrDefaultAsync(g => g.Id == city.GovernorateId);
         }
+        public async Task<City?> GetCityByNameAsync(string cityName)
+        {
+            return await dbContext.Set<City>().FirstOrDefaultAsync(c => c.NameAr == cityName);
+        }
     }
 }
