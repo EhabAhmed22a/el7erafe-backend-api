@@ -20,8 +20,7 @@ namespace Shared.DataTransferObject.ServiceRequestDTOs
         public List<IFormFile>? Images { get; set; }
 
         [Required(ErrorMessage = "المدينة مطلوبة")]
-        [Range(1, int.MaxValue, ErrorMessage = "الرجاء اختيار مدينة صالحة")]
-        public int? CityId { get; set; }
+        public string? CityName { get; set; }
 
         [Required(ErrorMessage = "عنوان الشارع مطلوب")]
         [StringLength(200, MinimumLength = 5,
