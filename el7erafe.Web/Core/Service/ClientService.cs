@@ -50,7 +50,12 @@ namespace Service
             if (client is null)
                 throw new ForbiddenAccessException("هذا الإجراء متاح للعملاء فقط");
 
-            if (!await servicesRepository.ExistsAsync((int)regDTO.ServiceId) || !await cityRepository.ExistsAsync((int)regDTO.CityId))
+            var city = await cityRepository.GetCityByNameAsync(regDTO.CityName);
+
+            if (city is null)
+                throw new CityNotFoundException(regDTO.CityName);
+
+            if (!await servicesRepository.ExistsAsync((int)regDTO.ServiceId))
                 throw new TechnicalException();
 
             int clientId = client.Id;
@@ -62,7 +67,7 @@ namespace Service
             var serviceReq = new ServiceRequest()
             {
                 Description = regDTO!.Description,
-                CityId = (int) regDTO!.CityId,
+                CityId = city.Id,
                 ServiceId = (int) regDTO!.ServiceId,
                 SpecialSign = regDTO!.SpecialSign,
                 Street = regDTO!.Street,
