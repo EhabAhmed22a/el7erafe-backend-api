@@ -34,13 +34,21 @@ namespace Presentation.Controllers
         }
 
         [HttpDelete("client/account")]
-        public async Task<IActionResult> DeleteAccountAsync(string UserId)
+        public async Task<IActionResult> DeleteAccountAsync()
         {
-            _logger.LogInformation("[CONTROLLER] DeleteAccount called for UserId: {UserId}", UserId);
+            _logger.LogInformation("[CONTROLLER] Getting UserId From the Token");
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                _logger.LogWarning("[CONTROLLER] DeleteAccount failed: userId not found in claims");
+                return Unauthorized("المستخدم غير موجود");
+            }
 
-            await _clientService.DeleteAccount(UserId);
+            _logger.LogInformation("[CONTROLLER] DeleteAccount called for UserId: {UserId}", userId);
 
-            _logger.LogInformation("[CONTROLLER] DeleteAccount completed for UserId: {UserId}", UserId);
+            await _clientService.DeleteAccount(userId);
+
+            _logger.LogInformation("[CONTROLLER] DeleteAccount completed for UserId: {UserId}", userId);
             return Ok(new { message = "تم حذف الحساب بنجاح" });
         }
     }
