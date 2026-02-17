@@ -1,11 +1,13 @@
 ﻿using DomainLayer.Contracts;
 using DomainLayer.Exceptions;
 using DomainLayer.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using ServiceAbstraction;
 using Shared.DataTransferObject.ClientDTOs;
 using Shared.DataTransferObject.ClientIdentityDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
+using Shared.DataTransferObject.UpdateDTOs;
 
 namespace Service
 {
@@ -69,10 +71,10 @@ namespace Service
             {
                 Description = regDTO!.Description,
                 CityId = city.Id,
-                ServiceId = (int) regDTO!.ServiceId,
+                ServiceId = (int)regDTO!.ServiceId,
                 SpecialSign = regDTO!.SpecialSign,
                 Street = regDTO!.Street,
-                ServiceDate = (DateOnly) regDTO!.ServiceDate,
+                ServiceDate = (DateOnly)regDTO!.ServiceDate,
                 AvailableFrom = regDTO!.AvailableFrom,
                 AvailableTo = regDTO!.AvailableTo,
                 CreatedAt = DateTime.UtcNow,
@@ -87,7 +89,7 @@ namespace Service
                 var fileNames = await blobStorageRepository.UploadMultipleFilesAsync(regDTO.Images, "service-requests-images", $"{serviceRequest.Id}_{clientId}");
                 lastImageURL = fileNames.LastOrDefault();
             }
-            
+
             serviceRequest.LastImageURL = lastImageURL;
             if (!await serviceRequestRepository.UpdateAsync(serviceRequest))
                 throw new TechnicalException();
@@ -103,9 +105,34 @@ namespace Service
             {
                 Name = user.Name,
                 Email = user.User.Email!,
-                ImageURL = user.ImageURL,
+                ImageURL = user.ImageURL ?? "https://el7erafe.blob.core.windows.net/services-documents/user-circles-set.png",
                 PhoneNumber = user.User.PhoneNumber!
             };
+        }
+
+        public async Task UpdateNameAndImage(string userId, UpdateNameImageDTO dTO)
+        {
+            var user = await clientRepository.GetByUserIdAsync(userId);
+            if (user is null)
+                throw new UserNotFoundException("المستخدم غير موجود");
+
+            bool hasName = !string.IsNullOrWhiteSpace(dTO.Name);
+            bool hasValidImage = dTO.Image is not null && dTO.Image.Length > 0;
+
+            if (!hasName && !hasValidImage)
+                throw new ArgumentException("يجب توفير الاسم أو الصورة على الأقل للتحديث");
+
+            bool sameName = user.Name.Equals(dTO.Name);
+            if (sameName)
+                throw new UpdateException("الاسم الجديد مطابق للاسم الحالي");
+
+            if (hasName)
+                user.Name = dTO.Name!;
+
+            if (hasValidImage)
+                user.ImageURL = await blobStorageRepository.UploadFileAsync(dTO.Image!, "client-profilepics", $"{user.Id}{Path.GetExtension(dTO.Image?.FileName)}");
+
+            await clientRepository.UpdateAsync(user);
         }
     }
 }

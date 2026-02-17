@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
 using Shared.DataTransferObject.ServiceRequestDTOs;
+using Shared.DataTransferObject.UpdateDTOs;
 
 namespace Presentation.Controllers
 {
@@ -30,7 +31,7 @@ namespace Presentation.Controllers
                 return Unauthorized("المستخدم غير موجود");
 
             await _clientService.QuickReserve(requestRegDTO, userId);
-            return Ok(new {message = "تم الحجز بنجاح"});
+            return Ok(new { message = "تم الحجز بنجاح" });
         }
 
         [HttpGet("cf/profile")]
@@ -42,6 +43,17 @@ namespace Presentation.Controllers
 
             var result = await _clientService.GetProfileAsync(userId);
             return Ok(result);
+        }
+
+        [HttpPatch("cf/profile_update")]
+        public async Task<IActionResult> UpdateProfile([FromForm] UpdateNameImageDTO update)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            await _clientService.UpdateNameAndImage(userId, update);
+            return Ok(new { message = "تم تحديث الملف الشخصي بنجاح" });
         }
     }
 }
