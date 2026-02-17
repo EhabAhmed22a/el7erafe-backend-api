@@ -38,14 +38,25 @@ namespace Service
 
         public async Task QuickReserve(ServiceRequestRegDTO regDTO, string userId)
         {
-            if (regDTO.AllDayAvailability && (regDTO.AvailableFrom.HasValue || regDTO.AvailableTo.HasValue))
-                throw new UnprocessableEntityException("عند اختيار 'متاح طوال اليوم'، يجب إرسال حقلي وقت البداية والنهاية فارغين");
+            if (regDTO.AllDayAvailability)
+            {
+                if (regDTO.AvailableFrom.HasValue || regDTO.AvailableTo.HasValue)
+                    throw new UnprocessableEntityException("عند اختيار 'متاح طوال اليوم'، يجب إرسال حقلي وقت البداية والنهاية فارغين");
+            }
+            else
+            {
+                if (!regDTO.AvailableFrom.HasValue || !regDTO.AvailableTo.HasValue)
+                    throw new UnprocessableEntityException("يجب تحديد وقت البداية والنهاية عندما لا تكون متاحاً طوال اليوم");
 
-            if (!regDTO.AllDayAvailability && (!regDTO.AvailableFrom.HasValue || !regDTO.AvailableTo.HasValue))
-                throw new UnprocessableEntityException("يجب تحديد وقت البداية والنهاية عندما لا تكون متاحاً طوال اليوم");
+                if (regDTO.AvailableFrom.Value >= regDTO.AvailableTo.Value)
+                    throw new UnprocessableEntityException("وقت البداية يجب أن يكون قبل وقت النهاية");
 
-            if (!regDTO.AllDayAvailability && regDTO.AvailableFrom >= regDTO.AvailableTo)
-                throw new UnprocessableEntityException("وقت البداية يجب أن يكون قبل وقت النهاية");
+                if ((regDTO.AvailableTo.Value - regDTO.AvailableFrom.Value).TotalHours > 23)
+                    throw new UnprocessableEntityException("إذا كنت متاحاً طوال اليوم، الرجاء اختيار 'متاح طوال اليوم'");
+
+                if (regDTO.AvailableFrom.Value.ToTimeSpan() < DateTime.Now.TimeOfDay)
+                    throw new UnprocessableEntityException("وقت البداية لا يمكن أن يكون في الماضي");
+            }
 
             var client = await clientRepository.GetByUserIdAsync(userId);
             if (client is null)
