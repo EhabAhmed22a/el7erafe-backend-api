@@ -10,5 +10,6 @@ namespace DomainLayer.Contracts
         Task<Stream> DownloadFileAsync(string fileName, string containerName);
         string ExtractFileNameFromUrl(string url);
         Task DeleteMultipleFilesAsync(string fileName, string containerName);
+        Task<string?> GetImageURL(string containerName, string fileName);
     }
 }
