@@ -116,6 +116,7 @@ namespace Service
             }
 
             var deleted = await clientRepository.DeleteAsync(userId);
+        }
         public async Task<ClientProfileDTO> GetProfileAsync(string userId)
         {
             var user = await clientRepository.GetByUserIdAsync(userId);

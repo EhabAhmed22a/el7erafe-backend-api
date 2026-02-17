@@ -50,6 +50,8 @@ namespace Presentation.Controllers
 
             _logger.LogInformation("[CONTROLLER] DeleteAccount completed for UserId: {UserId}", userId);
             return Ok(new { message = "تم حذف الحساب بنجاح" });
+        }
+
         [HttpGet("cf/profile")]
         public async Task<IActionResult> GetProfile()
         {
