@@ -4,6 +4,7 @@ using DomainLayer.Models;
 using Microsoft.EntityFrameworkCore;
 using ServiceAbstraction;
 using Shared.DataTransferObject.ClientDTOs;
+using Shared.DataTransferObject.ClientIdentityDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
 
 namespace Service
@@ -90,6 +91,44 @@ namespace Service
             serviceRequest.LastImageURL = lastImageURL;
             if (!await serviceRequestRepository.UpdateAsync(serviceRequest))
                 throw new TechnicalException();
+        }
+
+        public async Task DeleteAccount(string userId)
+        {
+            var client = await clientRepository.GetByUserIdAsync(userId);
+            if (client is null)
+                throw new UserNotFoundException("المستخدم غير موجود");
+
+            // Get all service request ids for this client
+            var serviceRequestIds = await serviceRequestRepository.GetServiceRequestIdsByClientAsync(client.Id);
+
+            foreach (var srId in serviceRequestIds)
+            {
+                var sr = await serviceRequestRepository.GetServiceById(srId);
+                if (sr is null)
+                    continue;
+
+                // If the service request has images, delete them from blob storage.
+                if (!string.IsNullOrWhiteSpace(sr.LastImageURL))
+                {
+                    await blobStorageRepository.DeleteMultipleFilesAsync(sr.LastImageURL, "service-requests-images");
+                }
+            }
+
+            var deleted = await clientRepository.DeleteAsync(userId);
+        public async Task<ClientProfileDTO> GetProfileAsync(string userId)
+        {
+            var user = await clientRepository.GetByUserIdAsync(userId);
+            if (user is null)
+                throw new UserNotFoundException("المستخدم غير موجود");
+
+            return new ClientProfileDTO()
+            {
+                Name = user.Name,
+                Email = user.User.Email!,
+                ImageURL = user.ImageURL,
+                PhoneNumber = user.User.PhoneNumber!
+            };
         }
     }
 }

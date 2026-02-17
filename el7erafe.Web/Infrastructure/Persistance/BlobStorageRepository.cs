@@ -1,4 +1,5 @@
-﻿using Azure.Identity;
+﻿using System.Threading.Tasks;
+using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using DomainLayer.Contracts;
@@ -77,7 +78,7 @@ namespace Persistance
 
                 var fileExtension = Path.GetExtension(file.FileName);
                 var fileName = customFileNames is not null
-                    ? $"{customFileNames}_{i+1}{fileExtension}"
+                    ? $"{customFileNames}_{i + 1}{fileExtension}"
                     : $"{Guid.NewGuid()}{fileExtension}";
 
                 var blobClient = containerClient.GetBlobClient(fileName);
@@ -97,12 +98,22 @@ namespace Persistance
             return uploadedFileNames;
         }
 
+        public async Task<string?> GetImageURL(string containerName, string fileName)
+        {
+            var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+            var blobClient = containerClient.GetBlobClient(fileName);
+            bool exists = await blobClient.ExistsAsync();
+            return exists ? blobClient.Uri.AbsoluteUri : null;
+
+        }
+
         public async Task DeleteFileAsync(string fileName, string containerName)
         {
             var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
             var blobClient = containerClient.GetBlobClient(fileName);
             await blobClient.DeleteIfExistsAsync();
         }
+
 
         public async Task<bool> FileExistsAsync(string fileName, string containerName)
         {
@@ -133,6 +144,33 @@ namespace Persistance
 
             var idx = url.LastIndexOf('/');
             return idx >= 0 ? url[(idx + 1)..] : url;
+        }
+
+        public async Task DeleteMultipleFilesAsync(string fileName, string containerName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName))
+                throw new ArgumentException("fileName cannot be null or empty", nameof(fileName));
+
+            var extension = Path.GetExtension(fileName);
+            var baseName = Path.GetFileNameWithoutExtension(fileName);
+            var parts = baseName.Split('_');
+
+            // Expected format: serviceId_clientId_count
+            if (parts.Length != 3 || !int.TryParse(parts[2], out var count))
+            {
+                // Fallback: try deleting the provided filename as-is
+                await DeleteFileAsync(fileName, containerName);
+                return;
+            }
+
+            var serviceId = parts[0];
+            var Id = parts[1];
+
+            for (int i = count; i >= 1; i--)
+            {
+                var candidate = $"{serviceId}_{Id}_{i}{extension}";
+                await DeleteFileAsync(candidate, containerName);
+            }
         }
     }
 }

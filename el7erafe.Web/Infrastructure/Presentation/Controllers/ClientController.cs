@@ -32,5 +32,33 @@ namespace Presentation.Controllers
             await _clientService.QuickReserve(requestRegDTO, userId);
             return Ok(new {message = "تم الحجز بنجاح"});
         }
+
+        [HttpDelete("client/account")]
+        public async Task<IActionResult> DeleteAccountAsync()
+        {
+            _logger.LogInformation("[CONTROLLER] Getting UserId From the Token");
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                _logger.LogWarning("[CONTROLLER] DeleteAccount failed: userId not found in claims");
+                return Unauthorized("المستخدم غير موجود");
+            }
+
+            _logger.LogInformation("[CONTROLLER] DeleteAccount called for UserId: {UserId}", userId);
+
+            await _clientService.DeleteAccount(userId);
+
+            _logger.LogInformation("[CONTROLLER] DeleteAccount completed for UserId: {UserId}", userId);
+            return Ok(new { message = "تم حذف الحساب بنجاح" });
+        [HttpGet("cf/profile")]
+        public async Task<IActionResult> GetProfile()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            var result = await _clientService.GetProfileAsync(userId);
+            return Ok(result);
+        }
     }
 }
