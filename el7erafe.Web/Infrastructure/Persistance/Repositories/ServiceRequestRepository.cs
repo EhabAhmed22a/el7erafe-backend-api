@@ -52,6 +52,26 @@ namespace Persistance.Repositories
             await dbContext.SaveChangesAsync();
             return true;
         }
+
+        public async Task<int> DeleteAsync(int id)
+        {
+            var serviceRequest = await dbContext.Set<ServiceRequest>().FindAsync(id);
+            if (serviceRequest is not null)
+            {
+                dbContext.Set<ServiceRequest>().Remove(serviceRequest);
+                return await dbContext.SaveChangesAsync();
+            }
+            return 0;
+        }
+
+        public async Task<IEnumerable<int>> GetServiceRequestIdsByClientAsync(int clientId)
+        {
+            return await dbContext
+                .Set<ServiceRequest>()
+                .Where(sr => sr.ClientId == clientId)
+                .Select(sr => sr.Id)
+                .ToListAsync();
+        }
     }
 
     public static class TimeOnlyExtensions
@@ -63,3 +83,4 @@ namespace Persistance.Repositories
         }
     }
 }
+

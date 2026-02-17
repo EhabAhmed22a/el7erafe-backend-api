@@ -11,5 +11,7 @@ namespace DomainLayer.Contracts
         Task<bool> IsTimeConflicted(int clientId, TimeOnly? AvailableFrom, TimeOnly? AvailableTo, DateOnly Date);
         Task<TimeOnly?> GetServiceTime(int clientId);
         Task<ServiceRequest> CreateAsync(ServiceRequest serviceRequest);
+        Task<int> DeleteAsync(int id);
+        Task<IEnumerable<int>> GetServiceRequestIdsByClientAsync(int clientId);
     }
 }
