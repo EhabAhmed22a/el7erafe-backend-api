@@ -1,5 +1,6 @@
 ﻿
 using Shared.DataTransferObject.ClientDTOs;
+using Shared.DataTransferObject.ClientIdentityDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
 
 namespace ServiceAbstraction
@@ -8,5 +9,6 @@ namespace ServiceAbstraction
     {
         Task<ServiceListDto> GetClientServicesAsync();
         Task QuickReserve(ServiceRequestRegDTO requestRegDTO, string userId);
+        Task<ClientProfileDTO> GetProfileAsync(string userId);
     }
 }

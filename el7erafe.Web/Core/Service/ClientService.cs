@@ -4,6 +4,7 @@ using DomainLayer.Models;
 using Microsoft.EntityFrameworkCore;
 using ServiceAbstraction;
 using Shared.DataTransferObject.ClientDTOs;
+using Shared.DataTransferObject.ClientIdentityDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
 
 namespace Service
@@ -90,6 +91,21 @@ namespace Service
             serviceRequest.LastImageURL = lastImageURL;
             if (!await serviceRequestRepository.UpdateAsync(serviceRequest))
                 throw new TechnicalException();
+        }
+
+        public async Task<ClientProfileDTO> GetProfileAsync(string userId)
+        {
+            var user = await clientRepository.GetByUserIdAsync(userId);
+            if (user is null)
+                throw new UserNotFoundException("المستخدم غير موجود");
+
+            return new ClientProfileDTO()
+            {
+                Name = user.Name,
+                Email = user.User.Email!,
+                ImageURL = user.ImageURL,
+                PhoneNumber = user.User.PhoneNumber!
+            };
         }
     }
 }
