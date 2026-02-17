@@ -8,5 +8,6 @@ namespace ServiceAbstraction
     {
         Task<ServiceListDto> GetClientServicesAsync();
         Task QuickReserve(ServiceRequestRegDTO requestRegDTO, string userId);
+        Task DeleteAccount(string userId);
     }
 }

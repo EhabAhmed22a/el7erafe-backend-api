@@ -91,5 +91,10 @@ namespace Service
             if (!await serviceRequestRepository.UpdateAsync(serviceRequest))
                 throw new TechnicalException();
         }
+
+        public async Task DeleteAccount(string userId)
+        {
+
+        }
     }
 }
