@@ -115,8 +115,6 @@ namespace Service
             }
 
             var deleted = await clientRepository.DeleteAsync(userId);
-            if (!deleted)
-                throw new UserNotFoundException("المستخدم غير موجود");
         }
     }
 }
