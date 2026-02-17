@@ -130,8 +130,13 @@ namespace Service
                 user.Name = dTO.Name!;
 
             if (hasValidImage)
-                user.ImageURL = await blobStorageRepository.UploadFileAsync(dTO.Image!, "client-profilepics", $"{user.Id}{Path.GetExtension(dTO.Image?.FileName)}");
+            {
+                if (user.ImageURL != null)
+                    await blobStorageRepository.DeleteFileAsync(user.ImageURL, "client-profilepics");
 
+                user.ImageURL = await blobStorageRepository.GetImageURL("client-profilepics", await blobStorageRepository.UploadFileAsync(dTO.Image!, "client-profilepics", $"{user.Id}{Path.GetExtension(dTO.Image?.FileName)}"));
+
+            }
             await clientRepository.UpdateAsync(user);
         }
     }
