@@ -93,29 +93,6 @@ namespace Service
                 throw new TechnicalException();
         }
 
-        public async Task DeleteAccount(string userId)
-        {
-            var client = await clientRepository.GetByUserIdAsync(userId);
-            if (client is null)
-                throw new UserNotFoundException("المستخدم غير موجود");
-
-            // Get all service request ids for this client
-            var serviceRequestIds = await serviceRequestRepository.GetServiceRequestIdsByClientAsync(client.Id);
-
-            foreach (var srId in serviceRequestIds)
-            {
-                var sr = await serviceRequestRepository.GetServiceById(srId);
-                if (sr is null)
-                    continue;
-
-                // If the service request has images, delete them from blob storage.
-                if (!string.IsNullOrWhiteSpace(sr.LastImageURL))
-                {
-                    await blobStorageRepository.DeleteMultipleFilesAsync(sr.LastImageURL, "service-requests-images");
-                }
-            }
-
-            var deleted = await clientRepository.DeleteAsync(userId);
         public async Task<ClientProfileDTO> GetProfileAsync(string userId)
         {
             var user = await clientRepository.GetByUserIdAsync(userId);
