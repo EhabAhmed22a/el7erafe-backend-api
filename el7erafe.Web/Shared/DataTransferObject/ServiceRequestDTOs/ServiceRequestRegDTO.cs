@@ -61,6 +61,12 @@ namespace Shared.DataTransferObject.ServiceRequestDTOs
                         "إذا كنت متاحاً طوال اليوم، الرجاء اختيار 'متاح طوال اليوم'",
                         new[] { nameof(AvailableFrom), nameof(AvailableTo) });
                 }
+                else if (AvailableFrom.Value.ToTimeSpan() < DateTime.Now.TimeOfDay)
+                {
+                    yield return new ValidationResult(
+                        "وقت البداية لا يمكن أن يكون في الماضي",
+                        new[] { nameof(AvailableFrom) });
+                }
             }
 
             if (ServiceDate < DateOnly.FromDateTime(DateTime.Today))

@@ -50,6 +50,15 @@ namespace Presentation.Controllers
 
             _logger.LogInformation("[CONTROLLER] DeleteAccount completed for UserId: {UserId}", userId);
             return Ok(new { message = "تم حذف الحساب بنجاح" });
+        [HttpGet("cf/profile")]
+        public async Task<IActionResult> GetProfile()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            var result = await _clientService.GetProfileAsync(userId);
+            return Ok(result);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Azure.Identity;
+﻿using System.Threading.Tasks;
+using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using DomainLayer.Contracts;
@@ -77,7 +78,7 @@ namespace Persistance
 
                 var fileExtension = Path.GetExtension(file.FileName);
                 var fileName = customFileNames is not null
-                    ? $"{customFileNames}_{i+1}{fileExtension}"
+                    ? $"{customFileNames}_{i + 1}{fileExtension}"
                     : $"{Guid.NewGuid()}{fileExtension}";
 
                 var blobClient = containerClient.GetBlobClient(fileName);
@@ -95,6 +96,15 @@ namespace Persistance
             }
 
             return uploadedFileNames;
+        }
+
+        public async Task<string?> GetImageURL(string containerName, string fileName)
+        {
+            var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+            var blobClient = containerClient.GetBlobClient(fileName);
+            bool exists = await blobClient.ExistsAsync();
+            return exists ? blobClient.Uri.AbsoluteUri : null;
+
         }
 
         public async Task DeleteFileAsync(string fileName, string containerName)
