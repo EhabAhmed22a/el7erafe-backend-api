@@ -32,5 +32,16 @@ namespace Presentation.Controllers
             await _clientService.QuickReserve(requestRegDTO, userId);
             return Ok(new {message = "تم الحجز بنجاح"});
         }
+
+        [HttpDelete("client/account")]
+        public async Task<IActionResult> DeleteAccountAsync(string UserId)
+        {
+            _logger.LogInformation("[CONTROLLER] DeleteAccount called for UserId: {UserId}", UserId);
+
+            await _clientService.DeleteAccount(UserId);
+
+            _logger.LogInformation("[CONTROLLER] DeleteAccount completed for UserId: {UserId}", UserId);
+            return Ok(new { message = "تم حذف الحساب بنجاح" });
+        }
     }
 }

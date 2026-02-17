@@ -8,9 +8,14 @@ namespace Persistance.Repositories
 {
     public class ServiceRequestRepository(ApplicationDbContext dbContext) : IServiceRequestRepository
     {
-        public Task<ServiceRequest> GetServiceById(int id)
+        public async Task<ServiceRequest?> GetServiceById(int id)
         {
-            throw new NotImplementedException();
+            return await dbContext.Set<ServiceRequest>()
+                .Include(sr => sr.City)
+                .Include(sr => sr.Service)
+                .Include(sr => sr.Client)
+                .Include(sr => sr.Technician)
+                .FirstOrDefaultAsync(sr => sr.Id == id);
         }
 
         public Task<TimeOnly?> GetServiceTime(int clientId)
