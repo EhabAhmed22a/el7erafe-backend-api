@@ -58,7 +58,7 @@ namespace el7erafe.Web.CustomMiddleWares
                 { } when ex is AlreadyExistException or EmailAlreadyVerified or TechnicianAcceptedOrPendingException
                 or ServiceAlreadyRegisteredException or ServiceAlreadyRequestedException
                 or ServiceRequestTimeConflictException => StatusCodes.Status409Conflict,
-                InvalidOtpException => StatusCodes.Status400BadRequest,
+                { } when ex is InvalidOtpException or UpdateException => StatusCodes.Status400BadRequest,
                 { } when ex is ForgotPasswordDisallowed or ResetTokenExpiredException or ForbiddenAccessException => StatusCodes.Status403Forbidden,
                 UnprocessableEntityException => StatusCodes.Status422UnprocessableEntity,
                 UnverifiedException unverifiedLogin => GetEmail(unverifiedLogin, Response),
