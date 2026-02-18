@@ -158,7 +158,7 @@ namespace Persistance.Repositories
                 .Include(t => t.City)
                     .ThenInclude(c => c.Governorate)
                 .Include(t => t.Service)
-                .Where(t => t.City.GovernorateId == governorateId)
+                .Where(t => t.City.GovernorateId == governorateId && t.Status == TechnicianStatus.Accepted)
                 .OrderBy(t => t.CityId == preferredCityId ? 0 : 1) // Same city first
                     .ThenBy(t => t.City.NameEn) // Then order by city name
                 .ToListAsync();
