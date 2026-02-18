@@ -23,7 +23,6 @@ namespace Service
             ITechnicianServicesRepository servicesRepository,
             ITechnicianRepository technicianRepository,
             ICityRepository cityRepository,
-            ITechnicianRepository technicianRepository,
             OtpHelper otpHelper) : IClientService
     {
         public async Task<ServiceListDto> GetClientServicesAsync()
