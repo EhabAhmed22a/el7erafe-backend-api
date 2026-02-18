@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
+using Shared.DataTransferObject.ClientDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
 using Shared.DataTransferObject.UpdateDTOs;
 
@@ -64,6 +65,13 @@ namespace Presentation.Controllers
             return Ok(result);
         }
 
+        [HttpGet("cf/technicians_available")]
+        public async Task<IActionResult> GetAvailableTechnicians(GetAvailableTechniciansRequest requestRegDTO)
+        {
+            _logger.LogInformation("[CONTROLLER] Getting Available Technicians");
+            var technicians = await _clientService.GetAvailableTechniciansAsync(requestRegDTO);
+            _logger.LogInformation("[CONTROLLER] Successfully Getting Available Technicians");
+            return Ok(technicians);
         [HttpPatch("cf/profile_update")]
         public async Task<IActionResult> UpdateProfile([FromForm] UpdateNameImageDTO update)
         {
