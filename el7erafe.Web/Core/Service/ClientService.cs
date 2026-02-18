@@ -167,7 +167,7 @@ namespace Service
             var governorate = await cityRepository.GetGovernateByCityId(city.Id);
 
             var technicians = await technicianRepository
-                .GetAvailableApprovedTechniciansWithSortingAsync(governorate.Id, city.Id, requestRegDTO.Sorted);
+                .GetTechniciansByServiceAndLocationAsync(service.Id,governorate.Id, city.Id, requestRegDTO.Sorted);
 
             if (technicians is null || !technicians.Any())
                 return new List<AvailableTechnicianDto>();
