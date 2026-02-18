@@ -14,6 +14,7 @@ namespace Service
             IBlobStorageRepository blobStorageRepository,
             IServiceRequestRepository serviceRequestRepository,
             ITechnicianServicesRepository servicesRepository,
+            ITechnicianRepository technicianRepository,
             ICityRepository cityRepository) : IClientService
     {
         public async Task<ServiceListDto> GetClientServicesAsync()
@@ -130,6 +131,30 @@ namespace Service
                 ImageURL = user.ImageURL,
                 PhoneNumber = user.User.PhoneNumber!
             };
+        }
+
+        public async Task<List<AvailableTechnicianDto>> GetAvailableTechniciansAsync(ServiceRequestRegDTO requestRegDTO)
+        {
+            var city = await cityRepository.GetCityByNameAsync(requestRegDTO.CityName);
+            if (city is null)
+                throw new CityNotFoundException(requestRegDTO.CityName);
+
+            var governorate = await cityRepository.GetGovernateByCityId(city.Id);
+
+            var technicians = await technicianRepository
+                .GetTechniciansByGovernorateWithCityPriorityAsync(governorate.Id, city.Id);
+
+            // Map to DTO
+            var result = technicians.Select(t => new AvailableTechnicianDto
+            {
+                Id = t.Id,
+                Name = t.Name,
+                ServiceName = t.Service.NameAr,
+                Rating = t.Rating,
+                City = t.City.NameAr,
+                ProfilePicture = t.ProfilePictureURL
+            }).ToList();
+            return result;
         }
     }
 }
