@@ -1,22 +1,29 @@
 ﻿using DomainLayer.Contracts;
 using DomainLayer.Exceptions;
 using DomainLayer.Models;
+using DomainLayer.Models.IdentityModule;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Service.Helpers;
 using ServiceAbstraction;
 using Shared.DataTransferObject.ClientDTOs;
 using Shared.DataTransferObject.ClientIdentityDTOs;
+using Shared.DataTransferObject.OtpDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
 using Shared.DataTransferObject.UpdateDTOs;
 
 namespace Service
 {
     public class ClientService(ITechnicianServicesRepository technicianServicesRepository,
+            UserManager<ApplicationUser> userManager,
             IClientRepository clientRepository,
+            IUserTokenRepository userTokenRepository,
             IBlobStorageRepository blobStorageRepository,
             IServiceRequestRepository serviceRequestRepository,
             ITechnicianServicesRepository servicesRepository,
-            ICityRepository cityRepository) : IClientService
+            ICityRepository cityRepository,
+            OtpHelper otpHelper) : IClientService
     {
         public async Task<ServiceListDto> GetClientServicesAsync()
         {
@@ -173,7 +180,15 @@ namespace Service
                 user.ImageURL = await blobStorageRepository.GetImageURL("client-profilepics", await blobStorageRepository.UploadFileAsync(dTO.Image!, "client-profilepics", $"{user.Id}{Path.GetExtension(dTO.Image?.FileName)}"));
 
             }
-            await clientRepository.UpdateAsync(user);
+            try
+            {
+                if (!await clientRepository.UpdateAsync(user))
+                    throw new TechnicalException();
+            }
+            catch
+            {
+                throw new TechnicalException();
+            }
         }
 
         public async Task UpdatePhoneNumber(string userId, UpdatePhoneDTO dTO)
@@ -189,7 +204,58 @@ namespace Service
                 throw new UnprocessableEntityException("رقم الهاتف مستخدم بالفعل من قبل عميل آخر");
 
             user.User.PhoneNumber = dTO.PhoneNumber;
-            await clientRepository.UpdateAsync(user);
+            user.User.UserName = dTO.PhoneNumber;
+            try
+            {
+                if (!await clientRepository.UpdateAsync(user))
+                    throw new TechnicalException();
+            }
+            catch
+            {
+                throw new TechnicalException();
+            }
+        }
+
+        public async Task<OtpResponseDTO> UpdateEmail(string userId, UpdateEmailDTO updateEmailDTO)
+        {
+            var user = await CheckUser(userId);
+
+            if (!user.User.EmailConfirmed)
+                throw new UnprocessableEntityException("يجب تأكيد البريد الإلكتروني الحالي أولاً");
+            if (user.User.Email == updateEmailDTO.NewEmail)
+                throw new UpdateException("البريد الإلكتروني الجديد مطابق للبريد الحالي");
+            if (await clientRepository.EmailExistsAsync(updateEmailDTO.NewEmail))
+                throw new UnprocessableEntityException("البريد الإلكتروني مستخدم بالفعل");
+
+            user.User.Email = updateEmailDTO.NewEmail;
+            user.User.EmailConfirmed = false;
+            user.User.NormalizedEmail = updateEmailDTO.NewEmail.ToUpperInvariant();
+
+            try
+            {
+                if (!await clientRepository.UpdateAsync(user))
+                    throw new TechnicalException();
+            }
+            catch
+            {
+                throw new TechnicalException();
+            }
+
+            await otpHelper.SendOTP(user.User);
+            await userTokenRepository.DeleteUserTokenAsync(userId);
+
+            return new OtpResponseDTO
+            {
+                Message = "تم إرسال الرمز إلى بريدك الإلكتروني الجديد. يرجى التحقق لإكمال التحديث."
+            };
+        }
+
+        private async Task<Client> CheckUser(string userId)
+        {
+            var user = await clientRepository.GetByUserIdAsync(userId);
+            if (user is null)
+                throw new UserNotFoundException("المستخدم غير موجود");
+            return user;
         }
     }
 }
