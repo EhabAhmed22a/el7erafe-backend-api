@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
 using Shared.DataTransferObject.ClientDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
+using Shared.DataTransferObject.UpdateDTOs;
 
 namespace Presentation.Controllers
 {
@@ -71,6 +72,49 @@ namespace Presentation.Controllers
             var technicians = await _clientService.GetAvailableTechniciansAsync(requestRegDTO);
             _logger.LogInformation("[CONTROLLER] Successfully Getting Available Technicians");
             return Ok(technicians);
+        [HttpPatch("cf/profile_update")]
+        public async Task<IActionResult> UpdateProfile([FromForm] UpdateNameImageDTO update)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            await _clientService.UpdateNameAndImage(userId, update);
+
+            bool hasName = !string.IsNullOrEmpty(update.Name);
+            bool hasImage = update.Image is not null && update.Image.Length > 0;
+            string message;
+            if (hasName && hasImage)
+                message = "تم تحديث الاسم و رقم الهاتف";
+            else if (hasName)
+                message = "تم تحديث الاسم";
+            else if (hasImage)
+                message = "تم تحديث رقم الهاتف";
+            else
+                message = "تم التحديث بنجاح";
+            return Ok(new { message = message });
+        }
+
+        [HttpPatch("cf/phone_update")]
+        public async Task<IActionResult> UpdatePhoneNumber(UpdatePhoneDTO dTO)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            await _clientService.UpdatePhoneNumber(userId, dTO);
+            return Ok(new { message = "تم تحديث رقم الهاتف بنجاح" });
+        }
+
+        [HttpPost("cf/update_email")]
+        public async Task<IActionResult> UpdateEmail(UpdateEmailDTO dTO)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            var response = await _clientService.UpdateEmail(userId, dTO);
+            return Ok(new { message = response.Message });
         }
     }
 }

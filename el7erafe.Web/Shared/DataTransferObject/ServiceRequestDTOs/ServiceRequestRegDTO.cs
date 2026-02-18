@@ -39,42 +39,42 @@ namespace Shared.DataTransferObject.ServiceRequestDTOs
         public TimeOnly? AvailableFrom { get; set; }
         public TimeOnly? AvailableTo { get; set; }
 
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-        {
-            if (!AllDayAvailability)
-            {
-                if (!AvailableFrom.HasValue || !AvailableTo.HasValue)
-                {
-                    yield return new ValidationResult(
-                        "يجب تحديد نطاق وقت البداية والنهاية عندما لا تكون متاحاً طوال اليوم",
-                        new[] { nameof(AvailableFrom), nameof(AvailableTo) });
-                }
-                else if (AvailableFrom.Value >= AvailableTo.Value)
-                {
-                    yield return new ValidationResult(
-                        "وقت البداية يجب أن يكون قبل وقت النهاية",
-                        new[] { nameof(AvailableFrom), nameof(AvailableTo) });
-                }
-                else if ((AvailableTo.Value - AvailableFrom.Value).TotalHours > 23)
-                {
-                    yield return new ValidationResult(
-                        "إذا كنت متاحاً طوال اليوم، الرجاء اختيار 'متاح طوال اليوم'",
-                        new[] { nameof(AvailableFrom), nameof(AvailableTo) });
-                }
-                else if (AvailableFrom.Value.ToTimeSpan() < DateTime.Now.TimeOfDay)
-                {
-                    yield return new ValidationResult(
-                        "وقت البداية لا يمكن أن يكون في الماضي",
-                        new[] { nameof(AvailableFrom) });
-                }
-            }
+        //public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        //{
+        //    if (!AllDayAvailability)
+        //    {
+        //        if (!AvailableFrom.HasValue || !AvailableTo.HasValue)
+        //        {
+        //            yield return new ValidationResult(
+        //                "يجب تحديد نطاق وقت البداية والنهاية عندما لا تكون متاحاً طوال اليوم",
+        //                new[] { nameof(AvailableFrom), nameof(AvailableTo) });
+        //        }
+        //        else if (AvailableFrom.Value >= AvailableTo.Value)
+        //        {
+        //            yield return new ValidationResult(
+        //                "وقت البداية يجب أن يكون قبل وقت النهاية",
+        //                new[] { nameof(AvailableFrom), nameof(AvailableTo) });
+        //        }
+        //        else if ((AvailableTo.Value - AvailableFrom.Value).TotalHours > 23)
+        //        {
+        //            yield return new ValidationResult(
+        //                "إذا كنت متاحاً طوال اليوم، الرجاء اختيار 'متاح طوال اليوم'",
+        //                new[] { nameof(AvailableFrom), nameof(AvailableTo) });
+        //        }
+        //        else if (AvailableFrom.Value.ToTimeSpan() < DateTime.Now.TimeOfDay)
+        //        {
+        //            yield return new ValidationResult(
+        //                "وقت البداية لا يمكن أن يكون في الماضي",
+        //                new[] { nameof(AvailableFrom) });
+        //        }
+        //    }
 
-            if (ServiceDate < DateOnly.FromDateTime(DateTime.Today))
-            {
-                yield return new ValidationResult(
-                    "تاريخ الخدمة لا يمكن أن يكون في الماضي",
-                    new[] { nameof(ServiceDate) });
-            }
-        }
+        //    if (ServiceDate < DateOnly.FromDateTime(DateTime.Today))
+        //    {
+        //        yield return new ValidationResult(
+        //            "تاريخ الخدمة لا يمكن أن يكون في الماضي",
+        //            new[] { nameof(ServiceDate) });
+        //    }
+        //}
     }
 }
