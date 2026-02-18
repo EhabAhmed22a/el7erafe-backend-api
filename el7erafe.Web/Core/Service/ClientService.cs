@@ -142,7 +142,7 @@ namespace Service
             var governorate = await cityRepository.GetGovernateByCityId(city.Id);
 
             var technicians = await technicianRepository
-                .GetTechniciansByGovernorateWithCityPriorityAsync(governorate.Id, city.Id, requestRegDTO.Sorted);
+                .GetAvailableApprovedTechniciansWithSortingAsync(governorate.Id, city.Id, requestRegDTO.Sorted);
 
             if (technicians is null || !technicians.Any())
                 return new List<AvailableTechnicianDto>();
@@ -154,7 +154,9 @@ namespace Service
                 ServiceName = t.Service.NameAr,
                 Rating = t.Rating,
                 City = t.City.NameAr,
+                //About column will do it later
                 ProfilePicture = t.ProfilePictureURL
+                //PortfolioImages will be added later after implementing the portfolio feature for technicians
             }).ToList();
             return result;
         }
