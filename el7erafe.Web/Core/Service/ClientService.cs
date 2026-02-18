@@ -1,6 +1,7 @@
 ﻿using DomainLayer.Contracts;
 using DomainLayer.Exceptions;
 using DomainLayer.Models;
+using DomainLayer.Models.IdentityModule;
 using Microsoft.EntityFrameworkCore;
 using ServiceAbstraction;
 using Shared.DataTransferObject.ClientDTOs;
@@ -147,6 +148,10 @@ namespace Service
             if (technicians is null || !technicians.Any())
                 return new List<AvailableTechnicianDto>();
 
+            // Generate SAS URLs for all profile pictures
+            var sasUrls = await GenerateProfilePictureSasUrlsAsync(technicians);
+
+            // Map to DTOs
             var result = technicians.Select(t => new AvailableTechnicianDto
             {
                 Id = t.Id,
@@ -154,11 +159,36 @@ namespace Service
                 ServiceName = t.Service.NameAr,
                 Rating = t.Rating,
                 City = t.City.NameAr,
-                //About column will do it later
-                ProfilePicture = t.ProfilePictureURL
-                //PortfolioImages will be added later after implementing the portfolio feature for technicians
+                ProfilePicture = sasUrls.ContainsKey(t.ProfilePictureURL) ? sasUrls[t.ProfilePictureURL] : string.Empty
             }).ToList();
+
             return result;
+        }
+
+
+        private async Task<Dictionary<string, string>> GenerateProfilePictureSasUrlsAsync(IEnumerable<Technician> technicians)
+        {
+            var profilePictureNames = technicians
+                .Where(t => t != null && !string.IsNullOrEmpty(t.ProfilePictureURL))
+                .Select(t => t.ProfilePictureURL)
+                .Distinct()
+                .ToList();
+
+            if (!profilePictureNames.Any())
+                return new Dictionary<string, string>();
+
+            try
+            {
+                return await blobStorageRepository.GetMultipleBlobsUrlWithSasTokenAsync(
+                    "technician-documents",
+                    profilePictureNames,
+                    expiryHours: 1
+                ) ?? new Dictionary<string, string>();
+            }
+            catch (Exception ex)
+            {
+                return new Dictionary<string, string>();
+            }
         }
     }
 }
