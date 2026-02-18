@@ -23,7 +23,6 @@ namespace Service
             IServiceRequestRepository serviceRequestRepository,
             ITechnicianServicesRepository servicesRepository,
             ITechnicianRepository technicianRepository,
-            ICityRepository cityRepository) : IClientService
             ICityRepository cityRepository,
             OtpHelper otpHelper) : IClientService
     {
@@ -186,30 +185,6 @@ namespace Service
             return result;
         }
 
-
-        private async Task<Dictionary<string, string>> GenerateProfilePictureSasUrlsAsync(IEnumerable<Technician> technicians)
-        {
-            var profilePictureNames = technicians
-                .Where(t => t != null && !string.IsNullOrEmpty(t.ProfilePictureURL))
-                .Select(t => t.ProfilePictureURL)
-                .Distinct()
-                .ToList();
-
-            if (!profilePictureNames.Any())
-                return new Dictionary<string, string>();
-
-            try
-            {
-                return await blobStorageRepository.GetMultipleBlobsUrlWithSasTokenAsync(
-                    "technician-documents",
-                    profilePictureNames,
-                    expiryHours: 1
-                ) ?? new Dictionary<string, string>();
-            }
-            catch (Exception ex)
-            {
-                return new Dictionary<string, string>();
-            }
         public async Task UpdateNameAndImage(string userId, UpdateNameImageDTO dTO)
         {
             var user = await clientRepository.GetByUserIdAsync(userId);
@@ -313,6 +288,30 @@ namespace Service
             if (user is null)
                 throw new UserNotFoundException("المستخدم غير موجود");
             return user;
+        }
+        private async Task<Dictionary<string, string>> GenerateProfilePictureSasUrlsAsync(IEnumerable<Technician> technicians)
+        {
+            var profilePictureNames = technicians
+                .Where(t => t != null && !string.IsNullOrEmpty(t.ProfilePictureURL))
+                .Select(t => t.ProfilePictureURL)
+                .Distinct()
+                .ToList();
+
+            if (!profilePictureNames.Any())
+                return new Dictionary<string, string>();
+
+            try
+            {
+                return await blobStorageRepository.GetMultipleBlobsUrlWithSasTokenAsync(
+                    "technician-documents",
+                    profilePictureNames,
+                    expiryHours: 1
+                ) ?? new Dictionary<string, string>();
+            }
+            catch (Exception ex)
+            {
+                return new Dictionary<string, string>();
+            }
         }
     }
 }

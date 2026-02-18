@@ -72,6 +72,8 @@ namespace Presentation.Controllers
             var technicians = await _clientService.GetAvailableTechniciansAsync(requestRegDTO);
             _logger.LogInformation("[CONTROLLER] Successfully Getting Available Technicians");
             return Ok(technicians);
+        }
+
         [HttpPatch("cf/profile_update")]
         public async Task<IActionResult> UpdateProfile([FromForm] UpdateNameImageDTO update)
         {
