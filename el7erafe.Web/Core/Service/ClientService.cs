@@ -131,23 +131,5 @@ namespace Service
                 PhoneNumber = user.User.PhoneNumber!
             };
         }
-
-        public async Task<AvailableTechnicianDto> GetAvailableTechniciansAsync(ServiceRequestRegDTO requestRegDTO, string userID)
-        {
-            var city = await cityRepository.GetCityByNameAsync(requestRegDTO.CityName);
-            if (city is null)
-                throw new CityNotFoundException(requestRegDTO.CityName);
-            var technicians = await technicianServicesRepository.GetAvailableTechniciansAsync((int)requestRegDTO.ServiceId, city.Id, requestRegDTO.ServiceDate);
-            return new AvailableTechnicianDto
-            {
-                Technicians = technicians.Select(t => new TechnicianDto
-                {
-                    Id = t.Id,
-                    Name = t.Name,
-                    ImageURL = t.ImageURL,
-                    PhoneNumber = t.User.PhoneNumber!
-                }).ToList()
-             };
-        }
     }
 }
