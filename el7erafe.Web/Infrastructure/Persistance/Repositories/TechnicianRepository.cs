@@ -149,7 +149,7 @@ namespace Persistance.Repositories
             return await _context.Set<ApplicationUser>().AnyAsync(t => t.Email == email);
         }
 
-        public async Task<IEnumerable<Technician>?> GetAvailableApprovedTechniciansWithSortingAsync(int governorateId, int preferredCityId, bool sorted)
+        public async Task<IEnumerable<Technician>?> GetTechniciansByServiceAndLocationAsync(int serviceId, int governorateId, int preferredCityId, bool sorted)
         {
             var query = context.Set<Technician>()
                                .Include(t => t.User)
@@ -157,7 +157,9 @@ namespace Persistance.Repositories
                                .Include(t => t.City)
                                    .ThenInclude(c => c.Governorate)
                                .Include(t => t.Service)
-                               .Where(t => t.City.GovernorateId == governorateId && t.Status == TechnicianStatus.Accepted);
+                               .Where(t => t.City.GovernorateId == governorateId 
+                                && t.Status == TechnicianStatus.Accepted
+                                && t.ServiceId == serviceId);
             if (sorted)
             {
                 return await query.OrderByDescending(t => t.Rating)
