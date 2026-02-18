@@ -10,7 +10,7 @@ namespace ServiceAbstraction
     public interface IClientService
     {
         Task<ServiceListDto> GetClientServicesAsync();
-        Task QuickReserve(ServiceRequestRegDTO requestRegDTO, string userId);
+        Task ServiceRequest(ServiceRequestRegDTO requestRegDTO, string userId);
         Task DeleteAccount(string userId);
         Task<ClientProfileDTO> GetProfileAsync(string userId);
         Task UpdateNameAndImage(string userId, UpdateNameImageDTO dTO);
