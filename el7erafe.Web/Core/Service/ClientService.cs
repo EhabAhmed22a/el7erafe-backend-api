@@ -133,7 +133,7 @@ namespace Service
             };
         }
 
-        public async Task<List<AvailableTechnicianDto>> GetAvailableTechniciansAsync(ServiceRequestRegDTO requestRegDTO)
+        public async Task<List<AvailableTechnicianDto>> GetAvailableTechniciansAsync(GetAvailableTechniciansRequest requestRegDTO)
         {
             var city = await cityRepository.GetCityByNameAsync(requestRegDTO.CityName);
             if (city is null)

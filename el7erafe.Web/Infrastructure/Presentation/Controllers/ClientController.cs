@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
+using Shared.DataTransferObject.ClientDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
 
 namespace Presentation.Controllers
@@ -30,7 +31,7 @@ namespace Presentation.Controllers
                 return Unauthorized("المستخدم غير موجود");
 
             await _clientService.QuickReserve(requestRegDTO, userId);
-            return Ok(new {message = "تم الحجز بنجاح"});
+            return Ok(new { message = "تم الحجز بنجاح" });
         }
 
         [HttpDelete("client/account")]
@@ -61,6 +62,15 @@ namespace Presentation.Controllers
 
             var result = await _clientService.GetProfileAsync(userId);
             return Ok(result);
+        }
+
+        [HttpGet("cf/technicians_available")]
+        public async Task<IActionResult> GetAvailableTechnicians(GetAvailableTechniciansRequest requestRegDTO)
+        {
+            _logger.LogInformation("[CONTROLLER] Getting Available Technicians");
+            var technicians = await _clientService.GetAvailableTechniciansAsync(requestRegDTO);
+            _logger.LogInformation("[CONTROLLER] Successfully Getting Available Technicians");
+            return Ok(technicians);
         }
     }
 }
