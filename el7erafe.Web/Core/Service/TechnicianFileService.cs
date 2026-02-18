@@ -78,7 +78,7 @@ namespace Service
         {
             var profilePicture = await _blobStorageService.UploadFileAsync(
                 techRegisterDTO.ProfilePicture,
-                "client-profilepics",
+                "technician-documents",
                 $"profilepicture_{Guid.NewGuid()}"
             );
 
