@@ -16,7 +16,6 @@ using Shared.DataTransferObject.UpdateDTOs;
 namespace Service
 {
     public class ClientService(ITechnicianServicesRepository technicianServicesRepository,
-            UserManager<ApplicationUser> userManager,
             IClientRepository clientRepository,
             IUserTokenRepository userTokenRepository,
             IBlobStorageRepository blobStorageRepository,
@@ -24,6 +23,7 @@ namespace Service
             ITechnicianServicesRepository servicesRepository,
             ITechnicianRepository technicianRepository,
             ICityRepository cityRepository,
+            ITechnicianRepository technicianRepository,
             OtpHelper otpHelper) : IClientService
     {
         public async Task<ServiceListDto> GetClientServicesAsync()
@@ -46,7 +46,7 @@ namespace Service
             return result;
         }
 
-        public async Task QuickReserve(ServiceRequestRegDTO regDTO, string userId)
+        public async Task ServiceRequest(ServiceRequestRegDTO regDTO, string userId)
         {
             if (regDTO.AllDayAvailability)
             {
@@ -63,23 +63,33 @@ namespace Service
 
                 if ((regDTO.AvailableTo.Value - regDTO.AvailableFrom.Value).TotalHours > 23)
                     throw new UnprocessableEntityException("إذا كنت متاحاً طوال اليوم، الرجاء اختيار 'متاح طوال اليوم'");
-
-                if (regDTO.AvailableFrom.Value.ToTimeSpan() < DateTime.Now.TimeOfDay)
-                    throw new UnprocessableEntityException("وقت البداية لا يمكن أن يكون في الماضي");
+                
+                if (regDTO.ServiceDate == DateOnly.FromDateTime(DateTime.Today))
+                {
+                    if (regDTO.AvailableFrom.Value.ToTimeSpan() < DateTime.Now.TimeOfDay)
+                        throw new UnprocessableEntityException("وقت البداية لا يمكن أن يكون في الماضي");
+                }
+                
             }
 
             var client = await clientRepository.GetByUserIdAsync(userId);
             if (client is null)
                 throw new ForbiddenAccessException("هذا الإجراء متاح للعملاء فقط");
 
-            var city = await cityRepository.GetCityByNameAsync(regDTO.CityName);
+            var city = await cityRepository.GetCityByNameAsync(regDTO.CityName ?? "");
 
             if (city is null)
-                throw new CityNotFoundException(regDTO.CityName);
+                throw new CityNotFoundException(regDTO.CityName ?? "");
 
-            if (!await servicesRepository.ExistsAsync((int)regDTO.ServiceId))
+            if (!await servicesRepository.ExistsAsync(regDTO.ServiceId))
                 throw new TechnicalException();
 
+            if (regDTO.TechnicianId is not null)
+            {
+                if (await technicianRepository.GetByIdAsync((int)regDTO.TechnicianId) is null)
+                    throw new UserNotFoundException("الفني المحدد غير موجود");
+            }
+                
             int clientId = client.Id;
             if (await serviceRequestRepository.IsServiceAlreadyReq(clientId, regDTO.ServiceId))
                 throw new ServiceAlreadyRequestedException();
@@ -88,16 +98,17 @@ namespace Service
 
             var serviceReq = new ServiceRequest()
             {
-                Description = regDTO!.Description,
+                Description = regDTO.Description,
                 CityId = city.Id,
-                ServiceId = (int)regDTO!.ServiceId,
-                SpecialSign = regDTO!.SpecialSign,
-                Street = regDTO!.Street,
-                ServiceDate = (DateOnly)regDTO!.ServiceDate,
-                AvailableFrom = regDTO!.AvailableFrom,
-                AvailableTo = regDTO!.AvailableTo,
-                CreatedAt = DateTime.UtcNow,
-                ClientId = clientId
+                ServiceId = regDTO.ServiceId,
+                SpecialSign = regDTO.SpecialSign,
+                Street = regDTO.Street,
+                ServiceDate = regDTO.ServiceDate,
+                AvailableFrom = regDTO.AvailableFrom,
+                AvailableTo = regDTO.AvailableTo,
+                CreatedAt = DateTime.Now,
+                ClientId = clientId,
+                TechnicianId = regDTO.TechnicianId
             };
 
             var serviceRequest = await serviceRequestRepository.CreateAsync(serviceReq);

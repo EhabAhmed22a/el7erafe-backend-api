@@ -14,7 +14,7 @@ namespace Shared.DataTransferObject.ServiceRequestDTOs
 
         [Required(ErrorMessage = "الخدمة مطلوبة")]
         [Range(1, int.MaxValue, ErrorMessage = "الرجاء اختيار خدمة صالحة")]
-        public int? ServiceId { get; set; }
+        public int ServiceId { get; set; }
 
         [MaxLength(5, ErrorMessage = "الحد الأقصى للصور هو '٥'")]
         public List<IFormFile>? Images { get; set; }
@@ -32,12 +32,13 @@ namespace Shared.DataTransferObject.ServiceRequestDTOs
 
         [Required(ErrorMessage = "التاريخ مطلوب")]
         [FutureDate]
-        public DateOnly? ServiceDate { get; set; }
+        public DateOnly ServiceDate { get; set; }
 
         public bool AllDayAvailability { get; set; } = true;
 
         public TimeOnly? AvailableFrom { get; set; }
         public TimeOnly? AvailableTo { get; set; }
+        public int? TechnicianId {  get; set; }
 
         //public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         //{
