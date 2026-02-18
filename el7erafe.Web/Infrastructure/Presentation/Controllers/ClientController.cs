@@ -97,5 +97,16 @@ namespace Presentation.Controllers
             await _clientService.UpdatePhoneNumber(userId, dTO);
             return Ok(new { message = "تم تحديث رقم الهاتف بنجاح" });
         }
+
+        [HttpPost("cf/update_email")]
+        public async Task<IActionResult> UpdateEmail(UpdateEmailDTO dTO)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            var response = await _clientService.UpdateEmail(userId, dTO);
+            return Ok(new { message = response.Message });
+        }
     }
 }

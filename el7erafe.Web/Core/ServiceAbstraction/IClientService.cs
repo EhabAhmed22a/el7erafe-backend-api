@@ -1,6 +1,7 @@
 ﻿
 using Shared.DataTransferObject.ClientDTOs;
 using Shared.DataTransferObject.ClientIdentityDTOs;
+using Shared.DataTransferObject.OtpDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
 using Shared.DataTransferObject.UpdateDTOs;
 
@@ -14,5 +15,6 @@ namespace ServiceAbstraction
         Task<ClientProfileDTO> GetProfileAsync(string userId);
         Task UpdateNameAndImage(string userId, UpdateNameImageDTO dTO);
         Task UpdatePhoneNumber(string userId, UpdatePhoneDTO dTO);
+        Task<OtpResponseDTO> UpdateEmail(string userId, UpdateEmailDTO updateEmailDTO);
     }
 }
