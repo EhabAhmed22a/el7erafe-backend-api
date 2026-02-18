@@ -87,7 +87,7 @@ namespace Persistance.Repositories
 
         public async Task<bool> ExistsAsync(string phoneNumber)
         {
-            return await context.Set<ApplicationUser>().AnyAsync(c => c.UserName == phoneNumber);
+            return await context.Set<ApplicationUser>().AnyAsync(c => c.PhoneNumber == phoneNumber);
         }
 
         public async Task<bool> EmailExistsAsync(string email)
