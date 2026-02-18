@@ -156,8 +156,8 @@ namespace Service
 
         public async Task<List<AvailableTechnicianDto>> GetAvailableTechniciansAsync(GetAvailableTechniciansRequest requestRegDTO)
         {
-            var service = await servicesRepository.ExistsAsync(requestRegDTO.ServiceName);
-            if (!service)
+            var service = await servicesRepository.GetServiceByNameAsync(requestRegDTO.ServiceName);
+            if (service is null)
                 throw new ServiceNotFoundException(requestRegDTO.ServiceName);
 
             var city = await cityRepository.GetCityByNameAsync(requestRegDTO.CityName);
