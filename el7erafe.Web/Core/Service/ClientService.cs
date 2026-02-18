@@ -147,7 +147,6 @@ namespace Service
             if (technicians is null || !technicians.Any())
                 return new List<AvailableTechnicianDto>();
 
-            // Map to DTO
             var result = technicians.Select(t => new AvailableTechnicianDto
             {
                 Id = t.Id,

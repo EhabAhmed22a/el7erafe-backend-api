@@ -22,6 +22,6 @@ namespace DomainLayer.Contracts
         Task<TechnicianService?> GetServiceByNameAsync(string nameAr);
         Task<IEnumerable<Technician>?> GetPagedAsync(int pageNumber, int pageSize); //Get all technicians except the pending ones
         Task<IEnumerable<Technician>?> GetPagedByStatusAsync(TechnicianStatus status, int pageNumber, int pageSize);
-        Task<IEnumerable<Technician>?> GetTechniciansByGovernorateWithCityPriorityAsync(int governorateId, int preferredCityId,bool sorted);
+        Task<IEnumerable<Technician>?> GetTechniciansByGovernorateWithCityPriorityAsync(int governorateId,int preferredCityId,bool sorted);
     }
 }

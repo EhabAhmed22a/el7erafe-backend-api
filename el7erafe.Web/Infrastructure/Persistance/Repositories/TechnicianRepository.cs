@@ -149,7 +149,7 @@ namespace Persistance.Repositories
             return await _context.Set<ApplicationUser>().AnyAsync(t => t.Email == email);
         }
 
-        public async Task<IEnumerable<Technician>?> GetTechniciansByGovernorateWithCityPriorityAsync(int governorateId, int preferredCityId, bool sorted)
+        public async Task<IEnumerable<Technician>?> GetAvailableApprovedTechniciansWithSortingAsync(int governorateId, int preferredCityId, bool sorted)
         {
             var query = context.Set<Technician>()
                                .Include(t => t.User)
