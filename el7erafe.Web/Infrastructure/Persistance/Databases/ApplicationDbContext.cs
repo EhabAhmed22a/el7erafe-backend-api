@@ -47,6 +47,10 @@ namespace Persistance.Databases
                       .WithOne(r => r.Technician)
                       .HasForeignKey<Rejection>(r => r.TechnicianId) // Explicit foreign key
                       .OnDelete(DeleteBehavior.Cascade);
+
+                entity.Property(t => t.Rating)
+                      .HasColumnType("decimal(3,2)")
+                      .HasDefaultValue(0);
             });
 
             builder.Entity<UserToken>(entity =>
@@ -93,6 +97,8 @@ namespace Persistance.Databases
                 entity.HasIndex(r => r.TechnicianId)
                 .IsUnique();
             });
+
+  
 
         }
     }

@@ -1,7 +1,7 @@
-﻿using System.Threading.Tasks;
-using Azure.Identity;
+﻿using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using Azure.Storage.Sas;
 using DomainLayer.Contracts;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -172,5 +172,69 @@ namespace Persistance
                 await DeleteFileAsync(candidate, containerName);
             }
         }
+
+        public async Task<string?> GetBlobUrlWithSasTokenAsync(string containerName, string fileName, int expiryHours = 1)
+        {
+            if (string.IsNullOrEmpty(fileName))
+                return null;
+
+            var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);  
+            var blobClient = containerClient.GetBlobClient(fileName);
+
+            // Check if blob exists
+            bool exists = await blobClient.ExistsAsync();
+            if (!exists)
+                return null;
+
+            // Create a SAS builder for the blob
+            var sasBuilder = new BlobSasBuilder
+            {
+                BlobContainerName = containerName,
+                BlobName = fileName,
+                Resource = "b", // "b" for blob
+                ExpiresOn = DateTimeOffset.UtcNow.AddHours(expiryHours)
+            };
+
+            // Set read permissions only
+            sasBuilder.SetPermissions(BlobSasPermissions.Read);
+
+            // Generate the SAS URI
+            Uri sasUri = blobClient.GenerateSasUri(sasBuilder);
+
+            return sasUri.ToString();
+        }
+
+        public async Task<Dictionary<string, string>> GetMultipleBlobsUrlWithSasTokenAsync(string containerName,List<string> fileNames,int expiryHours = 1)
+        {
+            var result = new Dictionary<string, string>();
+            var expiryTime = DateTimeOffset.UtcNow.AddHours(expiryHours);
+
+            foreach (var fileName in fileNames)
+            {
+                if (string.IsNullOrEmpty(fileName))
+                    continue;
+
+                var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+                var blobClient = containerClient.GetBlobClient(fileName);
+
+                bool exists = await blobClient.ExistsAsync();
+                if (!exists)
+                    continue;
+
+                var sasBuilder = new BlobSasBuilder
+                {
+                    BlobContainerName = containerName,
+                    BlobName = fileName,
+                    Resource = "b",
+                    ExpiresOn = expiryTime
+                };
+                sasBuilder.SetPermissions(BlobSasPermissions.Read);
+
+                result[fileName] = blobClient.GenerateSasUri(sasBuilder).ToString();
+            }
+
+            return result;
+        }
+
     }
 }

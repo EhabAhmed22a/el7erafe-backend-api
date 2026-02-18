@@ -22,6 +22,7 @@ namespace DomainLayer.Models.IdentityModule
         public TechnicianService Service { get; set; } = default!;
         public int ServiceId { get; set; }
         public virtual Rejection? Rejection { get; set; }
+        public decimal Rating { get; set; } = 0.0m;
 
     }
 }

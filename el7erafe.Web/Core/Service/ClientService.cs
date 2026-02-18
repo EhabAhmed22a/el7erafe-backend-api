@@ -22,6 +22,7 @@ namespace Service
             IBlobStorageRepository blobStorageRepository,
             IServiceRequestRepository serviceRequestRepository,
             ITechnicianServicesRepository servicesRepository,
+            ITechnicianRepository technicianRepository,
             ICityRepository cityRepository,
             OtpHelper otpHelper) : IClientService
     {
@@ -153,6 +154,37 @@ namespace Service
             };
         }
 
+        public async Task<List<AvailableTechnicianDto>> GetAvailableTechniciansAsync(GetAvailableTechniciansRequest requestRegDTO)
+        {
+            var city = await cityRepository.GetCityByNameAsync(requestRegDTO.CityName);
+            if (city is null)
+                throw new CityNotFoundException(requestRegDTO.CityName);
+
+            var governorate = await cityRepository.GetGovernateByCityId(city.Id);
+
+            var technicians = await technicianRepository
+                .GetAvailableApprovedTechniciansWithSortingAsync(governorate.Id, city.Id, requestRegDTO.Sorted);
+
+            if (technicians is null || !technicians.Any())
+                return new List<AvailableTechnicianDto>();
+
+            // Generate SAS URLs for all profile pictures
+            var sasUrls = await GenerateProfilePictureSasUrlsAsync(technicians);
+
+            // Map to DTOs
+            var result = technicians.Select(t => new AvailableTechnicianDto
+            {
+                Id = t.Id,
+                Name = t.Name,
+                ServiceName = t.Service.NameAr,
+                Rating = t.Rating,
+                City = t.City.NameAr,
+                ProfilePicture = sasUrls.ContainsKey(t.ProfilePictureURL) ? sasUrls[t.ProfilePictureURL] : string.Empty
+            }).ToList();
+
+            return result;
+        }
+
         public async Task UpdateNameAndImage(string userId, UpdateNameImageDTO dTO)
         {
             var user = await clientRepository.GetByUserIdAsync(userId);
@@ -256,6 +288,30 @@ namespace Service
             if (user is null)
                 throw new UserNotFoundException("المستخدم غير موجود");
             return user;
+        }
+        private async Task<Dictionary<string, string>> GenerateProfilePictureSasUrlsAsync(IEnumerable<Technician> technicians)
+        {
+            var profilePictureNames = technicians
+                .Where(t => t != null && !string.IsNullOrEmpty(t.ProfilePictureURL))
+                .Select(t => t.ProfilePictureURL)
+                .Distinct()
+                .ToList();
+
+            if (!profilePictureNames.Any())
+                return new Dictionary<string, string>();
+
+            try
+            {
+                return await blobStorageRepository.GetMultipleBlobsUrlWithSasTokenAsync(
+                    "technician-documents",
+                    profilePictureNames,
+                    expiryHours: 1
+                ) ?? new Dictionary<string, string>();
+            }
+            catch (Exception ex)
+            {
+                return new Dictionary<string, string>();
+            }
         }
     }
 }

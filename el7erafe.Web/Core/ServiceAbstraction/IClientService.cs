@@ -13,6 +13,7 @@ namespace ServiceAbstraction
         Task QuickReserve(ServiceRequestRegDTO requestRegDTO, string userId);
         Task DeleteAccount(string userId);
         Task<ClientProfileDTO> GetProfileAsync(string userId);
+        Task<List<AvailableTechnicianDto>> GetAvailableTechniciansAsync(GetAvailableTechniciansRequest requestRegDTO);
         Task UpdateNameAndImage(string userId, UpdateNameImageDTO dTO);
         Task UpdatePhoneNumber(string userId, UpdatePhoneDTO dTO);
         Task<OtpResponseDTO> UpdateEmail(string userId, UpdateEmailDTO updateEmailDTO);
