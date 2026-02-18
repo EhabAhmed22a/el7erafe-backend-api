@@ -11,5 +11,7 @@ namespace DomainLayer.Contracts
         string ExtractFileNameFromUrl(string url);
         Task DeleteMultipleFilesAsync(string fileName, string containerName);
         Task<string?> GetImageURL(string containerName, string fileName);
+        Task<string?> GetBlobUrlWithSasTokenAsync(string containerName, string fileName, int expiryHours = 1);
+        Task<Dictionary<string, string>> GetMultipleBlobsUrlWithSasTokenAsync(string containerName, List<string> fileNames, int expiryHours = 1);
     }
 }
