@@ -13,5 +13,6 @@ namespace ServiceAbstraction
         Task DeleteAccount(string userId);
         Task<ClientProfileDTO> GetProfileAsync(string userId);
         Task UpdateNameAndImage(string userId, UpdateNameImageDTO dTO);
+        Task UpdatePhoneNumber(string userId, UpdatePhoneDTO dTO);
     }
 }

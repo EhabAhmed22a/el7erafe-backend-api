@@ -130,6 +130,7 @@ namespace Service
 
             var deleted = await clientRepository.DeleteAsync(userId);
         }
+
         public async Task<ClientProfileDTO> GetProfileAsync(string userId)
         {
             var user = await clientRepository.GetByUserIdAsync(userId);
@@ -172,6 +173,22 @@ namespace Service
                 user.ImageURL = await blobStorageRepository.GetImageURL("client-profilepics", await blobStorageRepository.UploadFileAsync(dTO.Image!, "client-profilepics", $"{user.Id}{Path.GetExtension(dTO.Image?.FileName)}"));
 
             }
+            await clientRepository.UpdateAsync(user);
+        }
+
+        public async Task UpdatePhoneNumber(string userId, UpdatePhoneDTO dTO)
+        {
+            var user = await clientRepository.GetByUserIdAsync(userId);
+            if (user is null)
+                throw new UserNotFoundException("المستخدم غير موجود");
+
+            if (user.User.PhoneNumber == dTO.PhoneNumber)
+                throw new UpdateException("رقم الهاتف الجديد مطابق للرقم الحالي");
+
+            if (await clientRepository.ExistsAsync(dTO.PhoneNumber))
+                throw new UnprocessableEntityException("رقم الهاتف مستخدم بالفعل من قبل عميل آخر");
+
+            user.User.PhoneNumber = dTO.PhoneNumber;
             await clientRepository.UpdateAsync(user);
         }
     }
