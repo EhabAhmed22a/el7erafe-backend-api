@@ -144,6 +144,9 @@ namespace Service
             var technicians = await technicianRepository
                 .GetTechniciansByGovernorateWithCityPriorityAsync(governorate.Id, city.Id);
 
+            if (technicians is null || !technicians.Any())
+                return new List<AvailableTechnicianDto>();
+
             // Map to DTO
             var result = technicians.Select(t => new AvailableTechnicianDto
             {
