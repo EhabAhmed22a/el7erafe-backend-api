@@ -31,8 +31,20 @@ namespace Presentation.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("المستخدم غير موجود");
 
-            await _clientService.QuickReserve(requestRegDTO, userId);
-            return Ok(new { message = "تم الحجز بنجاح" });
+            await _clientService.ServiceRequest(requestRegDTO, userId);
+            return Ok(new { message = "تم إرسال طلب الخدمة بنجاح. سيتم تعيين فني قريباً" });
+        }
+
+        [HttpPost("cf/select_technician")]
+        public async Task<IActionResult> TechnicianReserve([FromForm] ServiceRequestRegDTO requestRegDTO)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            await _clientService.ServiceRequest(requestRegDTO, userId);
+            return Ok(new { message = "تم إرسال طلب الخدمة للفني المحدد. في انتظار قبوله" });
         }
 
         [HttpDelete("client/account")]
