@@ -12,5 +12,6 @@ namespace DomainLayer.Contracts
         Task<bool> DeleteAsync(int id);
         Task<bool> UpdateAsync(TechnicianService technicianService);
         Task<TechnicianService?> GetByIdAsync(int id);
+        Task<TechnicianService?> GetServiceByNameAsync(string serviceName);
     }
 }
