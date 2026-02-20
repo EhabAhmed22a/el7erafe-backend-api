@@ -1,31 +1,17 @@
-﻿using Azure.Identity;
-using Azure.Storage.Blobs;
+﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Sas;
 using DomainLayer.Contracts;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace Persistance
 {
-    public class BlobStorageRepository : IBlobStorageRepository
+    public class BlobStorageRepository(IWebHostEnvironment _env,
+                                       IUserDelegationKeyCache _userDelegationKeyCache,
+                                       BlobServiceClient _blobServiceClient) : IBlobStorageRepository
     {
-        private readonly BlobServiceClient _blobServiceClient;
-        private readonly IWebHostEnvironment _env;
-        private readonly IUserDelegationKeyCache _userDelegationKeyCache;
-
-        public BlobStorageRepository(IConfiguration configuration,
-                                    IWebHostEnvironment env,
-                                    IUserDelegationKeyCache userDelegationKeyCache,
-                                    BlobServiceClient blobServiceClient)
-        {
-            _userDelegationKeyCache = userDelegationKeyCache;
-            _env = env;
-            _blobServiceClient = blobServiceClient;
-        }
 
         public async Task<string> UploadFileAsync(IFormFile file, string containerName, string? customFileName = null)
         {
