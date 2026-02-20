@@ -7,30 +7,24 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Persistance
 {
     public class BlobStorageRepository : IBlobStorageRepository
     {
         private readonly BlobServiceClient _blobServiceClient;
+        private readonly IWebHostEnvironment _env;
+        private readonly IUserDelegationKeyCache _userDelegationKeyCache;
 
-        public BlobStorageRepository(IConfiguration configuration, IWebHostEnvironment env)
+        public BlobStorageRepository(IConfiguration configuration,
+                                    IWebHostEnvironment env,
+                                    IUserDelegationKeyCache userDelegationKeyCache,
+                                    BlobServiceClient blobServiceClient)
         {
-            if (env.IsDevelopment())
-            {
-                var connectionString = configuration.GetConnectionString("AzureBlobStorage");
-                _blobServiceClient = new BlobServiceClient(connectionString);
-            }
-            else
-            {
-                var accountName = configuration.GetValue<string>("AzureBlobStorage:AccountName");
-                if (string.IsNullOrEmpty(accountName))
-                {
-                    throw new InvalidOperationException("AzureBlobStorage AccountName is not configured for production environment.");
-                }
-                var blobServiceUri = new Uri($"https://{accountName}.blob.core.windows.net");
-                _blobServiceClient = new BlobServiceClient(blobServiceUri, new ManagedIdentityCredential());
-            }
+            _userDelegationKeyCache = userDelegationKeyCache;
+            _env = env;
+            _blobServiceClient = blobServiceClient;
         }
 
         public async Task<string> UploadFileAsync(IFormFile file, string containerName, string? customFileName = null)
@@ -199,8 +193,19 @@ namespace Persistance
             sasBuilder.SetPermissions(BlobSasPermissions.Read);
 
             // Generate the SAS URI
-            Uri sasUri = blobClient.GenerateSasUri(sasBuilder);
+            Uri sasUri;
 
+            if (_env.IsDevelopment())
+            {
+                // Development: Use account key SAS
+                sasUri = blobClient.GenerateSasUri(sasBuilder);
+            }
+            else
+            {
+                // Production: Use user delegation key SAS
+                var userDelegationKey = await _userDelegationKeyCache.GetUserDelegationKeyAsync();
+                sasUri = blobClient.GenerateUserDelegationSasUri(sasBuilder, userDelegationKey);
+            }
             return sasUri.ToString();
         }
 
@@ -208,6 +213,13 @@ namespace Persistance
         {
             var result = new Dictionary<string, string>();
             var expiryTime = DateTimeOffset.UtcNow.AddHours(expiryHours);
+
+            // Get user delegation key once for all blobs (production only)
+            UserDelegationKey? userDelegationKey = null;
+            if (!_env.IsDevelopment())
+            {
+                userDelegationKey = await _userDelegationKeyCache.GetUserDelegationKeyAsync();
+            }
 
             foreach (var fileName in fileNames)
             {
@@ -230,7 +242,17 @@ namespace Persistance
                 };
                 sasBuilder.SetPermissions(BlobSasPermissions.Read);
 
-                result[fileName] = blobClient.GenerateSasUri(sasBuilder).ToString();
+                Uri sasUri;
+                if (_env.IsDevelopment())
+                {
+                    sasUri = blobClient.GenerateSasUri(sasBuilder);
+                }
+                else
+                {
+                    sasUri = blobClient.GenerateUserDelegationSasUri(sasBuilder, userDelegationKey!);
+                }
+
+                result[fileName] = sasUri.ToString();
             }
 
             return result;
