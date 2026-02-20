@@ -48,7 +48,7 @@ namespace el7erafe.Web
             #endregion
 
             #region Add services to the container.
-            builder.Services.AddPersistanceServices(builder.Configuration);
+            builder.Services.AddPersistanceServices(builder.Configuration, builder.Environment);
             builder.Services.AddJWTService(builder.Configuration);
             builder.Services.AddServiceLayerServices();
             #endregion
