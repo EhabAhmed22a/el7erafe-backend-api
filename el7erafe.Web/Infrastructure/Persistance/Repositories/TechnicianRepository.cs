@@ -87,7 +87,6 @@ namespace Persistance.Repositories
             return await _context.Set<Technician>().AnyAsync(t => t.Id == id);
         }
 
-
         public async Task<bool> ExistsAsync(string phoneNumber)
         {
             return await _context.Set<ApplicationUser>().AnyAsync(t => t.UserName == phoneNumber);
@@ -148,6 +147,30 @@ namespace Persistance.Repositories
         public async Task<bool> EmailExistsAsync(string email)
         {
             return await _context.Set<ApplicationUser>().AnyAsync(t => t.Email == email);
+        }
+
+        public async Task<IEnumerable<Technician>?> GetTechniciansByServiceAndLocationAsync(int serviceId, int governorateId, int preferredCityId, bool sorted)
+        {
+            var query = context.Set<Technician>()
+                               .Include(t => t.User)
+                               .Include(t => t.Rejection)
+                               .Include(t => t.City)
+                                   .ThenInclude(c => c.Governorate)
+                               .Include(t => t.Service)
+                               .Where(t => t.ServiceId == serviceId 
+                                && t.Status == TechnicianStatus.Accepted
+                                && t.City.GovernorateId == governorateId);
+            if (sorted)
+            {
+                return await query.OrderByDescending(t => t.Rating)
+                                    .ThenBy(t => t.City.NameEn)
+                                  .ToListAsync();
+
+            }
+            return await query.OrderBy(t => t.CityId == preferredCityId ? 0 : 1)
+                                .ThenByDescending(t => t.Rating)
+                                    .ThenBy(t => t.City.NameEn)
+                              .ToListAsync();
         }
     }
 }

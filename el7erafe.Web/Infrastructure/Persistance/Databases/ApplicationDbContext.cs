@@ -1,4 +1,5 @@
-﻿using DomainLayer.Models.IdentityModule;
+﻿using DomainLayer.Models;
+using DomainLayer.Models.IdentityModule;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +17,7 @@ namespace Persistance.Databases
         public DbSet<Admin> Admins { get; set; } = default!;
         public DbSet<BlockedUser> BlockedUsers { get; set; } = default!;
         public DbSet<RejectionComment> rejectionComments { get; set; }
+        public DbSet<ServiceRequest> ServiceRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -30,6 +32,7 @@ namespace Persistance.Databases
             builder.Entity<TechnicianService>().ToTable("TechnicianServices");
             builder.Entity<City>().ToTable("Cities");
             builder.Entity<Admin>().ToTable("Admins");
+            builder.Entity<ServiceRequest>().ToTable("ServiceRequests");
             builder.Entity<RejectionComment>().ToTable("RejectionComments");
             builder.Ignore<IdentityUserClaim<string>>();
             builder.Ignore<IdentityUserToken<string>>();
@@ -44,6 +47,10 @@ namespace Persistance.Databases
                       .WithOne(r => r.Technician)
                       .HasForeignKey<Rejection>(r => r.TechnicianId) // Explicit foreign key
                       .OnDelete(DeleteBehavior.Cascade);
+
+                entity.Property(t => t.Rating)
+                      .HasColumnType("decimal(3,2)")
+                      .HasDefaultValue(0);
             });
 
             builder.Entity<UserToken>(entity =>
@@ -90,6 +97,8 @@ namespace Persistance.Databases
                 entity.HasIndex(r => r.TechnicianId)
                 .IsUnique();
             });
+
+  
 
         }
     }

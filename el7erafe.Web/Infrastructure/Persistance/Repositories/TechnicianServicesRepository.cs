@@ -68,5 +68,11 @@ namespace Persistance.Repositories
             await dbContext.SaveChangesAsync();
             return true;
         }
+
+        public async Task<TechnicianService?> GetServiceByNameAsync(string serviceName)
+        {
+            return await dbContext.Set<TechnicianService>()
+                                    .FirstOrDefaultAsync(ts => ts.NameAr == serviceName);
+        }
     }
 }

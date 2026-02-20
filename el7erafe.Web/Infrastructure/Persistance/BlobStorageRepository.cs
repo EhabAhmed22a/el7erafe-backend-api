@@ -1,32 +1,17 @@
-﻿using Azure.Identity;
-using Azure.Storage.Blobs;
+﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using Azure.Storage.Sas;
 using DomainLayer.Contracts;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
 namespace Persistance
 {
-    public class BlobStorageRepository : IBlobStorageRepository
+    public class BlobStorageRepository(IWebHostEnvironment _env,
+                                       IUserDelegationKeyCache _userDelegationKeyCache,
+                                       BlobServiceClient _blobServiceClient) : IBlobStorageRepository
     {
-        private readonly BlobServiceClient _blobServiceClient;
-
-        public BlobStorageRepository(IConfiguration configuration, IWebHostEnvironment env)
-        {
-            if (env.IsDevelopment())
-            {
-                var connectionString = configuration.GetConnectionString("AzureBlobStorage");
-                _blobServiceClient = new BlobServiceClient(connectionString);
-            }
-            else
-            {
-                var accountName = configuration.GetValue<string>("AzureBlobStorage:AccountName");
-                var blobServiceUri = new Uri($"https://{accountName}.blob.core.windows.net");
-                _blobServiceClient = new BlobServiceClient(blobServiceUri, new DefaultAzureCredential());
-            }
-        }
 
         public async Task<string> UploadFileAsync(IFormFile file, string containerName, string? customFileName = null)
         {
@@ -56,12 +41,59 @@ namespace Persistance
             return fileName;
         }
 
+        public async Task<List<string>> UploadMultipleFilesAsync(List<IFormFile> files, string containerName, string? customFileNames = null)
+        {
+            if (files == null || files.Count == 0)
+                throw new ArgumentException("No files provided");
+
+            var uploadedFileNames = new List<string>();
+            var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+
+            for (int i = 0; i < files.Count; i++)
+            {
+                var file = files[i];
+
+                if (file == null || file.Length == 0)
+                    continue;
+
+                var fileExtension = Path.GetExtension(file.FileName);
+                var fileName = customFileNames is not null
+                    ? $"{customFileNames}_{i + 1}{fileExtension}"
+                    : $"{Guid.NewGuid()}{fileExtension}";
+
+                var blobClient = containerClient.GetBlobClient(fileName);
+
+                using var stream = file.OpenReadStream();
+                await blobClient.UploadAsync(stream, new BlobUploadOptions
+                {
+                    HttpHeaders = new BlobHttpHeaders
+                    {
+                        ContentType = file.ContentType
+                    }
+                });
+
+                uploadedFileNames.Add(fileName);
+            }
+
+            return uploadedFileNames;
+        }
+
+        public async Task<string?> GetImageURL(string containerName, string fileName)
+        {
+            var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+            var blobClient = containerClient.GetBlobClient(fileName);
+            bool exists = await blobClient.ExistsAsync();
+            return exists ? blobClient.Uri.AbsoluteUri : null;
+
+        }
+
         public async Task DeleteFileAsync(string fileName, string containerName)
         {
             var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
             var blobClient = containerClient.GetBlobClient(fileName);
             await blobClient.DeleteIfExistsAsync();
         }
+
 
         public async Task<bool> FileExistsAsync(string fileName, string containerName)
         {
@@ -93,5 +125,124 @@ namespace Persistance
             var idx = url.LastIndexOf('/');
             return idx >= 0 ? url[(idx + 1)..] : url;
         }
+
+        public async Task DeleteMultipleFilesAsync(string fileName, string containerName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName))
+                throw new ArgumentException("fileName cannot be null or empty", nameof(fileName));
+
+            var extension = Path.GetExtension(fileName);
+            var baseName = Path.GetFileNameWithoutExtension(fileName);
+            var parts = baseName.Split('_');
+
+            // Expected format: serviceId_clientId_count
+            if (parts.Length != 3 || !int.TryParse(parts[2], out var count))
+            {
+                // Fallback: try deleting the provided filename as-is
+                await DeleteFileAsync(fileName, containerName);
+                return;
+            }
+
+            var serviceId = parts[0];
+            var Id = parts[1];
+
+            for (int i = count; i >= 1; i--)
+            {
+                var candidate = $"{serviceId}_{Id}_{i}{extension}";
+                await DeleteFileAsync(candidate, containerName);
+            }
+        }
+
+        public async Task<string?> GetBlobUrlWithSasTokenAsync(string containerName, string fileName, int expiryHours = 1)
+        {
+            if (string.IsNullOrEmpty(fileName))
+                return null;
+
+            var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);  
+            var blobClient = containerClient.GetBlobClient(fileName);
+
+            // Check if blob exists
+            bool exists = await blobClient.ExistsAsync();
+            if (!exists)
+                return null;
+
+            // Create a SAS builder for the blob
+            var sasBuilder = new BlobSasBuilder
+            {
+                BlobContainerName = containerName,
+                BlobName = fileName,
+                Resource = "b", // "b" for blob
+                ExpiresOn = DateTimeOffset.UtcNow.AddHours(expiryHours)
+            };
+
+            // Set read permissions only
+            sasBuilder.SetPermissions(BlobSasPermissions.Read);
+
+            // Generate the SAS URI
+            Uri sasUri;
+
+            if (_env.IsDevelopment())
+            {
+                // Development: Use account key SAS
+                sasUri = blobClient.GenerateSasUri(sasBuilder);
+            }
+            else
+            {
+                // Production: Use user delegation key SAS
+                var userDelegationKey = await _userDelegationKeyCache.GetUserDelegationKeyAsync();
+                sasUri = blobClient.GenerateUserDelegationSasUri(sasBuilder, userDelegationKey);
+            }
+            return sasUri.ToString();
+        }
+
+        public async Task<Dictionary<string, string>> GetMultipleBlobsUrlWithSasTokenAsync(string containerName,List<string> fileNames,int expiryHours = 1)
+        {
+            var result = new Dictionary<string, string>();
+            var expiryTime = DateTimeOffset.UtcNow.AddHours(expiryHours);
+
+            // Get user delegation key once for all blobs (production only)
+            UserDelegationKey? userDelegationKey = null;
+            if (!_env.IsDevelopment())
+            {
+                userDelegationKey = await _userDelegationKeyCache.GetUserDelegationKeyAsync();
+            }
+
+            foreach (var fileName in fileNames)
+            {
+                if (string.IsNullOrEmpty(fileName))
+                    continue;
+
+                var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+                var blobClient = containerClient.GetBlobClient(fileName);
+
+                bool exists = await blobClient.ExistsAsync();
+                if (!exists)
+                    continue;
+
+                var sasBuilder = new BlobSasBuilder
+                {
+                    BlobContainerName = containerName,
+                    BlobName = fileName,
+                    Resource = "b",
+                    ExpiresOn = expiryTime
+                };
+                sasBuilder.SetPermissions(BlobSasPermissions.Read);
+
+                Uri sasUri;
+                if (_env.IsDevelopment())
+                {
+                    sasUri = blobClient.GenerateSasUri(sasBuilder);
+                }
+                else
+                {
+                    sasUri = blobClient.GenerateUserDelegationSasUri(sasBuilder, userDelegationKey!);
+                }
+
+                result[fileName] = sasUri.ToString();
+            }
+
+            return result;
+        }
+
     }
 }

@@ -76,7 +76,6 @@ namespace Service
 
         public async Task<TechRegisterToReturnDTO> ProcessTechnicianFilesAsync(TechRegisterDTO techRegisterDTO)
         {
-            // Save files to blob storage and get URLs
             var profilePicture = await _blobStorageService.UploadFileAsync(
                 techRegisterDTO.ProfilePicture,
                 "technician-documents",
