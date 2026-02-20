@@ -155,11 +155,13 @@ namespace Service
             if (user is null)
                 throw new UserNotFoundException("المستخدم غير موجود");
 
+            var isImageNull = user.ImageURL is not null;
+
             return new ClientProfileDTO()
             {
                 Name = user.Name,
                 Email = user.User.Email!,
-                ImageURL = user.ImageURL ?? "https://el7erafe.blob.core.windows.net/services-documents/user-circles-set.png",
+                ImageURL = isImageNull ? await blobStorageRepository.GetBlobUrlWithSasTokenAsync("client-profilepics", user.ImageURL!) : "https://el7erafe.blob.core.windows.net/services-documents/user-circles-set.png",
                 PhoneNumber = user.User.PhoneNumber!
             };
         }
@@ -223,7 +225,7 @@ namespace Service
                 if (user.ImageURL != null)
                     await blobStorageRepository.DeleteFileAsync(user.ImageURL, "client-profilepics");
 
-                user.ImageURL = await blobStorageRepository.GetImageURL("client-profilepics", await blobStorageRepository.UploadFileAsync(dTO.Image!, "client-profilepics", $"{user.Id}{Path.GetExtension(dTO.Image?.FileName)}"));
+                user.ImageURL = await blobStorageRepository.UploadFileAsync(dTO.Image!, "client-profilepics", $"{user.Id}{Path.GetExtension(dTO.Image?.FileName)}");
 
             }
             try
