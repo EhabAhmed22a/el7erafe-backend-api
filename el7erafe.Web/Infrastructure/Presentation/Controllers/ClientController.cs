@@ -77,7 +77,7 @@ namespace Presentation.Controllers
             return Ok(result);
         }
 
-        [HttpGet("cf/technicians_available")]
+        [HttpPost("cf/technicians_available")]
         public async Task<IActionResult> GetAvailableTechnicians(GetAvailableTechniciansRequest requestRegDTO)
         {
             _logger.LogInformation("[CONTROLLER] Getting Available Technicians");
