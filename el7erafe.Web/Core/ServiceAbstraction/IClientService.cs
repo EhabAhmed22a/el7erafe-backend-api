@@ -16,6 +16,8 @@ namespace ServiceAbstraction
         Task<List<AvailableTechnicianDto>> GetAvailableTechniciansAsync(GetAvailableTechniciansRequest requestRegDTO);
         Task UpdateNameAndImage(string userId, UpdateNameImageDTO dTO);
         Task UpdatePhoneNumber(string userId, UpdatePhoneDTO dTO);
-        Task<OtpResponseDTO> UpdateEmail(string userId, UpdateEmailDTO updateEmailDTO);
+        Task<OtpResponseDTO> UpdatePendingEmail(string userId, UpdateEmailDTO updateEmailDTO);
+        Task UpdateEmailAsync(string userId, OtpCodeDTO otpCode);
+        Task<OtpResponseDTO> ResendOtpForPendingEmail(string userId);
     }
 }
