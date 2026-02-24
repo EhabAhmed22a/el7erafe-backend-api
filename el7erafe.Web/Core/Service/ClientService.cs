@@ -4,7 +4,9 @@ using DomainLayer.Models;
 using DomainLayer.Models.IdentityModule;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Service.Helpers;
 using ServiceAbstraction;
 using Shared.DataTransferObject.ClientDTOs;
@@ -17,7 +19,6 @@ namespace Service
 {
     public class ClientService(ITechnicianServicesRepository technicianServicesRepository,
             IClientRepository clientRepository,
-            IUserTokenRepository userTokenRepository,
             IBlobStorageRepository blobStorageRepository,
             IServiceRequestRepository serviceRequestRepository,
             ITechnicianServicesRepository servicesRepository,
@@ -264,7 +265,7 @@ namespace Service
             }
         }
 
-        public async Task<OtpResponseDTO> UpdateEmail(string userId, UpdateEmailDTO updateEmailDTO)
+        public async Task<OtpResponseDTO> UpdatePendingEmail(string userId, UpdateEmailDTO updateEmailDTO)
         {
             var user = await CheckUser(userId);
 
@@ -275,9 +276,51 @@ namespace Service
             if (await clientRepository.EmailExistsAsync(updateEmailDTO.NewEmail))
                 throw new UnprocessableEntityException("البريد الإلكتروني مستخدم بالفعل");
 
-            user.User.Email = updateEmailDTO.NewEmail;
-            user.User.EmailConfirmed = false;
-            user.User.NormalizedEmail = updateEmailDTO.NewEmail.ToUpperInvariant();
+            user.User.PendingEmail = updateEmailDTO.NewEmail;
+
+            try
+            {
+                if (!await clientRepository.UpdateAsync(user))
+                    throw new TechnicalException();
+            }
+            catch
+            {
+                throw new TechnicalException();
+            }
+            var identifier = otpHelper.GetOtpIdentifier(userId);
+            if (!otpHelper.CanResendOtp(identifier).Result)
+            {
+                throw new OtpAlreadySent();
+            }
+            await otpHelper.SendOTP(user.User, updateEmailDTO.NewEmail);
+
+            return new OtpResponseDTO
+            {
+                Message = "تم إرسال الرمز إلى بريدك الإلكتروني الجديد. يرجى التحقق لإكمال التحديث."
+            };
+        }
+
+        public async Task UpdateEmailAsync(string userId, OtpCodeDTO otpCode)
+        {
+            var user = await CheckUser(userId);
+
+            if (string.IsNullOrEmpty(user.User.PendingEmail))
+                throw new UnprocessableEntityException("لا يوجد بريد إلكتروني معلق للتحديث");
+
+            var identifier = otpHelper.GetOtpIdentifier(userId);
+            var result = await otpHelper.VerifyOtp(identifier, otpCode.OtpCode);
+
+            if (!result)
+            {
+                throw new InvalidOtpException();
+            }
+
+            if (await clientRepository.EmailExistsAsync(user.User.PendingEmail))
+                throw new UnprocessableEntityException("البريد الإلكتروني أصبح مستخدم بالفعل");
+
+            user.User.Email = user.User.PendingEmail;
+            user.User.NormalizedEmail = user.User.Email.ToUpperInvariant();
+            user.User.PendingEmail = null;
 
             try
             {
@@ -289,12 +332,28 @@ namespace Service
                 throw new TechnicalException();
             }
 
-            await otpHelper.SendOTP(user.User);
-            await userTokenRepository.DeleteUserTokenAsync(userId);
+        }
+
+        public async Task<OtpResponseDTO> ResendOtpForPendingEmail(string userId)
+        {
+            var user = await CheckUser(userId);
+
+            if (string.IsNullOrEmpty(user.User.PendingEmail))
+            {
+                throw new UnprocessableEntityException("لا يوجد بريد إلكتروني معلق");
+            }
+
+            var identifier = otpHelper.GetOtpIdentifier(user.User.Id);
+            if (!otpHelper.CanResendOtp(identifier).Result)
+            {
+                throw new OtpAlreadySent();
+            }
+
+            await otpHelper.SendOTP(user.User, user.User.PendingEmail);
 
             return new OtpResponseDTO
             {
-                Message = "تم إرسال الرمز إلى بريدك الإلكتروني الجديد. يرجى التحقق لإكمال التحديث."
+                Message = "تم إعادة إرسال الرمز إلى بريدك الإلكتروني الجديد."
             };
         }
 

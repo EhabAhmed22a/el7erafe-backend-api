@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
 using Shared.DataTransferObject.ClientDTOs;
+using Shared.DataTransferObject.OtpDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
 using Shared.DataTransferObject.UpdateDTOs;
 
@@ -120,14 +121,38 @@ namespace Presentation.Controllers
             return Ok(new { message = "تم تحديث رقم الهاتف بنجاح" });
         }
 
-        [HttpPost("cf/update_email")]
-        public async Task<IActionResult> UpdateEmail(UpdateEmailDTO dTO)
+        [HttpPost("cf/update-pending-email")]
+        public async Task<IActionResult> UpdatePendingEmail(UpdateEmailDTO dTO)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("المستخدم غير موجود");
 
-            var response = await _clientService.UpdateEmail(userId, dTO);
+            var response = await _clientService.UpdatePendingEmail(userId, dTO);
+            return Ok(new { message = response.Message });
+        }
+
+        [HttpPost("cf/update-email")]
+        public async Task<IActionResult> UpdateEmail(OtpCodeDTO otpCode)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            await _clientService.UpdateEmailAsync(userId, otpCode);
+
+            return Ok(new { message = "تم تحديث البريد الإلكتروني بنجاح" });
+        }
+
+        [HttpPost("cf/resend-otp-pendingemail")]
+        public async Task<IActionResult> ResendPendingOtp()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            var response = await _clientService.ResendOtpForPendingEmail(userId);
+
             return Ok(new { message = response.Message });
         }
     }
