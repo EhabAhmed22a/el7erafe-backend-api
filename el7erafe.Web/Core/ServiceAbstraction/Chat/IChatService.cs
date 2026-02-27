@@ -1,6 +1,6 @@
 ﻿using Shared.DataTransferObject.ChatDTOs;
 
-namespace ServiceAbstraction.Hubs
+namespace ServiceAbstraction.Chat
 {
     public interface IChatService
     {
