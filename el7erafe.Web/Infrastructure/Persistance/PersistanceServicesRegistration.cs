@@ -50,6 +50,7 @@ namespace Persistance
             services.AddScoped<IServiceRequestRepository, ServiceRequestRepository>();
             services.AddScoped<ICityRepository, CityRepository>();
             services.AddScoped<IChatRepository, ChatRepository>();
+            services.AddScoped<IUserConnectionRepository, UserConnectionRepository>();
             services.AddScoped<IUserDelegationKeyCache, UserDelegationKeyCache>();
             services.AddSingleton<BlobServiceClient>(serviceProvider =>
             {
