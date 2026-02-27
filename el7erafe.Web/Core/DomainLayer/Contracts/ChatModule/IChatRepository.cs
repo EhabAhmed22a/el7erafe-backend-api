@@ -1,9 +1,11 @@
 ﻿using DomainLayer.Models.ChatModule;
+using DomainLayer.Models.IdentityModule;
 
 namespace DomainLayer.Contracts.ChatModule
 {
     public interface IChatRepository
     {
+        Task<Chat> GetOrCreateChatAsync(string clientId, string technicianId);
         Task<Chat?> GetChatByIdAsync(int id);
         Task<Chat> CreateChatAsync(Chat chat);
 

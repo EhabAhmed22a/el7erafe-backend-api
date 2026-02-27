@@ -4,7 +4,7 @@ namespace Shared.DataTransferObject.ChatDTOs
 {
     public class SendMessageDto
     {
-        [Required]                      // Validation: Must have this!
+        [Required]                      
         public int ChatId { get; set; }
 
         [Required]
@@ -14,9 +14,9 @@ namespace Shared.DataTransferObject.ChatDTOs
         public string ReceiverId { get; set; } = default!;
 
         [Required]
-        [MaxLength(4000)]               // Message can't be too long
+        [MaxLength(4000)]              
         public string Content { get; set; } = default!;
 
-        public string Type { get; set; } = "Text"; // Default to text
+        public string Type { get; set; } = "Text"; 
     }
 }

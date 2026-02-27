@@ -8,7 +8,25 @@ namespace Persistance.Repositories.ChatModule
     public class ChatRepository(ApplicationDbContext dbContext) : IChatRepository
     {
         // ========== CHAT OPERATIONS ==========
+        public async Task<Chat> GetOrCreateChatAsync(string clientId, string technicianId)
+        {
+            var chat = await dbContext.Chats
+                .Include(c => c.Client)
+                .Include(c => c.Technician)
+                .Include(c => c.Messages.OrderByDescending(m => m.CreatedAt).Take(1))
+                .FirstOrDefaultAsync(c => c.ClientId == clientId && c.TechnicianId == technicianId);
 
+            if (chat != null)
+                return chat;
+
+            var newChat = new Chat
+            {
+                ClientId = clientId,
+                TechnicianId = technicianId
+            };
+
+            return await CreateChatAsync(newChat);
+        }
         public async Task<Chat?> GetChatByIdAsync(int id)
         {
             return await dbContext.Chats
@@ -116,5 +134,6 @@ namespace Persistance.Repositories.ChatModule
                 .ExecuteUpdateAsync(setters => setters
                     .SetProperty(m => m.ReceiverId, deletedMarker));
         }
+
     }
 }
