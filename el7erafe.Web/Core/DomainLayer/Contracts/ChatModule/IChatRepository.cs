@@ -18,8 +18,5 @@ namespace DomainLayer.Contracts.ChatModule
         // Delete operations (for hard delete scenario)
         Task AnonymizeUserChatsAsync(string userId, string deletedMarker);
         Task AnonymizeUserMessagesAsync(string userId, string deletedMarker);
-
-        // Save
-        Task<bool> SaveChangesAsync();
     }
 }
