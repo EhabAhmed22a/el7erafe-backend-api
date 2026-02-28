@@ -8,6 +8,7 @@ using Persistance.Databases;
 using Serilog;
 using Service;
 using Service.Email;
+using Service.Hubs;
 using ServiceAbstraction;
 using static Org.BouncyCastle.Math.EC.ECCurve;
 
@@ -122,7 +123,7 @@ namespace el7erafe.Web
             app.UseAuthentication();
             app.UseAuthorization();
 
-
+            app.MapHub<ChatHub>("/chatHub");
             app.MapControllers();
             #endregion
 
