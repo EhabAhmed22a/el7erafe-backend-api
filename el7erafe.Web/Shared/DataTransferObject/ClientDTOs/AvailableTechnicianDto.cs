@@ -3,7 +3,7 @@ namespace Shared.DataTransferObject.ClientDTOs
 {
     public class AvailableTechnicianDto
     {
-        public int Id { get; set; }
+        public string Id { get; set; } = default!;
 
         public string Name { get; set; } = default!;
 
