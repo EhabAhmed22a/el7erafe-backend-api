@@ -191,7 +191,7 @@ namespace Service
             // Map to DTOs
             var result = technicians.Select(t => new AvailableTechnicianDto
             {
-                Id = t.Id,
+                Id = t.UserId,
                 Name = t.Name,
                 ServiceName = t.Service.NameAr,
                 Rating = t.Rating,
