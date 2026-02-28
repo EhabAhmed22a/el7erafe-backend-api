@@ -35,6 +35,7 @@ namespace el7erafe.Web
             .WithOrigins("http://localhost:4200",
                          "https://localhost:4200",
                          "https://7otob3den.com",
+                         "http://127.0.0.1:5500",
                          "https://www.7otob3den.com")
             .AllowAnyHeader()
             .AllowAnyMethod()

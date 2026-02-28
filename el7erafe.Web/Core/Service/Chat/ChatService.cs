@@ -33,13 +33,13 @@ namespace Service.Chat
             };
         }
 
-        public async Task<MessageDto> SendMessageAsync(SendMessageDto messageDto)
+        public async Task<MessageDto> SendMessageAsync(SendMessageDto messageDto,int chatId,string senderId)
         {
 
             var domainMessage = new Message
             {
-                ChatId = messageDto.ChatId,
-                SenderId = messageDto.SenderId,
+                ChatId = chatId,
+                SenderId = senderId,
                 ReceiverId = messageDto.ReceiverId,
                 Content = messageDto.Content,
                 Type = MessageType.Text,
