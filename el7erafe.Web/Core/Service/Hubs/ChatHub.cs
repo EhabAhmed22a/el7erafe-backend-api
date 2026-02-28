@@ -7,7 +7,7 @@ using Shared.DataTransferObject.ChatDTOs;
 
 namespace Service.Hubs
 {
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "Bearer", Roles = "Client,Technician")]
     public class ChatHub(IChatService _chatService,
                          IUserConnectionRepository _userConnectionRepository) : Hub
     {
