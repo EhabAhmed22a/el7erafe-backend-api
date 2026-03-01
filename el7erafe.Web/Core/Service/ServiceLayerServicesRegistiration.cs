@@ -24,6 +24,7 @@ namespace Service
             services.AddScoped<IAdminDashboardService, AdminDashboardService>();
             services.AddScoped<IClientService, ClientService>();
             services.AddScoped<IChatService, ChatService>();
+            services.AddScoped<ITechnicianService, TechnicianFlowService>();
             services.AddSignalR();
             return services;
         }
