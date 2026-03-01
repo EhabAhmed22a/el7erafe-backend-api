@@ -1,6 +1,7 @@
 ﻿using DomainLayer.Contracts.ChatModule;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 using Service.Chat;
 using ServiceAbstraction.Chat;
 using Shared.DataTransferObject.ChatDTOs;
@@ -9,15 +10,21 @@ namespace Service.Hubs
 {
     [Authorize(AuthenticationSchemes = "Bearer", Roles = "Client,Technician")]
     public class ChatHub(IChatService _chatService,
-                         IUserConnectionRepository _userConnectionRepository) : Hub
+                         IUserConnectionRepository _userConnectionRepository,
+                         ILogger<ChatHub> _logger) : Hub
     {
         public override async Task OnConnectedAsync()
         {
             var userId = Context.UserIdentifier;
+
             var connectionId = Context.ConnectionId;
+            _logger.LogInformation("=== OnConnectedAsync Started ===");
+            _logger.LogInformation("UserId: {UserId}", userId);
+            _logger.LogInformation("ConnectionId: {ConnectionId}", connectionId);
 
             if (string.IsNullOrEmpty(userId))
             {
+                _logger.LogWarning("❌ UserId is null or empty - aborting connection");
                 Context.Abort();
                 return;
             }
@@ -43,14 +50,13 @@ namespace Service.Hubs
         {
             var senderId = Context.UserIdentifier;
 
-            // Security check
-            if (senderId != messageDto.SenderId)
-            {
+            if (string.IsNullOrEmpty(senderId))
                 throw new HubException("Unauthorized");
-            }
+
+            var chat = await _chatService.GetOrCreateChatAsync(senderId,messageDto.ReceiverId);
 
             // Save message to database
-            var savedMessage = await _chatService.SendMessageAsync(messageDto);
+            var savedMessage = await _chatService.SendMessageAsync(messageDto, chat.Id, senderId);
 
             // Send to receiver ONLY (if they're online)
             var receiverConnections = await _userConnectionRepository.GetUserConnectionsAsync(messageDto.ReceiverId);
@@ -81,25 +87,6 @@ namespace Service.Hubs
             foreach (var connectionId in otherUserConnections)
             {
                 await Clients.Client(connectionId).SendAsync("MessagesRead", chatId, userId);
-            }
-        }
-
-        public async Task UserTyping(int chatId, string receiverId, bool isTyping)
-        {
-            var userId = Context.UserIdentifier;
-
-            var typingDto = new
-            {
-                ChatId = chatId,
-                UserId = userId,
-                IsTyping = isTyping
-            };
-
-            // Just notify the receiver
-            var receiverConnections = await _userConnectionRepository.GetUserConnectionsAsync(receiverId);
-            foreach (var connectionId in receiverConnections)
-            {
-                await Clients.Client(connectionId).SendAsync("UserTyping", typingDto);
             }
         }
 
