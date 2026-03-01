@@ -51,6 +51,15 @@ namespace Persistance.Repositories.ChatModule
             await dbContext.SaveChangesAsync(); 
             return chat;
         }
+        public async Task<IEnumerable<Chat>> GetUserChatsWithDetailsAsync(string userId)
+        {
+            return await dbContext.Chats
+                .Where(c => c.ClientId == userId || c.TechnicianId == userId)
+                .Include(c => c.Client)
+                .Include(c => c.Technician)
+                .Include(c => c.Messages)
+                .ToListAsync();
+        }
 
         // ========== MESSAGE OPERATIONS ==========
 

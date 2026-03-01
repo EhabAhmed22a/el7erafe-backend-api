@@ -8,6 +8,7 @@ namespace DomainLayer.Contracts.ChatModule
         Task<Chat> GetOrCreateChatAsync(string clientId, string technicianId);
         Task<Chat?> GetChatByIdAsync(int id);
         Task<Chat> CreateChatAsync(Chat chat);
+        Task<IEnumerable<Chat>> GetUserChatsWithDetailsAsync(string userId);
 
         // Message operations within chat
         Task<IEnumerable<Message>> GetChatMessagesAsync(int chatId, int page = 1, int pageSize = 50);

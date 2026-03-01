@@ -1,19 +1,22 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
+using ServiceAbstraction.Chat;
 using Shared.DataTransferObject.ClientDTOs;
 using Shared.DataTransferObject.OtpDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
 using Shared.DataTransferObject.UpdateDTOs;
+using System.Security.Claims;
 
 namespace Presentation.Controllers
 {
     [ApiController]
     [Route("api")]
     [Authorize(AuthenticationSchemes = "Bearer", Roles = "Client")]
-    public class ClientController(IClientService _clientService, ILogger<ClientController> _logger) : ControllerBase
+    public class ClientController(IClientService _clientService,
+        ILogger<ClientController> _logger,
+        IChatService chatService) : ControllerBase
     {
         [HttpGet("/cf/services")]
         public async Task<ActionResult<string>> GetServicesAsync()
@@ -154,6 +157,19 @@ namespace Presentation.Controllers
             var response = await _clientService.ResendOtpForPendingEmail(userId);
 
             return Ok(new { message = response.Message });
+        }
+
+        [HttpGet("cf/inbox")]
+        public async Task<IActionResult> GetInbox()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var result = await chatService.GetInboxAsync(userId);
+
+            return Ok(result);
         }
     }
 }

@@ -16,5 +16,7 @@ namespace ServiceAbstraction.Chat
 
         // Delete/Anonymize (called when user is deleted)
         Task AnonymizeUserDataAsync(string userId, string deletedMarker);
+
+        Task<IEnumerable<InboxConversationDto>> GetInboxAsync(string userId);
     }
 }

@@ -1,4 +1,5 @@
-﻿using DomainLayer.Contracts.ChatModule;
+﻿using DomainLayer.Contracts;
+using DomainLayer.Contracts.ChatModule;
 using DomainLayer.Models.ChatModule;
 using DomainLayer.Models.ChatModule.Enums;
 using ServiceAbstraction.Chat;
@@ -6,7 +7,10 @@ using Shared.DataTransferObject.ChatDTOs;
 
 namespace Service.Chat
 {
-    public class ChatService(IChatRepository _chatRepository) : IChatService
+    public class ChatService(IChatRepository _chatRepository,
+                             IBlobStorageRepository blobStorageRepository,
+                             IClientRepository clientRepository,
+                             ITechnicianRepository technicianRepository) : IChatService
     {
         public async Task<ChatDto> GetOrCreateChatAsync(string clientId, string technicianId)
         {
@@ -33,7 +37,7 @@ namespace Service.Chat
             };
         }
 
-        public async Task<MessageDto> SendMessageAsync(SendMessageDto messageDto,int chatId,string senderId)
+        public async Task<MessageDto> SendMessageAsync(SendMessageDto messageDto, int chatId, string senderId)
         {
 
             var domainMessage = new Message
@@ -91,6 +95,77 @@ namespace Service.Chat
         public async Task AnonymizeUserDataAsync(string userId, string deletedMarker)
         {
             await _chatRepository.AnonymizeUserChatsAsync(userId, deletedMarker);
+        }
+
+        public async Task<IEnumerable<InboxConversationDto>> GetInboxAsync(string userId)
+        {
+            var chats = await _chatRepository.GetUserChatsWithDetailsAsync(userId);
+
+            var inbox = new List<InboxConversationDto>();
+
+            foreach (var chat in chats)
+            {
+                var isClient = chat.ClientId == userId;
+
+                string receiverId;
+                string receiverName;
+                string? receiverImage = null;
+
+                if (isClient)
+                {
+                    var technician = await technicianRepository.GetByUserIdAsync(chat.TechnicianId);
+                    if (technician == null)
+                        continue;
+
+                    receiverId = technician.UserId;
+                    receiverName = technician.Name;
+
+                    if (!string.IsNullOrEmpty(technician.ProfilePictureURL))
+                    {
+                        receiverImage = await blobStorageRepository
+                            .GetBlobUrlWithSasTokenAsync("technician-documents", technician.ProfilePictureURL);
+                    }
+                }
+                else
+                {
+                    var client = await clientRepository.GetByUserIdAsync(chat.ClientId);
+                    if (client == null)
+                        continue;
+
+                    receiverId = client.UserId;
+                    receiverName = client.Name;
+
+                    if (!string.IsNullOrEmpty(client.ImageURL))
+                    {
+                        receiverImage = await blobStorageRepository
+                            .GetBlobUrlWithSasTokenAsync("client-profilepics", client.ImageURL);
+                    }
+                }
+
+                var lastMessage = chat.Messages
+                    .Where(m => !m.IsDeleted)
+                    .OrderByDescending(m => m.CreatedAt)
+                    .FirstOrDefault();
+
+                var unreadCount = chat.Messages
+                    .Count(m => m.ReceiverId == userId && !m.IsRead);
+
+                inbox.Add(new InboxConversationDto
+                {
+                    ChatId = chat.Id,
+                    ReceiverId = receiverId,
+                    ReceiverName = receiverName,
+                    ReceiverImage = receiverImage,
+                    LastMessageContent = lastMessage?.Content,
+                    LastMessageTime = lastMessage?.CreatedAt,
+                    IsLastMessageFromMe = lastMessage?.SenderId == userId,
+                    UnreadCount = unreadCount
+                });
+            }
+
+            return inbox
+                .OrderByDescending(x => x.LastMessageTime)
+                .ToList();
         }
     }
 }
