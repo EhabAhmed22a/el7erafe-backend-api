@@ -1,8 +1,6 @@
 name: Whitelist Developer IP for Database
 
 on:
-  push:
-    branches: [ "Dev" ]
   workflow_dispatch:
     inputs:
       developer_ip:
