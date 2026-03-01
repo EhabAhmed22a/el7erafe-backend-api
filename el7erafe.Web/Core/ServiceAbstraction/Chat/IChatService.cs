@@ -1,4 +1,5 @@
-﻿using Shared.DataTransferObject.ChatDTOs;
+﻿using DomainLayer.Models.ChatModule.Enums;
+using Shared.DataTransferObject.ChatDTOs;
 
 namespace ServiceAbstraction.Chat
 {
@@ -13,6 +14,7 @@ namespace ServiceAbstraction.Chat
         Task<IEnumerable<MessageDto>> GetChatHistoryAsync(int chatId, int page = 1, int pageSize = 50);
         Task MarkMessagesAsReadAsync(int chatId, string userId);
         Task<int> GetUnreadCountAsync(string userId);
+        Task UpdateMessageStatusAsync(int messageId, MessageStatus newStatus);
 
         // Delete/Anonymize (called when user is deleted)
         Task AnonymizeUserDataAsync(string userId, string deletedMarker);

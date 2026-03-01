@@ -188,5 +188,15 @@ namespace Service.Chat
                 .OrderByDescending(x => x.LastMessageTime)
                 .ToList();
         }
+
+        public async Task UpdateMessageStatusAsync(int messageId, MessageStatus newStatus)
+        {
+            var message = await _chatRepository.GetMessageByIdAsync(messageId);
+            if (message == null)
+                return;
+
+            message.Status = newStatus;
+            await _chatRepository.UpdateMessageAsync(message);
+        }
     }
 }
