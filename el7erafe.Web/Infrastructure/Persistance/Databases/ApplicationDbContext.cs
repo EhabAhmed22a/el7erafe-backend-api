@@ -195,17 +195,9 @@ namespace Persistance.Databases
                     .IsRequired()
                     .HasMaxLength(4000); 
 
-                entity.Property(e => e.Type)
-                    .IsRequired()
-                    .HasDefaultValue(MessageType.Text);
-
                 entity.Property(e => e.CreatedAt)
                     .IsRequired()
                     .HasDefaultValueSql("GETUTCDATE()");
-
-                entity.Property(e => e.IsRead)
-                    .IsRequired()
-                    .HasDefaultValue(false);
 
                 entity.Property(e => e.IsDeleted)
                     .IsRequired()
@@ -226,7 +218,7 @@ namespace Persistance.Databases
                     .HasDatabaseName("IX_Messages_ChatId_CreatedAt");
 
                 // Index for unread counts
-                entity.HasIndex(e => new { e.ReceiverId, e.IsRead, e.ChatId })
+                entity.HasIndex(e => new { e.ReceiverId, e.Status, e.ChatId })
                     .HasDatabaseName("IX_Messages_ReceiverId_IsRead_ChatId");
 
                 // Relationships

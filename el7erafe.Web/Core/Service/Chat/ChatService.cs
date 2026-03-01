@@ -69,7 +69,7 @@ namespace Service.Chat
                 Content = messageDto.Content,
                 Type = MessageType.Text,
                 CreatedAt = DateTime.UtcNow,
-                IsRead = false
+                Status = MessageStatus.Sent,
             };
 
             // Persist and get the created message with its Id and timestamps
@@ -84,7 +84,7 @@ namespace Service.Chat
                 ReceiverId = created.ReceiverId,
                 Content = created.Content,
                 CreatedAt = created.CreatedAt,
-                IsRead = created.IsRead
+                IsRead = MessageStatus.Sent.ToString() 
             };
         }
 
@@ -99,7 +99,7 @@ namespace Service.Chat
                 ReceiverId = message.ReceiverId,
                 Content = message.Content,
                 CreatedAt = message.CreatedAt,
-                IsRead = message.IsRead
+                IsRead = message.Status.ToString()
             });
         }
 
@@ -169,7 +169,7 @@ namespace Service.Chat
                     .FirstOrDefault();
 
                 var unreadCount = chat.Messages
-                    .Count(m => m.ReceiverId == userId && !m.IsRead && !m.IsDeleted);
+                    .Count(m => m.ReceiverId == userId && m.Status != MessageStatus.Read && !m.IsDeleted);
 
                 inbox.Add(new InboxConversationDto
                 {
