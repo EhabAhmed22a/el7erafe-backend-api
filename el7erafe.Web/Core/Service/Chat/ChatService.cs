@@ -180,6 +180,7 @@ namespace Service.Chat
                     LastMessageContent = lastMessage?.Content,
                     LastMessageTime = lastMessage?.CreatedAt,
                     IsLastMessageFromMe = lastMessage?.SenderId == userId,
+                    MessageStatus = lastMessage?.Status.ToString() ?? "UnKnown",
                     UnreadCount = unreadCount
                 });
             }
