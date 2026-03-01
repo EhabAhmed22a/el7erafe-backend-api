@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
-using Service.Chat;
 using ServiceAbstraction.Chat;
 using Shared.DataTransferObject.ChatDTOs;
 
