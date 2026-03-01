@@ -15,6 +15,9 @@ on:
 jobs:
   update-firewall:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
       
       - name: Validate IP Address format
