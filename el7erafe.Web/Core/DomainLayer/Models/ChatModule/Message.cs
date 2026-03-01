@@ -12,7 +12,7 @@ namespace DomainLayer.Models.ChatModule
         public string Content { get; set; } = default!;
         public MessageType Type { get; set; }
         public DateTime CreatedAt { get; set; }
-        public bool IsRead { get; set; }
+        public MessageStatus Status { get; set; }
         public bool IsDeleted { get; set; }
 
         public Chat Chat { get; set; } = default!;

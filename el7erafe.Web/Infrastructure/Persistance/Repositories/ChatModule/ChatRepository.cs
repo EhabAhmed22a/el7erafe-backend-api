@@ -1,5 +1,6 @@
 ﻿using DomainLayer.Contracts.ChatModule;
 using DomainLayer.Models.ChatModule;
+using DomainLayer.Models.ChatModule.Enums;
 using Microsoft.EntityFrameworkCore;
 using Persistance.Databases;
 
@@ -101,15 +102,20 @@ namespace Persistance.Repositories.ChatModule
         public async Task MarkMessagesAsReadAsync(int chatId, string userId)
         {
             await dbContext.Messages
-                .Where(m => m.ChatId == chatId && m.ReceiverId == userId && !m.IsRead)
+                .Where(m => m.ChatId == chatId &&
+                       m.ReceiverId == userId &&
+                       m.Status != MessageStatus.Read &&
+                       !m.IsDeleted) 
                 .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(m => m.IsRead, true));
+                    .SetProperty(m => m.Status, MessageStatus.Read));
         }
 
         public async Task<int> GetUnreadCountAsync(string userId)
         {
             return await dbContext.Messages
-                .CountAsync(m => m.ReceiverId == userId && !m.IsRead && !m.IsDeleted);
+                .CountAsync(m => m.ReceiverId == userId &&
+                            m.Status != MessageStatus.Delivered &&
+                            !m.IsDeleted);
         }
 
         // ========== DELETE/ANONYMIZE OPERATIONS ==========
