@@ -1,5 +1,4 @@
 ﻿using DomainLayer.Models.ChatModule;
-using DomainLayer.Models.IdentityModule;
 
 namespace DomainLayer.Contracts.ChatModule
 {

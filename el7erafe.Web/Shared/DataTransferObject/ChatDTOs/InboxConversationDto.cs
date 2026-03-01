@@ -9,6 +9,7 @@ namespace Shared.DataTransferObject.ChatDTOs
         public string? ReceiverImage { get; set; }
         public string? LastMessageContent { get; set; }
         public DateTime? LastMessageTime { get; set; }
+        public string MessageStatus { get; set; } = default!;
         public bool IsLastMessageFromMe { get; set; }
         public int UnreadCount { get; set; }
     }

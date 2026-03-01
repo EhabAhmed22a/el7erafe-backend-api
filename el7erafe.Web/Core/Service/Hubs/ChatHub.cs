@@ -1,8 +1,8 @@
 ﻿using DomainLayer.Contracts.ChatModule;
+using DomainLayer.Models.ChatModule.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
-using Service.Chat;
 using ServiceAbstraction.Chat;
 using Shared.DataTransferObject.ChatDTOs;
 
@@ -60,6 +60,13 @@ namespace Service.Hubs
 
             // Send to receiver ONLY (if they're online)
             var receiverConnections = await _userConnectionRepository.GetUserConnectionsAsync(messageDto.ReceiverId);
+
+            if (receiverConnections.Any())
+            {
+                await _chatService.UpdateMessageStatusAsync(savedMessage.Id,MessageStatus.Delivered);
+                savedMessage.IsRead = MessageStatus.Delivered.ToString();
+            }
+
             foreach (var connectionId in receiverConnections)
             {
                 await Clients.Client(connectionId).SendAsync("ReceiveMessage", savedMessage);

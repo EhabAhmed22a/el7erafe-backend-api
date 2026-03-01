@@ -4,13 +4,11 @@ using el7erafe.Web.CustomMiddleWares;
 using el7erafe.Web.Extensions;
 using el7erafe.Web.Filters;
 using Persistance;
-using Persistance.Databases;
 using Serilog;
 using Service;
 using Service.Email;
 using Service.Hubs;
 using ServiceAbstraction;
-using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace el7erafe.Web
 {
