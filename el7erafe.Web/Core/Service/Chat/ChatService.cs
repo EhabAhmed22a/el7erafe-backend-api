@@ -2,6 +2,8 @@
 using DomainLayer.Contracts.ChatModule;
 using DomainLayer.Models.ChatModule;
 using DomainLayer.Models.ChatModule.Enums;
+using DomainLayer.Models.IdentityModule;
+using Microsoft.AspNetCore.Identity;
 using ServiceAbstraction.Chat;
 using Shared.DataTransferObject.ChatDTOs;
 
@@ -10,16 +12,35 @@ namespace Service.Chat
     public class ChatService(IChatRepository _chatRepository,
                              IBlobStorageRepository blobStorageRepository,
                              IClientRepository clientRepository,
-                             ITechnicianRepository technicianRepository) : IChatService
+                             ITechnicianRepository technicianRepository,
+                             UserManager<ApplicationUser> _userManager) : IChatService
     {
-        public async Task<ChatDto> GetOrCreateChatAsync(string clientId, string technicianId)
+        public async Task<ChatDto> GetOrCreateChatAsync(string user1Id, string user2Id)
         {
+            var user1 = await _userManager.FindByIdAsync(user1Id);
+            var roles = await _userManager.GetRolesAsync(user1);
+
+            string clientId;
+            string technicianId;
+
+            if (roles.Contains("Client"))
+            {
+                clientId = user1Id;
+                technicianId = user2Id;
+            }
+            else
+            {
+                clientId = user2Id;
+                technicianId = user1Id;
+            }
+
             var chat = await _chatRepository.GetOrCreateChatAsync(clientId, technicianId);
+
             return new ChatDto
             {
                 Id = chat.Id,
                 ClientId = chat.ClientId,
-                TechnicianId = chat.TechnicianId,
+                TechnicianId = chat.TechnicianId
             };
         }
 
@@ -148,7 +169,7 @@ namespace Service.Chat
                     .FirstOrDefault();
 
                 var unreadCount = chat.Messages
-                    .Count(m => m.ReceiverId == userId && !m.IsRead);
+                    .Count(m => m.ReceiverId == userId && !m.IsRead && !m.IsDeleted);
 
                 inbox.Add(new InboxConversationDto
                 {
