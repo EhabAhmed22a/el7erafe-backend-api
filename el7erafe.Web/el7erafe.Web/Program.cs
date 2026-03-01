@@ -8,6 +8,7 @@ using Persistance.Databases;
 using Serilog;
 using Service;
 using Service.Email;
+using Service.Hubs;
 using ServiceAbstraction;
 using static Org.BouncyCastle.Math.EC.ECCurve;
 
@@ -34,6 +35,7 @@ namespace el7erafe.Web
             .WithOrigins("http://localhost:4200",
                          "https://localhost:4200",
                          "https://7otob3den.com",
+                         "http://127.0.0.1:5500",
                          "https://www.7otob3den.com")
             .AllowAnyHeader()
             .AllowAnyMethod()
@@ -48,7 +50,7 @@ namespace el7erafe.Web
             #endregion
 
             #region Add services to the container.
-            builder.Services.AddPersistanceServices(builder.Configuration);
+            builder.Services.AddPersistanceServices(builder.Configuration, builder.Environment);
             builder.Services.AddJWTService(builder.Configuration);
             builder.Services.AddServiceLayerServices();
             #endregion
@@ -122,7 +124,7 @@ namespace el7erafe.Web
             app.UseAuthentication();
             app.UseAuthorization();
 
-
+            app.MapHub<ChatHub>("/chatHub");
             app.MapControllers();
             #endregion
 

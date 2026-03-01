@@ -98,7 +98,8 @@ namespace Presentation.Controllers
             logger.LogInformation("[API] OTP verification attempt for email: {Email}", otpVerificationDTO.Email);
             await service.VerifyOtpAsync(otpVerificationDTO);
             logger.LogInformation("[API] OTP verified successfully for email: {Email}", otpVerificationDTO.Email);
-            return Ok();
+
+            return Ok(new { message = "تم التحقق من الرمز بنجاح" });
         }
     }
 }

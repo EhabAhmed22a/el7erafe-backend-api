@@ -1,4 +1,5 @@
-﻿using DomainLayer.Models.IdentityModule.Enums;
+﻿using DomainLayer.Models.ChatModule;
+using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.AspNetCore.Identity;
 
 namespace DomainLayer.Models.IdentityModule
@@ -12,5 +13,12 @@ namespace DomainLayer.Models.IdentityModule
         public UserTypeEnum UserType { get; set; }
         public virtual UserToken? UserToken { get; set; }
         public BlockedUser? BlockedUser { get; set; }
+        public string? PendingEmail{ get; set; }
+
+        public ICollection<UserConnection> UserConnections { get; set; } = new List<UserConnection>();
+        public ICollection<Chat> ClientChats { get; set; } = new List<Chat>();
+        public ICollection<Chat> TechnicianChats { get; set; } = new List<Chat>();
+        public ICollection<Message> SentMessages { get; set; } = new List<Message>();
+        public ICollection<Message> ReceivedMessages { get; set; } = new List<Message>();
     }
 }

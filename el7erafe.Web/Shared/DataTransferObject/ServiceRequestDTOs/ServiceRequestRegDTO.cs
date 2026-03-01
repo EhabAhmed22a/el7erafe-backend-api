@@ -14,14 +14,13 @@ namespace Shared.DataTransferObject.ServiceRequestDTOs
 
         [Required(ErrorMessage = "الخدمة مطلوبة")]
         [Range(1, int.MaxValue, ErrorMessage = "الرجاء اختيار خدمة صالحة")]
-        public int? ServiceId { get; set; }
+        public int ServiceId { get; set; }
 
         [MaxLength(5, ErrorMessage = "الحد الأقصى للصور هو '٥'")]
         public List<IFormFile>? Images { get; set; }
 
         [Required(ErrorMessage = "المدينة مطلوبة")]
-        [Range(1, int.MaxValue, ErrorMessage = "الرجاء اختيار مدينة صالحة")]
-        public int? CityId { get; set; }
+        public string? CityName { get; set; }
 
         [Required(ErrorMessage = "عنوان الشارع مطلوب")]
         [StringLength(200, MinimumLength = 5,
@@ -33,43 +32,50 @@ namespace Shared.DataTransferObject.ServiceRequestDTOs
 
         [Required(ErrorMessage = "التاريخ مطلوب")]
         [FutureDate]
-        public DateOnly? ServiceDate { get; set; }
+        public DateOnly ServiceDate { get; set; }
 
         public bool AllDayAvailability { get; set; } = true;
 
         public TimeOnly? AvailableFrom { get; set; }
         public TimeOnly? AvailableTo { get; set; }
+        public int? TechnicianId {  get; set; }
 
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-        {
-            if (!AllDayAvailability)
-            {
-                if (!AvailableFrom.HasValue || !AvailableTo.HasValue)
-                {
-                    yield return new ValidationResult(
-                        "يجب تحديد نطاق وقت البداية والنهاية عندما لا تكون متاحاً طوال اليوم",
-                        new[] { nameof(AvailableFrom), nameof(AvailableTo) });
-                }
-                else if (AvailableFrom.Value >= AvailableTo.Value)
-                {
-                    yield return new ValidationResult(
-                        "وقت البداية يجب أن يكون قبل وقت النهاية",
-                        new[] { nameof(AvailableFrom), nameof(AvailableTo) });
-                }
-                else if ((AvailableTo.Value - AvailableFrom.Value).TotalHours > 23)
-                {
-                    yield return new ValidationResult(
-                        "إذا كنت متاحاً طوال اليوم، الرجاء اختيار 'متاح طوال اليوم'",
-                        new[] { nameof(AvailableFrom), nameof(AvailableTo) });
-                }
-            }
+        //public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        //{
+        //    if (!AllDayAvailability)
+        //    {
+        //        if (!AvailableFrom.HasValue || !AvailableTo.HasValue)
+        //        {
+        //            yield return new ValidationResult(
+        //                "يجب تحديد نطاق وقت البداية والنهاية عندما لا تكون متاحاً طوال اليوم",
+        //                new[] { nameof(AvailableFrom), nameof(AvailableTo) });
+        //        }
+        //        else if (AvailableFrom.Value >= AvailableTo.Value)
+        //        {
+        //            yield return new ValidationResult(
+        //                "وقت البداية يجب أن يكون قبل وقت النهاية",
+        //                new[] { nameof(AvailableFrom), nameof(AvailableTo) });
+        //        }
+        //        else if ((AvailableTo.Value - AvailableFrom.Value).TotalHours > 23)
+        //        {
+        //            yield return new ValidationResult(
+        //                "إذا كنت متاحاً طوال اليوم، الرجاء اختيار 'متاح طوال اليوم'",
+        //                new[] { nameof(AvailableFrom), nameof(AvailableTo) });
+        //        }
+        //        else if (AvailableFrom.Value.ToTimeSpan() < DateTime.Now.TimeOfDay)
+        //        {
+        //            yield return new ValidationResult(
+        //                "وقت البداية لا يمكن أن يكون في الماضي",
+        //                new[] { nameof(AvailableFrom) });
+        //        }
+        //    }
 
-            if (ServiceDate < DateOnly.FromDateTime(DateTime.Today))
-            {
-                yield return new ValidationResult(
-                    "تاريخ الخدمة لا يمكن أن يكون في الماضي",
-                    new[] { nameof(ServiceDate) });
-            }
-        }
+        //    if (ServiceDate < DateOnly.FromDateTime(DateTime.Today))
+        //    {
+        //        yield return new ValidationResult(
+        //            "تاريخ الخدمة لا يمكن أن يكون في الماضي",
+        //            new[] { nameof(ServiceDate) });
+        //    }
+        //}
     }
 }

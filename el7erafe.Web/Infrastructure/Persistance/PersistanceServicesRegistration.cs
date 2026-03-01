@@ -1,21 +1,24 @@
-﻿using DomainLayer.Contracts;
+﻿using Azure.Identity;
+using Azure.Storage.Blobs;
+using DomainLayer.Contracts;
+using DomainLayer.Contracts.ChatModule;
 using DomainLayer.Models.IdentityModule;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Persistance.Databases;
 using Persistance.Repositories;
-using Service;
-using Service.Email;
-using ServiceAbstraction;
+using Persistance.Repositories.ChatModule;
 
 namespace Persistance
 {
     public static class PersistanceServicesRegistration
     {
         public static IServiceCollection AddPersistanceServices(this IServiceCollection services,
-            IConfiguration configuration)
+            IConfiguration configuration, IWebHostEnvironment env)
         {
             services.AddDbContext<ApplicationDbContext>(options =>
                     options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"))
@@ -46,6 +49,30 @@ namespace Persistance
             services.AddScoped<IRejectionRepository, RejectionRepository>();
             services.AddScoped<IServiceRequestRepository, ServiceRequestRepository>();
             services.AddScoped<ICityRepository, CityRepository>();
+            services.AddScoped<IChatRepository, ChatRepository>();
+            services.AddScoped<IUserConnectionRepository, UserConnectionRepository>();
+            services.AddScoped<IUserDelegationKeyCache, UserDelegationKeyCache>();
+            services.AddSingleton<BlobServiceClient>(serviceProvider =>
+            {
+                var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+                var env = serviceProvider.GetRequiredService<IWebHostEnvironment>();
+
+                if (env.IsDevelopment())
+                {
+                    var connectionString = configuration.GetConnectionString("AzureBlobStorage");
+                    return new BlobServiceClient(connectionString);
+                }
+                else
+                {
+                    var accountName = configuration.GetValue<string>("AzureBlobStorage:AccountName");
+                    if (string.IsNullOrEmpty(accountName))
+                    {
+                        throw new InvalidOperationException("AzureBlobStorage AccountName is not configured for production environment.");
+                    }
+                    var blobServiceUri = new Uri($"https://{accountName}.blob.core.windows.net");
+                    return new BlobServiceClient(blobServiceUri, new ManagedIdentityCredential());
+                }
+            });
 
             return services;
         }
