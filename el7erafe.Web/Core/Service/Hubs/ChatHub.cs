@@ -30,6 +30,7 @@ namespace Service.Hubs
             }
 
             await _userConnectionRepository.AddConnectionAsync(userId, connectionId);
+            await _chatService.MarkAllMessagesAsDeliveredAsync(userId);
 
             await base.OnConnectedAsync();
         }
@@ -64,7 +65,7 @@ namespace Service.Hubs
             if (receiverConnections.Any())
             {
                 await _chatService.UpdateMessageStatusAsync(savedMessage.Id,MessageStatus.Delivered);
-                savedMessage.IsRead = MessageStatus.Delivered.ToString();
+                savedMessage.MessageStatus = MessageStatus.Delivered.ToString();
             }
 
             foreach (var connectionId in receiverConnections)
