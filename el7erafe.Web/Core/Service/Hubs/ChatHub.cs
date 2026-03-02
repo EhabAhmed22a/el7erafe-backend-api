@@ -54,27 +54,31 @@ namespace Service.Hubs
             if (string.IsNullOrEmpty(senderId))
                 throw new HubException("Unauthorized");
 
-            var chat = await _chatService.GetOrCreateChatAsync(senderId,messageDto.ReceiverId);
+            var chat = await _chatService.GetOrCreateChatAsync(senderId, messageDto.ReceiverId);
 
-            // Save message to database
             var savedMessage = await _chatService.SendMessageAsync(messageDto, chat.Id, senderId);
 
-            // Send to receiver ONLY (if they're online)
             var receiverConnections = await _userConnectionRepository.GetUserConnectionsAsync(messageDto.ReceiverId);
 
-            if (receiverConnections.Any())
+            bool isDelivered = receiverConnections.Any();
+
+            if (isDelivered)
             {
                 await _chatService.UpdateMessageStatusAsync(savedMessage.Id,MessageStatus.Delivered);
                 savedMessage.MessageStatus = MessageStatus.Delivered.ToString();
+            }
+
+            await Clients.Caller.SendAsync("MessageSent", savedMessage);
+
+            if (isDelivered)
+            {
+                await Clients.Caller.SendAsync("MessageStatusUpdated",savedMessage.Id,MessageStatus.Delivered.ToString());
             }
 
             foreach (var connectionId in receiverConnections)
             {
                 await Clients.Client(connectionId).SendAsync("ReceiveMessage", savedMessage);
             }
-
-            // Send confirmation back to sender
-            await Clients.Caller.SendAsync("MessageSent", savedMessage);
 
             await SendInboxUpdateToUser(messageDto.ReceiverId);
             await SendInboxUpdateToUser(senderId);
