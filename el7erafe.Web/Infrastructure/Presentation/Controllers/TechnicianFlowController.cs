@@ -23,7 +23,7 @@ namespace Presentation.Controllers
             return Ok(result);
         }
 
-        [HttpGet("tf/inbox")]
+        [HttpGet("inbox")]
         public async Task<IActionResult> GetInbox()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
