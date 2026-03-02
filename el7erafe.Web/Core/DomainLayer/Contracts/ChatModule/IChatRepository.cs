@@ -14,7 +14,7 @@ namespace DomainLayer.Contracts.ChatModule
         Task<Message?> GetMessageByIdAsync(int id);
         Task<Message> AddMessageAsync(Message message);
         Task UpdateMessageAsync(Message message);
-        Task MarkMessagesAsReadAsync(int chatId, string userId);
+        Task<List<int>> MarkMessagesAsReadAsync(int chatId, string userId);
         Task MarkAllMessagesAsDeliveredAsync(string userId);
         Task<int> GetUnreadCountAsync(string userId);
 
