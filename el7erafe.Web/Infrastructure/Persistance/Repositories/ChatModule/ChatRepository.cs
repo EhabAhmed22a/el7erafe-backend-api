@@ -99,15 +99,25 @@ namespace Persistance.Repositories.ChatModule
             await dbContext.SaveChangesAsync(); 
         }
 
-        public async Task MarkMessagesAsReadAsync(int chatId, string userId)
+        public async Task<List<int>> MarkMessagesAsReadAsync(int chatId, string userId)
         {
-            await dbContext.Messages
-                .Where(m => m.ChatId == chatId &&
-                       m.ReceiverId == userId &&
-                       m.Status != MessageStatus.Read &&
-                       !m.IsDeleted) 
-                .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(m => m.Status, MessageStatus.Read));
+            var messagesToUpdate = await dbContext.Messages
+                                    .Where(m => m.ChatId == chatId &&
+                                                m.ReceiverId == userId &&
+                                                m.Status != MessageStatus.Read &&
+                                                !m.IsDeleted)
+                                    .ToListAsync();
+
+            if (!messagesToUpdate.Any())
+                return new List<int>();
+
+            foreach (var message in messagesToUpdate)
+            {
+                message.Status = MessageStatus.Read;
+            }
+
+            await dbContext.SaveChangesAsync();
+            return messagesToUpdate.Select(m => m.Id).ToList();
         }
 
         public Task MarkAllMessagesAsDeliveredAsync(string userId)
