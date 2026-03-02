@@ -13,6 +13,7 @@ namespace ServiceAbstraction.Chat
         Task<MessageDto> SendMessageAsync(SendMessageDto messageDto, int chatId, string senderId);
         Task<IEnumerable<MessageDto>> GetChatHistoryAsync(int chatId, int page = 1, int pageSize = 50);
         Task MarkMessagesAsReadAsync(int chatId, string userId);
+        Task MarkAllMessagesAsDeliveredAsync(string userId);
         Task<int> GetUnreadCountAsync(string userId);
         Task UpdateMessageStatusAsync(int messageId, MessageStatus newStatus);
 

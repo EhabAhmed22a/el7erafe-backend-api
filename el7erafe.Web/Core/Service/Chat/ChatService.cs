@@ -84,7 +84,7 @@ namespace Service.Chat
                 ReceiverId = created.ReceiverId,
                 Content = created.Content,
                 CreatedAt = created.CreatedAt,
-                IsRead = MessageStatus.Sent.ToString() 
+                MessageStatus = MessageStatus.Sent.ToString() 
             };
         }
 
@@ -99,13 +99,17 @@ namespace Service.Chat
                 ReceiverId = message.ReceiverId,
                 Content = message.Content,
                 CreatedAt = message.CreatedAt,
-                IsRead = message.Status.ToString()
+                MessageStatus = message.Status.ToString()
             });
         }
 
         public async Task MarkMessagesAsReadAsync(int chatId, string userId)
         {
             await _chatRepository.MarkMessagesAsReadAsync(chatId, userId);
+        }
+        public async Task MarkAllMessagesAsDeliveredAsync(string userId)
+        {
+            await _chatRepository.MarkAllMessagesAsDeliveredAsync(userId);
         }
 
         public async Task<int> GetUnreadCountAsync(string userId)

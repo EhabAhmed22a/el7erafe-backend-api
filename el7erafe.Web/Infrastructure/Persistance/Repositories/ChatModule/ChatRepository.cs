@@ -110,6 +110,16 @@ namespace Persistance.Repositories.ChatModule
                     .SetProperty(m => m.Status, MessageStatus.Read));
         }
 
+        public Task MarkAllMessagesAsDeliveredAsync(string userId)
+        {
+            return dbContext.Messages
+                .Where(m => m.ReceiverId == userId &&
+                       m.Status == MessageStatus.Sent &&
+                       !m.IsDeleted) 
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(m => m.Status, MessageStatus.Delivered));
+        }
+
         public async Task<int> GetUnreadCountAsync(string userId)
         {
             return await dbContext.Messages
