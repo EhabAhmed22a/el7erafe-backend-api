@@ -8,15 +8,15 @@ namespace Service.Helpers
 {
     public class OtpHelper(IOtpService otpService, IEmailService emailService, ILogger<OtpHelper> logger)
     {
-        public async Task SendOTP(ApplicationUser? user)
+        public async Task SendOTP(ApplicationUser? user, string? customEmail = null)
         {
-            
+
             var identifier = GetOtpIdentifier(user.Id);
             logger.LogInformation("[SERVICE] OTP generated for client verification: {UserId}", user.Id);
             var otpCode = await otpService.GenerateOtp(identifier);
             _ = Task.Run(async () =>
             {
-                await emailService.SendOtpEmailAsync(user.Email, otpCode);
+                await emailService.SendOtpEmailAsync(customEmail ?? user.Email, otpCode);
             });
             logger.LogInformation("[SERVICE] OTP email sent to client: {Email}", user.Email);
         }

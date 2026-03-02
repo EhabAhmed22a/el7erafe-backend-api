@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Persistance.Databases;
 
@@ -11,9 +12,11 @@ using Persistance.Databases;
 namespace Persistance.Identity.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260227200542_AddChatsTableAndMessagesTable")]
+    partial class AddChatsTableAndMessagesTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -81,6 +84,11 @@ namespace Persistance.Identity.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
+                    b.Property<bool>("IsRead")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
                     b.Property<string>("ReceiverId")
                         .IsRequired()
                         .HasMaxLength(450)
@@ -91,11 +99,10 @@ namespace Persistance.Identity.Migrations
                         .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
                     b.Property<int>("Type")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
 
                     b.HasKey("Id");
 
@@ -111,7 +118,7 @@ namespace Persistance.Identity.Migrations
                     b.HasIndex("ChatId", "CreatedAt")
                         .HasDatabaseName("IX_Messages_ChatId_CreatedAt");
 
-                    b.HasIndex("ReceiverId", "Status", "ChatId")
+                    b.HasIndex("ReceiverId", "IsRead", "ChatId")
                         .HasDatabaseName("IX_Messages_ReceiverId_IsRead_ChatId");
 
                     b.ToTable("Messages", (string)null);
@@ -395,9 +402,6 @@ namespace Persistance.Identity.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("AboutMe")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("CityId")
                         .HasColumnType("int");
 
@@ -424,9 +428,6 @@ namespace Persistance.Identity.Migrations
 
                     b.Property<string>("NationalIdFrontURL")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PortifolioImageURL")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ProfilePictureURL")

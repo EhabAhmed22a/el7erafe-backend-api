@@ -1,0 +1,55 @@
+name: Whitelist Developer IP for Database
+
+on:
+  workflow_dispatch:
+    inputs:
+      developer_ip:
+        description: 'Enter your Public IP address (e.g., 198.51.100.14)'
+        required: true
+        type: string
+      developer_name:
+        description: 'Enter your name (used for the rule description)'
+        required: true
+        type: string
+
+jobs:
+  update-firewall:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      
+      - name: Validate IP Address format
+        run: |
+          IP="${{ github.event.inputs.developer_ip }}"
+          if [[ $IP =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+            echo "IP $IP format looks valid."
+          else
+            echo "Error: Invalid IP address format."
+            exit 1
+          fi
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+                client-id: ${{ secrets.AZURE_CLIENT_ID }}
+                tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+                subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        # ---------------------------------------------------------
+      # TODO: Authenticate with your Cloud Provider here.
+      # Example for AWS: uses: aws-actions/configure-aws-credentials@v4
+      # Example for Azure: uses: azure/login@v1
+      # Example for GCP: uses: google-github-actions/auth@v2
+      # ---------------------------------------------------------
+      
+      - name: Update Database Network Security Rule
+        run: |
+          IP="${{ github.event.inputs.developer_ip }}"
+          NAME="${{ github.event.inputs.developer_name }}"
+          
+          az sql server firewall-rule create \
+            --resource-group DefaultResourceGroup-null \
+            --server el7erafe-db-server \
+            --name "${{ github.event.inputs.developer_name }}" \
+            --start-ip-address "${{ github.event.inputs.developer_ip }}" \
+            --end-ip-address "${{ github.event.inputs.developer_ip }}"

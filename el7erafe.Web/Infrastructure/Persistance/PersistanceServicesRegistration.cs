@@ -1,15 +1,17 @@
 ﻿using Azure.Identity;
 using Azure.Storage.Blobs;
 using DomainLayer.Contracts;
+using DomainLayer.Contracts.ChatModule;
 using DomainLayer.Models.IdentityModule;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Persistance.Databases;
 using Persistance.Repositories;
-using Microsoft.Extensions.Hosting;
+using Persistance.Repositories.ChatModule;
 
 namespace Persistance
 {
@@ -47,7 +49,10 @@ namespace Persistance
             services.AddScoped<IRejectionRepository, RejectionRepository>();
             services.AddScoped<IServiceRequestRepository, ServiceRequestRepository>();
             services.AddScoped<ICityRepository, CityRepository>();
+            services.AddScoped<IChatRepository, ChatRepository>();
+            services.AddScoped<IUserConnectionRepository, UserConnectionRepository>();
             services.AddScoped<IUserDelegationKeyCache, UserDelegationKeyCache>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddSingleton<BlobServiceClient>(serviceProvider =>
             {
                 var configuration = serviceProvider.GetRequiredService<IConfiguration>();

@@ -1,18 +1,22 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
+using ServiceAbstraction.Chat;
 using Shared.DataTransferObject.ClientDTOs;
+using Shared.DataTransferObject.OtpDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
 using Shared.DataTransferObject.UpdateDTOs;
+using System.Security.Claims;
 
 namespace Presentation.Controllers
 {
     [ApiController]
     [Route("api")]
     [Authorize(AuthenticationSchemes = "Bearer", Roles = "Client")]
-    public class ClientController(IClientService _clientService, ILogger<ClientController> _logger) : ControllerBase
+    public class ClientController(IClientService _clientService,
+        ILogger<ClientController> _logger,
+        IChatService chatService) : ControllerBase
     {
         [HttpGet("/cf/services")]
         public async Task<ActionResult<string>> GetServicesAsync()
@@ -77,7 +81,7 @@ namespace Presentation.Controllers
             return Ok(result);
         }
 
-        [HttpGet("cf/technicians_available")]
+        [HttpPost("cf/technicians_available")]
         public async Task<IActionResult> GetAvailableTechnicians(GetAvailableTechniciansRequest requestRegDTO)
         {
             _logger.LogInformation("[CONTROLLER] Getting Available Technicians");
@@ -120,15 +124,52 @@ namespace Presentation.Controllers
             return Ok(new { message = "تم تحديث رقم الهاتف بنجاح" });
         }
 
-        [HttpPost("cf/update_email")]
-        public async Task<IActionResult> UpdateEmail(UpdateEmailDTO dTO)
+        [HttpPost("cf/update-pending-email")]
+        public async Task<IActionResult> UpdatePendingEmail(UpdateEmailDTO dTO)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("المستخدم غير موجود");
 
-            var response = await _clientService.UpdateEmail(userId, dTO);
+            var response = await _clientService.UpdatePendingEmail(userId, dTO);
             return Ok(new { message = response.Message });
+        }
+
+        [HttpPost("cf/update-email")]
+        public async Task<IActionResult> UpdateEmail(OtpCodeDTO otpCode)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            await _clientService.UpdateEmailAsync(userId, otpCode);
+
+            return Ok(new { message = "تم تحديث البريد الإلكتروني بنجاح" });
+        }
+
+        [HttpPost("cf/resend-otp-pendingemail")]
+        public async Task<IActionResult> ResendPendingOtp()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            var response = await _clientService.ResendOtpForPendingEmail(userId);
+
+            return Ok(new { message = response.Message });
+        }
+
+        [HttpGet("cf/inbox")]
+        public async Task<IActionResult> GetInbox()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var result = await chatService.GetInboxAsync(userId);
+
+            return Ok(result);
         }
     }
 }

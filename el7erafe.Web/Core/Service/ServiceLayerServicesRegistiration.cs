@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Service.Chat;
 using Service.Email;
 using Service.Helpers;
 using ServiceAbstraction;
+using ServiceAbstraction.Chat;
 
 namespace Service
 {
@@ -21,6 +23,9 @@ namespace Service
             services.AddScoped<IAdminLoginService, AdminLoginService>();
             services.AddScoped<IAdminDashboardService, AdminDashboardService>();
             services.AddScoped<IClientService, ClientService>();
+            services.AddScoped<IChatService, ChatService>();
+            services.AddScoped<ITechnicianService, TechnicianFlowService>();
+            services.AddSignalR();
             return services;
         }
     }

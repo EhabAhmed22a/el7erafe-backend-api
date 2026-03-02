@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Persistance.Databases;
 
@@ -11,9 +12,11 @@ using Persistance.Databases;
 namespace Persistance.Identity.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260224011056_Add Pending Email Column to Users Table")]
+    partial class AddPendingEmailColumntoUsersTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,133 +24,6 @@ namespace Persistance.Identity.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("DomainLayer.Models.ChatModule.Chat", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ClientId")
-                        .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("TechnicianId")
-                        .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClientId")
-                        .HasDatabaseName("IX_Chats_ClientId");
-
-                    b.HasIndex("TechnicianId")
-                        .HasDatabaseName("IX_Chats_TechnicianId");
-
-                    b.HasIndex("ClientId", "TechnicianId")
-                        .IsUnique()
-                        .HasDatabaseName("IX_Chats_Client_Technician");
-
-                    b.ToTable("Chats", (string)null);
-                });
-
-            modelBuilder.Entity("DomainLayer.Models.ChatModule.Message", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ChatId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("ReceiverId")
-                        .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("SenderId")
-                        .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ChatId")
-                        .HasDatabaseName("IX_Messages_ChatId");
-
-                    b.HasIndex("ReceiverId")
-                        .HasDatabaseName("IX_Messages_ReceiverId");
-
-                    b.HasIndex("SenderId")
-                        .HasDatabaseName("IX_Messages_SenderId");
-
-                    b.HasIndex("ChatId", "CreatedAt")
-                        .HasDatabaseName("IX_Messages_ChatId_CreatedAt");
-
-                    b.HasIndex("ReceiverId", "Status", "ChatId")
-                        .HasDatabaseName("IX_Messages_ReceiverId_IsRead_ChatId");
-
-                    b.ToTable("Messages", (string)null);
-                });
-
-            modelBuilder.Entity("DomainLayer.Models.ChatModule.UserConnection", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("ConnectedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<string>("ConnectionId")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ConnectionId")
-                        .IsUnique();
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserConnections", (string)null);
-                });
 
             modelBuilder.Entity("DomainLayer.Models.IdentityModule.Admin", b =>
                 {
@@ -395,9 +271,6 @@ namespace Persistance.Identity.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("AboutMe")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("CityId")
                         .HasColumnType("int");
 
@@ -424,9 +297,6 @@ namespace Persistance.Identity.Migrations
 
                     b.Property<string>("NationalIdFrontURL")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PortifolioImageURL")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ProfilePictureURL")
@@ -619,63 +489,6 @@ namespace Persistance.Identity.Migrations
                     b.ToTable("UserRoles", (string)null);
                 });
 
-            modelBuilder.Entity("DomainLayer.Models.ChatModule.Chat", b =>
-                {
-                    b.HasOne("DomainLayer.Models.IdentityModule.ApplicationUser", "Client")
-                        .WithMany("ClientChats")
-                        .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("DomainLayer.Models.IdentityModule.ApplicationUser", "Technician")
-                        .WithMany("TechnicianChats")
-                        .HasForeignKey("TechnicianId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Client");
-
-                    b.Navigation("Technician");
-                });
-
-            modelBuilder.Entity("DomainLayer.Models.ChatModule.Message", b =>
-                {
-                    b.HasOne("DomainLayer.Models.ChatModule.Chat", "Chat")
-                        .WithMany("Messages")
-                        .HasForeignKey("ChatId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DomainLayer.Models.IdentityModule.ApplicationUser", "Receiver")
-                        .WithMany("ReceivedMessages")
-                        .HasForeignKey("ReceiverId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("DomainLayer.Models.IdentityModule.ApplicationUser", "Sender")
-                        .WithMany("SentMessages")
-                        .HasForeignKey("SenderId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Chat");
-
-                    b.Navigation("Receiver");
-
-                    b.Navigation("Sender");
-                });
-
-            modelBuilder.Entity("DomainLayer.Models.ChatModule.UserConnection", b =>
-                {
-                    b.HasOne("DomainLayer.Models.IdentityModule.ApplicationUser", "User")
-                        .WithMany("UserConnections")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("DomainLayer.Models.IdentityModule.Admin", b =>
                 {
                     b.HasOne("DomainLayer.Models.IdentityModule.ApplicationUser", "User")
@@ -817,11 +630,6 @@ namespace Persistance.Identity.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("DomainLayer.Models.ChatModule.Chat", b =>
-                {
-                    b.Navigation("Messages");
-                });
-
             modelBuilder.Entity("DomainLayer.Models.IdentityModule.ApplicationUser", b =>
                 {
                     b.Navigation("Admin");
@@ -830,17 +638,7 @@ namespace Persistance.Identity.Migrations
 
                     b.Navigation("Client");
 
-                    b.Navigation("ClientChats");
-
-                    b.Navigation("ReceivedMessages");
-
-                    b.Navigation("SentMessages");
-
                     b.Navigation("Technician");
-
-                    b.Navigation("TechnicianChats");
-
-                    b.Navigation("UserConnections");
 
                     b.Navigation("UserToken");
                 });
