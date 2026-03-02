@@ -95,13 +95,23 @@ namespace Service.Hubs
             }
 
             // Mark messages as read
-            await _chatService.MarkMessagesAsReadAsync(chatId, userId);
+            var updatedMessageIds = await _chatService.MarkMessagesAsReadAsync(chatId, userId);
 
             // Notify the other user
-            var otherUserConnections = await _userConnectionRepository.GetUserConnectionsAsync(otherUserId);
-            foreach (var connectionId in otherUserConnections)
+            if (updatedMessageIds.Any())
             {
-                await Clients.Client(connectionId).SendAsync("MessagesRead", chatId, userId);
+                var otherUserConnections =
+                    await _userConnectionRepository.GetUserConnectionsAsync(otherUserId);
+
+                foreach (var connectionId in otherUserConnections)
+                {
+                    await Clients.Client(connectionId).SendAsync(
+                        "MessagesRead",
+                        chatId,
+                        updatedMessageIds,
+                        MessageStatus.Read.ToString()
+                    );
+                }
             }
             await SendInboxUpdateToUser(userId);
             await SendInboxUpdateToUser(otherUserId);

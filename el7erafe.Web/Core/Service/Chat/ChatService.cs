@@ -103,9 +103,9 @@ namespace Service.Chat
             });
         }
 
-        public async Task MarkMessagesAsReadAsync(int chatId, string userId)
+        public async Task<List<int>> MarkMessagesAsReadAsync(int chatId, string userId)
         {
-            await _chatRepository.MarkMessagesAsReadAsync(chatId, userId);
+            return await _chatRepository.MarkMessagesAsReadAsync(chatId, userId);
         }
         public async Task MarkAllMessagesAsDeliveredAsync(string userId)
         {
