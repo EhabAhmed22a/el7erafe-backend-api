@@ -52,6 +52,7 @@ namespace Persistance
             services.AddScoped<IChatRepository, ChatRepository>();
             services.AddScoped<IUserConnectionRepository, UserConnectionRepository>();
             services.AddScoped<IUserDelegationKeyCache, UserDelegationKeyCache>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddSingleton<BlobServiceClient>(serviceProvider =>
             {
                 var configuration = serviceProvider.GetRequiredService<IConfiguration>();
