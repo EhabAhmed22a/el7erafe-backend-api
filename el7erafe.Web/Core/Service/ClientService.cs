@@ -19,7 +19,8 @@ namespace Service
             ITechnicianServicesRepository servicesRepository,
             ITechnicianRepository technicianRepository,
             ICityRepository cityRepository,
-            OtpHelper otpHelper) : IClientService
+            OtpHelper otpHelper,
+            IUnitOfWork unitOfWork) : IClientService
     {
         public async Task<ServiceListDto> GetClientServicesAsync()
         {
@@ -58,13 +59,12 @@ namespace Service
 
                 if ((regDTO.AvailableTo.Value - regDTO.AvailableFrom.Value).TotalHours > 23)
                     throw new UnprocessableEntityException("إذا كنت متاحاً طوال اليوم، الرجاء اختيار 'متاح طوال اليوم'");
-                
+
                 if (regDTO.ServiceDate == DateOnly.FromDateTime(DateTime.Today))
                 {
                     if (regDTO.AvailableFrom.Value.ToTimeSpan() < DateTime.Now.TimeOfDay)
                         throw new UnprocessableEntityException("وقت البداية لا يمكن أن يكون في الماضي");
                 }
-                
             }
 
             var client = await clientRepository.GetByUserIdAsync(userId);
@@ -72,7 +72,6 @@ namespace Service
                 throw new ForbiddenAccessException("هذا الإجراء متاح للعملاء فقط");
 
             var city = await cityRepository.GetCityByNameAsync(regDTO.CityName ?? "");
-
             if (city is null)
                 throw new CityNotFoundException(regDTO.CityName ?? "");
 
@@ -84,7 +83,7 @@ namespace Service
                 if (await technicianRepository.GetByIdAsync((int)regDTO.TechnicianId) is null)
                     throw new UserNotFoundException("الفني المحدد غير موجود");
             }
-                
+
             int clientId = client.Id;
             if (await serviceRequestRepository.IsServiceAlreadyReq(clientId, regDTO.ServiceId))
                 throw new ServiceAlreadyRequestedException();
@@ -106,18 +105,42 @@ namespace Service
                 TechnicianId = regDTO.TechnicianId
             };
 
-            var serviceRequest = await serviceRequestRepository.CreateAsync(serviceReq);
+            List<string> uploadedFiles = new List<string>();
+            await unitOfWork.BeginTransactionAsync();
 
-            string? lastImageURL = null;
-            if (regDTO.Images is not null && regDTO.Images.Count > 0)
+            try
             {
-                var fileNames = await blobStorageRepository.UploadMultipleFilesAsync(regDTO.Images, "service-requests-images", $"{serviceRequest.Id}_{clientId}");
-                lastImageURL = fileNames.LastOrDefault();
-            }
+                var serviceRequest = await serviceRequestRepository.CreateAsync(serviceReq);
 
-            serviceRequest.LastImageURL = lastImageURL;
-            if (!await serviceRequestRepository.UpdateAsync(serviceRequest))
+                if (regDTO.Images is not null && regDTO.Images.Count > 0)
+                {
+                    uploadedFiles = await blobStorageRepository.UploadMultipleFilesAsync(
+                        regDTO.Images,
+                        "service-requests-images",
+                        $"{serviceRequest.Id}_{clientId}");
+
+                    serviceRequest.LastImageURL = uploadedFiles.LastOrDefault();
+                    if(!await serviceRequestRepository.UpdateAsync(serviceRequest))
+                        throw new TechnicalException();
+                }
+
+                await unitOfWork.CommitTransactionAsync();
+            }
+            catch
+            {
+                await unitOfWork.RollbackTransactionAsync();
+
+                foreach (var file in uploadedFiles)
+                {
+                    try
+                    {
+                        await blobStorageRepository.DeleteFileAsync(file, "service-requests-images");
+                    }
+                    catch { }
+                }
+
                 throw new TechnicalException();
+            }
         }
 
         public async Task DeleteAccount(string userId)
