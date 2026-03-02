@@ -75,6 +75,9 @@ namespace Service.Hubs
 
             // Send confirmation back to sender
             await Clients.Caller.SendAsync("MessageSent", savedMessage);
+
+            await SendInboxUpdateToUser(messageDto.ReceiverId);
+            await SendInboxUpdateToUser(senderId);
         }
 
         public async Task MarkMessagesAsRead(int chatId, string otherUserId)
@@ -96,6 +99,8 @@ namespace Service.Hubs
             {
                 await Clients.Client(connectionId).SendAsync("MessagesRead", chatId, userId);
             }
+            await SendInboxUpdateToUser(userId);
+            await SendInboxUpdateToUser(otherUserId);
         }
 
         // ========== CHAT MANAGEMENT ==========
@@ -127,6 +132,20 @@ namespace Service.Hubs
             }
 
             return await _chatService.GetChatHistoryAsync(chatId, page, pageSize);
+        }
+
+        private async Task SendInboxUpdateToUser(string userId)
+        {
+            var inbox = await _chatService.GetInboxAsync(userId);
+
+            var connections = await _userConnectionRepository
+                .GetUserConnectionsAsync(userId);
+
+            foreach (var connectionId in connections)
+            {
+                await Clients.Client(connectionId)
+                    .SendAsync("InboxUpdated", inbox);
+            }
         }
     }
 }
