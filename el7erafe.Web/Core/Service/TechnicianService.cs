@@ -6,6 +6,7 @@ using DomainLayer.Models.IdentityModule;
 using ServiceAbstraction;
 using Shared.DataTransferObject.ClientIdentityDTOs;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
+using Shared.DataTransferObject.UpdateDTOs;
 
 namespace Service
 {
@@ -95,7 +96,6 @@ namespace Service
                 }
                 foreach (var fileName in updateTechnicianDTO.DeletedPortifolioImages)
                 {
-                    var fileExtnesion = Path.GetExtension(fileName);
                     try
                     {
                         await blobStorageRepository.DeleteFileAsync(fileName, "technician-documents");
@@ -135,11 +135,31 @@ namespace Service
             updateTechnicianDTO.NewPortifolioImages?.Count == 0 &&
             updateTechnicianDTO.DeletedPortifolioImages?.Count == 0)
             {
-                if (await technicianRepository.UpdateAsync(user) != 1)
-                    throw new TechnicalException();
+                await technicianRepository.UpdateAsync(user);
             }
         }
 
+        public async Task UpdatePhoneNumber(string userId, UpdatePhoneDTO updatePhoneDTO)
+        {
+            var user = await CheckUser(userId);
+
+            if (user.User.PhoneNumber == updatePhoneDTO.PhoneNumber)
+                throw new UpdateException("رقم الهاتف الجديد مطابق للرقم الحالي");
+
+            if (await technicianRepository.ExistsAsync(updatePhoneDTO.PhoneNumber))
+                throw new UnprocessableEntityException("رقم الهاتف مستخدم بالفعل من قبل عميل آخر");
+
+            user.User.PhoneNumber = updatePhoneDTO.PhoneNumber;
+            user.User.UserName = updatePhoneDTO.PhoneNumber;
+            try
+            {
+                await technicianRepository.UpdateAsync(user);
+            }
+            catch
+            {
+                throw new TechnicalException();
+            }
+        }
 
         private async Task<Technician> CheckUser(string userId)
         {
