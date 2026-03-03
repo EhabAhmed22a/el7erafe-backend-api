@@ -25,7 +25,7 @@ namespace Service
                 ProfileImage = isImageNull ? await blobStorageRepository.GetBlobUrlWithSasTokenAsync("technician-documents", user.ProfilePictureURL!) : "https://el7erafe.blob.core.windows.net/services-documents/user-circles-set.png",
                 Phone = user.User.PhoneNumber!,
                 AboutMe = user.AboutMe,
-                PortifolioImages = new List<string>() // Add the method where it returns multiple photos based on sequence number
+                PortifolioImages = await blobStorageRepository.GetBlobUrlsWithPrefixAsync("technician-documents", $"portifolioImages_{user.Id}_")
             };
         }
 
