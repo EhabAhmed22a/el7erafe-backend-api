@@ -100,46 +100,52 @@ namespace Service
                 ServiceDate = regDTO.ServiceDate,
                 AvailableFrom = regDTO.AvailableFrom,
                 AvailableTo = regDTO.AvailableTo,
-                CreatedAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
                 ClientId = clientId,
                 TechnicianId = regDTO.TechnicianId
             };
 
-            List<string> uploadedFiles = new List<string>();
-            await unitOfWork.BeginTransactionAsync();
-
-            try
+            if (!(regDTO.Images is not null && regDTO.Images.Count > 0))
             {
-                var serviceRequest = await serviceRequestRepository.CreateAsync(serviceReq);
-
-                if (regDTO.Images is not null && regDTO.Images.Count > 0)
+                try
                 {
-                    uploadedFiles = await blobStorageRepository.UploadMultipleFilesAsync(
-                        regDTO.Images,
-                        "service-requests-images",
-                        $"{serviceRequest.Id}_{clientId}");
-
-                    serviceRequest.LastImageURL = uploadedFiles.LastOrDefault();
-                    if(!await serviceRequestRepository.UpdateAsync(serviceRequest))
-                        throw new TechnicalException();
+                    await serviceRequestRepository.CreateAsync(serviceReq);
                 }
-
-                await unitOfWork.CommitTransactionAsync();
+                catch
+                {
+                    throw new TechnicalException();
+                }
             }
-            catch
+            else
             {
-                await unitOfWork.RollbackTransactionAsync();
-
-                foreach (var file in uploadedFiles)
+                List<string> uploadedFiles = new List<string>();
+                await unitOfWork.BeginTransactionAsync();
+                try
                 {
-                    try
-                    {
-                        await blobStorageRepository.DeleteFileAsync(file, "service-requests-images");
-                    }
-                    catch { }
-                }
+                    var serviceRequest = await serviceRequestRepository.CreateAsync(serviceReq);
 
-                throw new TechnicalException();
+                    await blobStorageRepository.UploadMultipleFilesAsync(
+                       regDTO.Images,
+                       "service-requests-images",
+                       $"{serviceRequest.Id}_{Guid.NewGuid()}");
+
+                    await unitOfWork.CommitTransactionAsync();
+                }
+                catch
+                {
+                    await unitOfWork.RollbackTransactionAsync();
+
+                    foreach (var file in uploadedFiles)
+                    {
+                        try
+                        {
+                            await blobStorageRepository.DeleteFileAsync(file, "service-requests-images");
+                        }
+                        catch { }
+                    }
+
+                    throw new TechnicalException();
+                }
             }
         }
 
@@ -198,7 +204,7 @@ namespace Service
             var governorate = await cityRepository.GetGovernateByCityId(city.Id);
 
             var technicians = await technicianRepository
-                .GetTechniciansByServiceAndLocationAsync(service.Id,governorate.Id, city.Id, requestRegDTO.Sorted);
+                .GetTechniciansByServiceAndLocationAsync(service.Id, governorate.Id, city.Id, requestRegDTO.Sorted);
 
             if (technicians is null || !technicians.Any())
                 return new List<AvailableTechnicianDto>();
