@@ -313,5 +313,28 @@ namespace Persistance
             return urls;
         }
 
+        public async Task<int> DeleteBlobsWithPrefixAsync(string containerName, string prefix)
+        {
+            var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+            int deletedCount = 0;
+
+            var options = new GetBlobsOptions
+            {
+                Prefix = prefix
+            };
+
+            await foreach (var blobItem in containerClient.GetBlobsAsync(options))
+            {
+                var blobClient = containerClient.GetBlobClient(blobItem.Name);
+                var result = await blobClient.DeleteIfExistsAsync();
+
+                if (result.Value)
+                {
+                    deletedCount++;
+                }
+            }
+
+            return deletedCount;
+        }
     }
 }
