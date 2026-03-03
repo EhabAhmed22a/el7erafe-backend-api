@@ -5,8 +5,9 @@ using DomainLayer.Models.IdentityModule;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ServiceAbstraction;
-using Shared.DataTransferObject.TechnicianIdentityDTOs;
 using ServiceAbstraction.Chat;
+using Shared.DataTransferObject.TechnicianIdentityDTOs;
+using Shared.DataTransferObject.UpdateDTOs;
 
 namespace Presentation.Controllers
 {
@@ -69,6 +70,17 @@ namespace Presentation.Controllers
                 message = "تم التحديث بنجاح";
 
             return Ok(new { message });
+        }
+
+        [HttpPatch("phone_update")]
+        public async Task<IActionResult> UpdatePhoneNumber(UpdatePhoneDTO dTO)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            await technicianService.UpdatePhoneNumber(userId, dTO);
+            return Ok(new { message = "تم تحديث رقم الهاتف بنجاح" });
         }
 
         [HttpGet("inbox")]
