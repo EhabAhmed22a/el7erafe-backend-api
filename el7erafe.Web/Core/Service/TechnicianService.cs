@@ -3,15 +3,18 @@ using Azure;
 using DomainLayer.Contracts;
 using DomainLayer.Exceptions;
 using DomainLayer.Models.IdentityModule;
+using Service.Helpers;
 using ServiceAbstraction;
 using Shared.DataTransferObject.ClientIdentityDTOs;
+using Shared.DataTransferObject.OtpDTOs;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
 using Shared.DataTransferObject.UpdateDTOs;
 
 namespace Service
 {
     public class TechnicianFlowService(ITechnicianRepository technicianRepository, IBlobStorageRepository blobStorageRepository,
-        IUnitOfWork unitOfWork) : ITechnicianService
+        IUnitOfWork unitOfWork,
+        OtpHelper otpHelper) : ITechnicianService
     {
         public async Task<TechnicianProfileDTO> GetProfile(string userId)
         {
@@ -159,6 +162,106 @@ namespace Service
             {
                 throw new TechnicalException();
             }
+        }
+
+        public async Task<OtpResponseDTO> UpdatePendingEmail(string userId, UpdateEmailDTO updateEmailDTO)
+        {
+            var user = await CheckUser(userId);
+
+            if (!user.User.EmailConfirmed)
+                throw new UnprocessableEntityException("يجب تأكيد البريد الإلكتروني الحالي أولاً");
+            if (user.User.Email == updateEmailDTO.NewEmail)
+                throw new UpdateException("البريد الإلكتروني الجديد مطابق للبريد الحالي");
+            if (await technicianRepository.EmailExistsAsync(updateEmailDTO.NewEmail))
+                throw new UnprocessableEntityException("البريد الإلكتروني مستخدم بالفعل");
+
+            user.User.PendingEmail = updateEmailDTO.NewEmail;
+
+            try
+            {
+                await technicianRepository.UpdateAsync(user);
+            }
+            catch
+            {
+                throw new TechnicalException();
+            }
+            var identifier = otpHelper.GetOtpIdentifier(userId);
+            if (!otpHelper.CanResendOtp(identifier).Result)
+            {
+                throw new OtpAlreadySent();
+            }
+            await otpHelper.SendOTP(user.User, updateEmailDTO.NewEmail);
+
+            return new OtpResponseDTO
+            {
+                Message = "تم إرسال الرمز إلى بريدك الإلكتروني الجديد. يرجى التحقق لإكمال التحديث."
+            };
+        }
+
+        public async Task UpdateEmailAsync(string userId, OtpCodeDTO otpCode)
+        {
+            var user = await CheckUser(userId);
+
+            if (string.IsNullOrEmpty(user.User.PendingEmail))
+                throw new UnprocessableEntityException("لا يوجد بريد إلكتروني معلق للتحديث");
+
+            var identifier = otpHelper.GetOtpIdentifier(userId);
+            var result = await otpHelper.VerifyOtp(identifier, otpCode.OtpCode);
+
+            if (!result)
+            {
+                throw new InvalidOtpException();
+            }
+
+            await unitOfWork.BeginTransactionAsync();
+            try
+            {
+                if (await technicianRepository.EmailExistsAsync(user.User.PendingEmail))
+                {
+                    await unitOfWork.RollbackTransactionAsync();
+                    throw new UnprocessableEntityException("البريد الإلكتروني أصبح مستخدم بالفعل");
+                }
+
+                user.User.Email = user.User.PendingEmail;
+                user.User.NormalizedEmail = user.User.Email.ToUpperInvariant();
+                user.User.PendingEmail = null;
+                user.User.EmailConfirmed = true;
+
+                await technicianRepository.UpdateAsync(user);
+                await unitOfWork.CommitTransactionAsync();
+            }
+            catch (UnprocessableEntityException)
+            {
+                throw;
+            }
+            catch(Exception)
+            {
+                await unitOfWork.RollbackTransactionAsync();
+                throw new TechnicalException();
+            }
+        }
+
+        public async Task<OtpResponseDTO> ResendOtpForPendingEmail(string userId)
+        {
+            var user = await CheckUser(userId);
+
+            if (string.IsNullOrEmpty(user.User.PendingEmail))
+            {
+                throw new UnprocessableEntityException("لا يوجد بريد إلكتروني معلق");
+            }
+
+            var identifier = otpHelper.GetOtpIdentifier(user.User.Id);
+            if (!await otpHelper.CanResendOtp(identifier))
+            {
+                throw new OtpAlreadySent();
+            }
+
+            await otpHelper.SendOTP(user.User, user.User.PendingEmail);
+
+            return new OtpResponseDTO
+            {
+                Message = "تم إعادة إرسال الرمز إلى بريدك الإلكتروني الجديد."
+            };
         }
 
         private async Task<Technician> CheckUser(string userId)

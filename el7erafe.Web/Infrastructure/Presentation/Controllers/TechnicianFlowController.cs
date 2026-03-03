@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ServiceAbstraction;
 using ServiceAbstraction.Chat;
+using Shared.DataTransferObject.OtpDTOs;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
 using Shared.DataTransferObject.UpdateDTOs;
 
@@ -81,6 +82,41 @@ namespace Presentation.Controllers
 
             await technicianService.UpdatePhoneNumber(userId, dTO);
             return Ok(new { message = "تم تحديث رقم الهاتف بنجاح" });
+        }
+
+        [HttpPost("update-pending-email")]
+        public async Task<IActionResult> UpdatePendingEmail(UpdateEmailDTO dTO)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            var response = await technicianService.UpdatePendingEmail(userId, dTO);
+            return Ok(new { message = response.Message });
+        }
+
+        [HttpPost("update-email")]
+        public async Task<IActionResult> UpdateEmail(OtpCodeDTO otpCode)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            await technicianService.UpdateEmailAsync(userId, otpCode);
+
+            return Ok(new { message = "تم تحديث البريد الإلكتروني بنجاح" });
+        }
+
+        [HttpPost("resend-otp-pendingemail")]
+        public async Task<IActionResult> ResendPendingOtp()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            var response = await technicianService.ResendOtpForPendingEmail(userId);
+
+            return Ok(new { message = response.Message });
         }
 
         [HttpGet("inbox")]

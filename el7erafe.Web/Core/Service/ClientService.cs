@@ -347,23 +347,36 @@ namespace Service
                 throw new InvalidOtpException();
             }
 
-            if (await clientRepository.EmailExistsAsync(user.User.PendingEmail))
-                throw new UnprocessableEntityException("البريد الإلكتروني أصبح مستخدم بالفعل");
-
-            user.User.Email = user.User.PendingEmail;
-            user.User.NormalizedEmail = user.User.Email.ToUpperInvariant();
-            user.User.PendingEmail = null;
-
+            await unitOfWork.BeginTransactionAsync();
             try
             {
+                if (await clientRepository.EmailExistsAsync(user.User.PendingEmail))
+                {
+                    await unitOfWork.RollbackTransactionAsync();
+                    throw new UnprocessableEntityException("البريد الإلكتروني أصبح مستخدم بالفعل");
+                }
+
+                user.User.Email = user.User.PendingEmail;
+                user.User.NormalizedEmail = user.User.Email.ToUpperInvariant();
+                user.User.PendingEmail = null;
+
                 if (!await clientRepository.UpdateAsync(user))
+                {
+                    await unitOfWork.RollbackTransactionAsync();
                     throw new TechnicalException();
+                }
+
+                await unitOfWork.CommitTransactionAsync();
             }
-            catch
+            catch (UnprocessableEntityException)
             {
+                throw;
+            }
+            catch (Exception)
+            {
+                await unitOfWork.RollbackTransactionAsync();
                 throw new TechnicalException();
             }
-
         }
 
         public async Task<OtpResponseDTO> ResendOtpForPendingEmail(string userId)
@@ -376,7 +389,7 @@ namespace Service
             }
 
             var identifier = otpHelper.GetOtpIdentifier(user.User.Id);
-            if (!otpHelper.CanResendOtp(identifier).Result)
+            if (!await otpHelper.CanResendOtp(identifier))
             {
                 throw new OtpAlreadySent();
             }
