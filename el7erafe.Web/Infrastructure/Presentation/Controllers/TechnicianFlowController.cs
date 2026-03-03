@@ -6,11 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ServiceAbstraction;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using ServiceAbstraction;
 using ServiceAbstraction.Chat;
-using System.Security.Claims;
 
 namespace Presentation.Controllers
 {
@@ -18,7 +14,7 @@ namespace Presentation.Controllers
     [Route("api/tech")]
     [Authorize(AuthenticationSchemes = "Bearer", Roles = "Technician")]
     public class TechnicianFlowController(ITechnicianService technicianService,
-                                          IChatService chatService): ControllerBase
+                                          IChatService chatService) : ControllerBase
     {
         [HttpGet("profile")]
         public async Task<IActionResult> GetProfile()
@@ -73,6 +69,8 @@ namespace Presentation.Controllers
                 message = "تم التحديث بنجاح";
 
             return Ok(new { message });
+        }
+
         [HttpGet("inbox")]
         public async Task<IActionResult> GetInbox()
         {
