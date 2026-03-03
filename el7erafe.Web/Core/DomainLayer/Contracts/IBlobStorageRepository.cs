@@ -13,5 +13,11 @@ namespace DomainLayer.Contracts
         Task<string?> GetImageURL(string containerName, string fileName);
         Task<string?> GetBlobUrlWithSasTokenAsync(string containerName, string fileName, int expiryHours = 1);
         Task<Dictionary<string, string>> GetMultipleBlobsUrlWithSasTokenAsync(string containerName, List<string> fileNames, int expiryHours = 1);
+        Task<List<string>> GetBlobUrlsWithPrefixAsync(
+            string containerName,
+            string prefix,
+            int expiryHours = 1);
+        Task<int> CountBlobsWithPrefixAsync(string containerName, string prefix);
+
     }
 }

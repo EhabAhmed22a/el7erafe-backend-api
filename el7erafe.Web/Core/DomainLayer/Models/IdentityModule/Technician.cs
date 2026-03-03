@@ -24,6 +24,5 @@ namespace DomainLayer.Models.IdentityModule
         public virtual Rejection? Rejection { get; set; }
         public decimal Rating { get; set; } = 0.0m;
         public string? AboutMe { get; set; }
-        public string? PortifolioImageURL { get; set; }
     }
 }
