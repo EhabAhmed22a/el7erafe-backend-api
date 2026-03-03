@@ -155,23 +155,31 @@ namespace Service
             if (client is null)
                 throw new UserNotFoundException("المستخدم غير موجود");
 
-            // Get all service request ids for this client
-            var serviceRequestIds = await serviceRequestRepository.GetServiceRequestIdsByClientAsync(client.Id);
+            await unitOfWork.BeginTransactionAsync();
 
-            foreach (var srId in serviceRequestIds)
+            try
             {
-                var sr = await serviceRequestRepository.GetServiceById(srId);
-                if (sr is null)
-                    continue;
+                // Get all service request ids
+                var serviceRequestIds = await serviceRequestRepository.GetServiceRequestIdsByClientAsync(client.Id);
 
-                // If the service request has images, delete them from blob storage.
-                if (!string.IsNullOrWhiteSpace(sr.LastImageURL))
+                // Delete ALL images for all service requests
+                foreach (var srId in serviceRequestIds)
                 {
-                    await blobStorageRepository.DeleteMultipleFilesAsync(sr.LastImageURL, "service-requests-images");
+                    await blobStorageRepository.DeleteBlobsWithPrefixAsync("service-requests-images", $"{srId}_");
                 }
-            }
 
-            var deleted = await clientRepository.DeleteAsync(userId);
+                // Delete client from database
+                var deleted = await clientRepository.DeleteAsync(userId);
+                if (!deleted)
+                    throw new TechnicalException();
+
+                await unitOfWork.CommitTransactionAsync();
+            }
+            catch
+            {
+                await unitOfWork.RollbackTransactionAsync();
+                throw new TechnicalException();
+            }
         }
 
         public async Task<ClientProfileDTO> GetProfileAsync(string userId)
