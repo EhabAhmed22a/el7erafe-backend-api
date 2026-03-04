@@ -3,6 +3,7 @@ using DomainLayer.Models.ChatModule.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+using MimeKit;
 using ServiceAbstraction.Chat;
 using Shared.DataTransferObject.ChatDTOs;
 
@@ -133,19 +134,15 @@ namespace Service.Hubs
 
         // ========== CHAT MANAGEMENT ==========
 
-        public async Task<ChatDto> GetOrCreateChat(string clientId, string technicianId)
+        public async Task<ChatDto> GetOrCreateChat(string receiverId)
         {
             var userId = Context.UserIdentifier;
 
-            // Verify user is either the client or technician
-            if (userId != clientId && userId != technicianId)
-            {
+            if (string.IsNullOrEmpty(userId))
                 throw new HubException("Unauthorized");
-            }
 
-            // JUST create/get chat - no broadcasting
-            return await _chatService.GetOrCreateChatAsync(clientId, technicianId);
-
+            // JUST create/get chat
+            return await _chatService.GetOrCreateChatAsync(userId, receiverId);
         }
 
         public async Task<IEnumerable<MessageDto>> GetChatHistory(int chatId, int page = 1, int pageSize = 50)
