@@ -14,7 +14,8 @@ namespace Service
 {
     public class TechnicianFlowService(ITechnicianRepository technicianRepository, IBlobStorageRepository blobStorageRepository,
         IUnitOfWork unitOfWork,
-        OtpHelper otpHelper) : ITechnicianService
+        OtpHelper otpHelper,
+        IServiceRequestRepository serviceRequestRepository) : ITechnicianService
     {
         public async Task<TechnicianProfileDTO> GetProfile(string userId)
         {
@@ -89,14 +90,6 @@ namespace Service
 
             if (updateTechnicianDTO.DeletedPortifolioImages is not null && updateTechnicianDTO.DeletedPortifolioImages.Count > 0)
             {
-                foreach (var fileName in updateTechnicianDTO.DeletedPortifolioImages)
-                {
-                    bool exists = await blobStorageRepository.FileExistsAsync(fileName, "technician-documents");
-                    if (!exists)
-                    {
-                        throw new TechnicalException();
-                    }
-                }
                 foreach (var fileName in updateTechnicianDTO.DeletedPortifolioImages)
                 {
                     try
@@ -262,6 +255,49 @@ namespace Service
             {
                 Message = "تم إعادة إرسال الرمز إلى بريدك الإلكتروني الجديد."
             };
+        }
+
+        public async Task DeleteAccount(string userId)
+        {
+            var technician = await CheckUser(userId);
+
+            //await CheckReservations() - will be added later
+
+            await unitOfWork.BeginTransactionAsync();
+
+            try
+            {
+                var serviceRequestIds = await serviceRequestRepository.GetServiceRequestIdsByTechnicianAsync(technician.Id);
+
+                foreach (var srId in serviceRequestIds)
+                {
+                    await serviceRequestRepository.DeleteAsync(srId);
+                }
+
+                int deleted = await technicianRepository.DeleteAsync(userId);
+                if (deleted == 0)
+                    throw new TechnicalException();
+
+                await unitOfWork.CommitTransactionAsync();
+
+
+                foreach (var srId in serviceRequestIds)
+                {
+                    await blobStorageRepository.DeleteBlobsWithPrefixAsync("service-requests-images", $"{srId}_");
+                }
+
+                await blobStorageRepository.DeleteFileAsync(technician.CriminalHistoryURL, "technician-documents");
+                await blobStorageRepository.DeleteFileAsync(technician.NationalIdBackURL, "technician-documents");
+                await blobStorageRepository.DeleteFileAsync(technician.NationalIdFrontURL, "technician-documents");
+                await blobStorageRepository.DeleteFileAsync(technician.ProfilePictureURL, "technician-documents");
+                if (await blobStorageRepository.CountBlobsWithPrefixAsync("technician-documents", $"portifolioImages_{technician.Id}_") > 0)
+                    await blobStorageRepository.DeleteBlobsWithPrefixAsync("technician-documents", $"portifolioImages_{technician.Id}_");
+            }
+            catch
+            {
+                await unitOfWork.RollbackTransactionAsync();
+                throw;
+            }
         }
 
         private async Task<Technician> CheckUser(string userId)

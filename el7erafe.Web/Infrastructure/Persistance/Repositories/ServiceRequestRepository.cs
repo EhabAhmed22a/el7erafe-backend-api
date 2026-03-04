@@ -77,6 +77,15 @@ namespace Persistance.Repositories
                 .Select(sr => sr.Id)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<int>> GetServiceRequestIdsByTechnicianAsync(int techId)
+        {
+            return await dbContext
+                .Set<ServiceRequest>()
+                .Where(sr => sr.TechnicianId == techId)
+                .Select(sr => sr.Id)
+                .ToListAsync();
+        }
     }
 
     public static class TimeOnlyExtensions
