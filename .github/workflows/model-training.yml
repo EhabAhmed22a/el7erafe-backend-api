@@ -44,6 +44,12 @@ jobs:
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID2 }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID2 }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID2 }}
       # 7. Build Image (Docker will grab the tested intent_model.bin)
       - name: Build and Push Docker Image 🚀
         run: |
@@ -57,6 +63,6 @@ jobs:
           registryUrl: ${{ secrets.ACR_LOGIN_SERVER }}
           registryUsername: ${{ secrets.ACR_USERNAME }}
           registryPassword: ${{ secrets.ACR_PASSWORD }}
-          containerAppName: regex-container-app         # UPDATE THIS
-          resourceGroup: el7rafe-rg     # UPDATE THIS
+          containerAppName: regex-container-app         
+          resourceGroup: el7rafe-rg     
           imageToDeploy: ${{ secrets.ACR_LOGIN_SERVER }}/safety-guard-api:${{ github.sha }}
