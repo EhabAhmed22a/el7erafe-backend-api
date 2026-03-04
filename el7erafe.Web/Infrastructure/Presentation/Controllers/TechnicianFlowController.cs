@@ -119,6 +119,17 @@ namespace Presentation.Controllers
             return Ok(new { message = response.Message });
         }
 
+        [HttpDelete("account")]
+        public async Task<IActionResult> DeleteAccountAsync()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            await technicianService.DeleteAccount(userId);
+            return Ok(new { message = "تم حذف الحساب بنجاح" });
+        }
+
         [HttpGet("inbox")]
         public async Task<IActionResult> GetInbox()
         {

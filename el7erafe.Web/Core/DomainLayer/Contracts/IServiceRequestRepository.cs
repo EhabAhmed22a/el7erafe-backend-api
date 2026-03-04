@@ -13,5 +13,6 @@ namespace DomainLayer.Contracts
         Task<ServiceRequest> CreateAsync(ServiceRequest serviceRequest);
         Task<int> DeleteAsync(int id);
         Task<IEnumerable<int>> GetServiceRequestIdsByClientAsync(int clientId);
+        Task<IEnumerable<int>> GetServiceRequestIdsByTechnicianAsync(int techId);
     }
 }
