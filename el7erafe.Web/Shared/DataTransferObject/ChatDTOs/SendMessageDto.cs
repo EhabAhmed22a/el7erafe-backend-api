@@ -8,7 +8,7 @@ namespace Shared.DataTransferObject.ChatDTOs
         public string ReceiverId { get; set; } = default!;
 
         [Required]
-        public string Type { get; set; } = "Text";
+        public string MessageType { get; set; } = "Text";
 
         [Required]
         [MaxLength(4000)]              
