@@ -7,9 +7,9 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-# Copy the code AND the machine learning model
-COPY main.py .
-COPY intent_model.bin .
+
+COPY . .
+
 
 # Expose the port FastAPI runs on
 EXPOSE 8000
