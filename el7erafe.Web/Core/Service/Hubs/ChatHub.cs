@@ -31,6 +31,7 @@ namespace Service.Hubs
 
             await _userConnectionRepository.AddConnectionAsync(userId, connectionId);
             await _chatService.MarkAllMessagesAsDeliveredAsync(userId);
+            await Clients.Others.SendAsync("UserOnline", userId);
 
             await base.OnConnectedAsync();
         }
@@ -38,9 +39,22 @@ namespace Service.Hubs
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             var connectionId = Context.ConnectionId;
+            var userId = Context.UserIdentifier;
 
             // JUST remove connection from database - nothing else
             await _userConnectionRepository.RemoveConnectionAsync(connectionId);
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                var isStillOnline =
+                    await _userConnectionRepository.IsUserOnlineAsync(userId);
+
+                // 🔥 If no more connections, notify offline
+                if (!isStillOnline)
+                {
+                    await Clients.Others.SendAsync("UserOffline", userId);
+                }
+            }
 
             await base.OnDisconnectedAsync(exception);
         }
