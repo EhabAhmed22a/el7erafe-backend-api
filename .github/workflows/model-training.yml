@@ -10,6 +10,11 @@ jobs:
     defaults:
       run:
         working-directory: ./Regex
+
+    permissions:
+      id-token: write
+      contents: read   
+       
     steps:
       # 1. Get the code
       - name: Checkout Code
