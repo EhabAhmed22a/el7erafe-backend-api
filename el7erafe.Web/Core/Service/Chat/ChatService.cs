@@ -60,7 +60,7 @@ namespace Service.Chat
 
         public async Task<MessageDto> SendMessageAsync(SendMessageDto messageDto, int chatId, string senderId)
         {
-            var messageType = ParseMessageType(messageDto.Type);
+            var messageType = ParseMessageType(messageDto.MessageType);
 
             var domainMessage = new Message
             {
@@ -85,7 +85,7 @@ namespace Service.Chat
                 ReceiverId = created.ReceiverId,
                 Content = created.Content,
                 CreatedAt = created.CreatedAt,
-                Type = created.Type.ToString(),
+                MessageType = created.Type.ToString(),
                 MessageStatus = created.Status.ToString()
             };
         }
@@ -101,7 +101,7 @@ namespace Service.Chat
                 ReceiverId = message.ReceiverId,
                 Content = message.Content,
                 CreatedAt = message.CreatedAt,
-                Type = message.Type.ToString(),
+                MessageType = message.Type.ToString(),
                 MessageStatus = message.Status.ToString()
             });
         }
