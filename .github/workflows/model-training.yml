@@ -3,13 +3,6 @@ name: Train, Test, and Deploy Safety Guard
 on:
   push:
     branches: [ "newinfra" ]
-    paths:
-      - 'training_data.txt'
-      - 'main.py'
-      - 'train.py'
-      - 'test.py'
-      - 'Dockerfile'
-      - 'requirements.txt'
   workflow_dispatch:
 jobs:
   build-and-deploy:
