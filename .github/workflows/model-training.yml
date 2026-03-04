@@ -57,6 +57,6 @@ jobs:
           registryUrl: ${{ secrets.ACR_LOGIN_SERVER }}
           registryUsername: ${{ secrets.ACR_USERNAME }}
           registryPassword: ${{ secrets.ACR_PASSWORD }}
-          containerAppName: safety-guard-app          # UPDATE THIS
-          resourceGroup: el7erafe-resource-group      # UPDATE THIS
+          containerAppName: regex-container-app         # UPDATE THIS
+          resourceGroup: el7rafe-rg     # UPDATE THIS
           imageToDeploy: ${{ secrets.ACR_LOGIN_SERVER }}/safety-guard-api:${{ github.sha }}
