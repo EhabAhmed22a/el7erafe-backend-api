@@ -132,110 +132,60 @@ namespace Persistance.Databases
 
             builder.Entity<Chat>(entity =>
             {
-                // Table name
                 entity.ToTable("Chats");
 
-                // Primary Key
                 entity.HasKey(e => e.Id);
 
-                // Properties
-                entity.Property(e => e.ClientId)
-                    .IsRequired()
-                    .HasMaxLength(450);
+                entity.Property(e => e.CreatedAt)
+                      .HasDefaultValueSql("GETUTCDATE()");
 
-                entity.Property(e => e.TechnicianId)
-                    .IsRequired()
-                    .HasMaxLength(450);
+                entity.HasIndex(e => e.ClientId);
+                entity.HasIndex(e => e.TechnicianId);
 
-                // Indexes for fast lookups
-                entity.HasIndex(e => e.ClientId)
-                    .HasDatabaseName("IX_Chats_ClientId");
-
-                entity.HasIndex(e => e.TechnicianId)
-                    .HasDatabaseName("IX_Chats_TechnicianId");
-
-                // Unique constraint to prevent duplicate chats between same client/technician
                 entity.HasIndex(e => new { e.ClientId, e.TechnicianId })
-                    .IsUnique()
-                    .HasDatabaseName("IX_Chats_Client_Technician");
+                      .IsUnique();
 
-                // Relationships
                 entity.HasOne(e => e.Client)
-                    .WithMany(u => u.ClientChats)
-                    .HasForeignKey(e => e.ClientId)
-                    .OnDelete(DeleteBehavior.Restrict); 
+                      .WithMany(c => c.Chats)
+                      .HasForeignKey(e => e.ClientId)
+                      .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(e => e.Technician)
-                    .WithMany(u => u.TechnicianChats)
-                    .HasForeignKey(e => e.TechnicianId)
-                    .OnDelete(DeleteBehavior.Restrict); 
+                      .WithMany(t => t.Chats)
+                      .HasForeignKey(e => e.TechnicianId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
             builder.Entity<Message>(entity =>
             {
-                // Table name
                 entity.ToTable("Messages");
 
-                // Primary Key
                 entity.HasKey(e => e.Id);
 
-                // Properties
-                entity.Property(e => e.ChatId)
-                    .IsRequired();
-
-                entity.Property(e => e.SenderId)
-                    .IsRequired()
-                    .HasMaxLength(450);
-
-                entity.Property(e => e.ReceiverId)
-                    .IsRequired()
-                    .HasMaxLength(450);
-
                 entity.Property(e => e.Content)
-                    .IsRequired()
-                    .HasMaxLength(4000); 
+                      .IsRequired()
+                      .HasMaxLength(4000);
 
                 entity.Property(e => e.CreatedAt)
-                    .IsRequired()
-                    .HasDefaultValueSql("GETUTCDATE()");
+                      .HasDefaultValueSql("GETUTCDATE()");
 
                 entity.Property(e => e.IsDeleted)
-                    .IsRequired()
-                    .HasDefaultValue(false);
+                      .HasDefaultValue(false);
 
-                // Indexes for performance
-                entity.HasIndex(e => e.ChatId)
-                    .HasDatabaseName("IX_Messages_ChatId");
+                entity.HasIndex(e => e.ChatId);
+                entity.HasIndex(e => e.SenderId);
 
-                entity.HasIndex(e => e.SenderId)
-                    .HasDatabaseName("IX_Messages_SenderId");
+                entity.HasIndex(e => new { e.ChatId, e.CreatedAt });
 
-                entity.HasIndex(e => e.ReceiverId)
-                    .HasDatabaseName("IX_Messages_ReceiverId");
-
-                // Composite index for chat history ordering
-                entity.HasIndex(e => new { e.ChatId, e.CreatedAt })
-                    .HasDatabaseName("IX_Messages_ChatId_CreatedAt");
-
-                // Index for unread counts
-                entity.HasIndex(e => new { e.ReceiverId, e.Status, e.ChatId })
-                    .HasDatabaseName("IX_Messages_ReceiverId_IsRead_ChatId");
-
-                // Relationships
                 entity.HasOne(e => e.Chat)
-                    .WithMany(c => c.Messages)
-                    .HasForeignKey(e => e.ChatId)
-                    .OnDelete(DeleteBehavior.Cascade); // If chat is deleted, delete all its messages
+                      .WithMany(c => c.Messages)
+                      .HasForeignKey(e => e.ChatId)
+                      .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasOne(e => e.Sender)
-                    .WithMany(u => u.SentMessages)
-                    .HasForeignKey(e => e.SenderId)
-                    .OnDelete(DeleteBehavior.Restrict); // Don't delete messages if sender is deleted
-
-                entity.HasOne(e => e.Receiver)
-                    .WithMany(u => u.ReceivedMessages)
-                    .HasForeignKey(e => e.ReceiverId)
-                    .OnDelete(DeleteBehavior.Restrict); // Don't delete messages if receiver is deleted
+                      .WithMany(u => u.SentMessages)
+                      .HasForeignKey(e => e.SenderId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }

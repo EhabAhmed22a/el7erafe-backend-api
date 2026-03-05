@@ -16,9 +16,6 @@ namespace DomainLayer.Models.IdentityModule
         public string? PendingEmail{ get; set; }
 
         public ICollection<UserConnection> UserConnections { get; set; } = new List<UserConnection>();
-        public ICollection<Chat> ClientChats { get; set; } = new List<Chat>();
-        public ICollection<Chat> TechnicianChats { get; set; } = new List<Chat>();
         public ICollection<Message> SentMessages { get; set; } = new List<Message>();
-        public ICollection<Message> ReceivedMessages { get; set; } = new List<Message>();
     }
 }

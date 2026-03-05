@@ -1,4 +1,5 @@
-﻿using DomainLayer.Models.IdentityModule.Enums;
+﻿using DomainLayer.Models.ChatModule;
+using DomainLayer.Models.IdentityModule.Enums;
 
 namespace DomainLayer.Models.IdentityModule
 {
@@ -25,5 +26,6 @@ namespace DomainLayer.Models.IdentityModule
         public decimal Rating { get; set; } = 0.0m;
         public string? AboutMe { get; set; }
         public ICollection<ServiceRequest> ServiceRequests { get; set; } = new List<ServiceRequest>();
+        public ICollection<Chat> Chats { get; set; } = new List<Chat>();
     }
 }

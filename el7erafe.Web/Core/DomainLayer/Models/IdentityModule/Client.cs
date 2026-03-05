@@ -1,4 +1,6 @@
 ﻿
+using DomainLayer.Models.ChatModule;
+
 namespace DomainLayer.Models.IdentityModule
 {
     public class Client
@@ -8,6 +10,7 @@ namespace DomainLayer.Models.IdentityModule
         public string? ImageURL { get; set; }
         public string UserId { get; set; } = null!; //FK
         public ApplicationUser User { get; set; } = null!;
+        public ICollection<Chat> Chats { get; set; } = new List<Chat>();
 
     }
 }
