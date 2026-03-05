@@ -211,8 +211,7 @@ namespace Service
 
             var governorate = await cityRepository.GetGovernateByCityId(city.Id);
 
-            var technicians = await technicianRepository
-                .GetTechniciansByServiceAndLocationAsync(service.Id, governorate.Id, city.Id, requestRegDTO.Sorted);
+            var technicians = await technicianRepository.GetTechniciansByServiceAndLocationAsync(service.Id, governorate.Id, city.Id, requestRegDTO.Sorted);
 
             if (technicians is null || !technicians.Any())
                 return new List<AvailableTechnicianDto>();
@@ -223,7 +222,7 @@ namespace Service
             // Map to DTOs
             var result = technicians.Select(t => new AvailableTechnicianDto
             {
-                Id = t.UserId,
+                Id = t.Id,
                 Name = t.Name,
                 ServiceName = t.Service.NameAr,
                 Rating = t.Rating,
