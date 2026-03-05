@@ -3,7 +3,6 @@ using DomainLayer.Models.ChatModule.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
-using MimeKit;
 using ServiceAbstraction.Chat;
 using Shared.DataTransferObject.ChatDTOs;
 
