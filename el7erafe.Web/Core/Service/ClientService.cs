@@ -220,17 +220,24 @@ namespace Service
             var sasUrls = await GenerateProfilePictureSasUrlsAsync(technicians);
 
             // Map to DTOs
-            var result = technicians.Select(t => new AvailableTechnicianDto
+            var technicianDtos = new List<AvailableTechnicianDto>();
+            foreach (var t in technicians)
             {
-                Id = t.Id,
-                Name = t.Name,
-                ServiceName = t.Service.NameAr,
-                Rating = t.Rating,
-                City = t.City.NameAr,
-                ProfilePicture = sasUrls.ContainsKey(t.ProfilePictureURL) ? sasUrls[t.ProfilePictureURL] : string.Empty
-            }).ToList();
+                var portfolioImages = await blobStorageRepository.GetBlobUrlsWithPrefixAsync("technician-documents", $"portifolioImages_{t.Id}_");
+                technicianDtos.Add(new AvailableTechnicianDto
+                {
+                    Id = t.Id,
+                    Name = t.Name,
+                    ServiceName = t.Service.NameAr,
+                    Rating = t.Rating,
+                    City = t.City.NameAr,
+                    About = t.AboutMe ?? string.Empty,
+                    ProfilePicture = sasUrls.ContainsKey(t.ProfilePictureURL) ? sasUrls[t.ProfilePictureURL] : string.Empty,
+                    PortfolioImages = portfolioImages
+                });
+            }
 
-            return result;
+            return technicianDtos;
         }
 
         public async Task UpdateNameAndImage(string userId, UpdateNameImageDTO dTO)
