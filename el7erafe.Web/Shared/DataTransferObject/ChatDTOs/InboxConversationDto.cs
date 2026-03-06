@@ -4,7 +4,7 @@ namespace Shared.DataTransferObject.ChatDTOs
     public class InboxConversationDto
     {
         public int ChatId { get; set; }
-        public string ReceiverId { get; set; } = default!;
+        public int ReceiverId { get; set; } 
         public string ReceiverName { get; set; } = default!;
         public string? ReceiverImage { get; set; }
         public string? LastMessageContent { get; set; }
