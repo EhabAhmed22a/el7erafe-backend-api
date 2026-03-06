@@ -1,4 +1,5 @@
-﻿using DomainLayer.Contracts.ChatModule;
+﻿using DomainLayer.Contracts;
+using DomainLayer.Contracts.ChatModule;
 using DomainLayer.Models.ChatModule.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
@@ -11,6 +12,8 @@ namespace Service.Hubs
     [Authorize(AuthenticationSchemes = "Bearer", Roles = "Client,Technician")]
     public class ChatHub(IChatService _chatService,
                          IUserConnectionRepository _userConnectionRepository,
+                         IClientRepository _clientRepository,
+                         ITechnicianRepository _technicianRepository,
                          ILogger<ChatHub> _logger) : Hub
     {
         public override async Task OnConnectedAsync()
@@ -78,7 +81,7 @@ namespace Service.Hubs
 
             if (isDelivered)
             {
-                await _chatService.UpdateMessageStatusAsync(savedMessage.Id,MessageStatus.Delivered);
+                await _chatService.UpdateMessageStatusAsync(savedMessage.Id, MessageStatus.Delivered);
                 savedMessage.MessageStatus = MessageStatus.Delivered.ToString();
             }
 
@@ -86,7 +89,7 @@ namespace Service.Hubs
 
             if (isDelivered)
             {
-                await Clients.Caller.SendAsync("MessageStatusUpdated",savedMessage.Id,MessageStatus.Delivered.ToString());
+                await Clients.Caller.SendAsync("MessageStatusUpdated", savedMessage.Id, MessageStatus.Delivered.ToString());
             }
 
             foreach (var connectionId in receiverConnections)
@@ -133,15 +136,15 @@ namespace Service.Hubs
 
         // ========== CHAT MANAGEMENT ==========
 
-        public async Task<ChatDto> GetOrCreateChat(string receiverId)
+        public async Task<ChatDto> GetOrCreateChat(int receiverId)
         {
             var userId = Context.UserIdentifier;
 
             if (string.IsNullOrEmpty(userId))
                 throw new HubException("Unauthorized");
 
-            // JUST create/get chat
-            return await _chatService.GetOrCreateChatAsync(userId, receiverId);
+            var receiverUserId = await GetUserIdById(receiverId);
+            return await _chatService.GetOrCreateChatAsync(userId, receiverUserId);
         }
 
         public async Task<IEnumerable<MessageDto>> GetChatHistory(int chatId, int page = 1, int pageSize = 50)
@@ -170,6 +173,19 @@ namespace Service.Hubs
                 await Clients.Client(connectionId)
                     .SendAsync("InboxUpdated", inbox);
             }
+        }
+
+        private async Task<string> GetUserIdById(int Id)
+        {
+            var user = await _technicianRepository.GetByIdAsync(Id);
+            if (user is null) 
+            {
+                var client = await _clientRepository.GetByIdAsync(Id);
+                if (client is null)
+                    throw new HubException("User not found");
+                return client.UserId;
+            }
+            return user.UserId;
         }
     }
 }
