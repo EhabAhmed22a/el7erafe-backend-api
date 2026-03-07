@@ -40,7 +40,7 @@ namespace Service
             {
                 logger.LogWarning("[SERVICE] Login failed: User not found for phone number: {PhoneNumber}",
                     loginDTO.PhoneNumber);
-                throw new UnauthorizedUserException();
+                throw new UnauthorizedUserException("1");
             }
 
             logger.LogInformation("[SERVICE] User found with ID: {UserId}, UserType: {UserType}, checking password",
@@ -51,7 +51,7 @@ namespace Service
             if (!result)
             {
                 logger.LogWarning("[SERVICE] Login failed: Invalid password for user: {UserId}", user.Id);
-                throw new UnauthorizedUserException();
+                throw new UnauthorizedUserException("2");
             }
 
             var userToken = await userTokenRepository.GetUserTokenAsync(user.Id);
@@ -96,7 +96,7 @@ namespace Service
                 if (client is null)
                 {
                     logger.LogError("[SERVICE] Client record not found for user: {UserId}", user.Id);
-                    throw new UnauthorizedUserException();
+                    throw new UnauthorizedUserException("3");
                 }
 
                 logger.LogInformation("[SERVICE] Generating token for client: {ClientName}", client.Name);
@@ -127,7 +127,7 @@ namespace Service
                 if (technician is null)
                 {
                     logger.LogError("[SERVICE] Technician record not found for user: {UserId}", user.Id);
-                    throw new UnauthorizedUserException();
+                    throw new UnauthorizedUserException("4");
                 }
 
                 logger.LogInformation("[SERVICE] Processing technician login flow for user: {UserId}", user.Id);
