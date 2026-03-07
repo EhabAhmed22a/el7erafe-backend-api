@@ -292,6 +292,7 @@ namespace Service
 
             user.User.PhoneNumber = dTO.PhoneNumber;
             user.User.UserName = dTO.PhoneNumber;
+            user.User.NormalizedUserName = dTO.PhoneNumber.ToUpperInvariant();
             try
             {
                 if (!await clientRepository.UpdateAsync(user))
