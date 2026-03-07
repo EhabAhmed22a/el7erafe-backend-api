@@ -3,6 +3,7 @@ using Azure;
 using DomainLayer.Contracts;
 using DomainLayer.Exceptions;
 using DomainLayer.Models.IdentityModule;
+using Microsoft.AspNetCore.Identity;
 using Service.Helpers;
 using ServiceAbstraction;
 using Shared.DataTransferObject.ClientIdentityDTOs;
@@ -15,6 +16,7 @@ namespace Service
     public class TechnicianFlowService(ITechnicianRepository technicianRepository, IBlobStorageRepository blobStorageRepository,
         IUnitOfWork unitOfWork,
         OtpHelper otpHelper,
+        UserManager<ApplicationUser> userManager,
         IServiceRequestRepository serviceRequestRepository) : ITechnicianService
     {
         public async Task<TechnicianProfileDTO> GetProfile(string userId)
@@ -145,17 +147,11 @@ namespace Service
             if (await technicianRepository.ExistsAsync(updatePhoneDTO.PhoneNumber))
                 throw new UnprocessableEntityException("رقم الهاتف مستخدم بالفعل من قبل عميل آخر");
 
-            user.User.PhoneNumber = updatePhoneDTO.PhoneNumber;
-            user.User.UserName = updatePhoneDTO.PhoneNumber;
-            user.User.NormalizedUserName = updatePhoneDTO.PhoneNumber.ToUpperInvariant();
-            try
-            {
-                await technicianRepository.UpdateAsync(user);
-            }
-            catch
-            {
+            var setPhoneResult = await userManager.SetPhoneNumberAsync(user.User, updatePhoneDTO.PhoneNumber);
+            var setNameResult = await userManager.SetUserNameAsync(user.User, updatePhoneDTO.PhoneNumber);
+
+            if (!setPhoneResult.Succeeded || !setNameResult.Succeeded)
                 throw new TechnicalException();
-            }
         }
 
         public async Task<OtpResponseDTO> UpdatePendingEmail(string userId, UpdateEmailDTO updateEmailDTO)
@@ -173,7 +169,10 @@ namespace Service
 
             try
             {
-                await technicianRepository.UpdateAsync(user);
+                var updateResult = await userManager.UpdateAsync(user.User);
+
+                if (!updateResult.Succeeded)
+                    throw new TechnicalException();
             }
             catch
             {
@@ -203,9 +202,7 @@ namespace Service
             var result = await otpHelper.VerifyOtp(identifier, otpCode.OtpCode);
 
             if (!result)
-            {
                 throw new InvalidOtpException();
-            }
 
             await unitOfWork.BeginTransactionAsync();
             try
@@ -216,19 +213,23 @@ namespace Service
                     throw new UnprocessableEntityException("البريد الإلكتروني أصبح مستخدم بالفعل");
                 }
 
-                user.User.Email = user.User.PendingEmail;
-                user.User.NormalizedEmail = user.User.Email.ToUpperInvariant();
+                await userManager.SetEmailAsync(user.User, user.User.PendingEmail);
+
                 user.User.PendingEmail = null;
                 user.User.EmailConfirmed = true;
 
-                await technicianRepository.UpdateAsync(user);
+                var updateResult = await userManager.UpdateAsync(user.User);
+
+                if (!updateResult.Succeeded)
+                    throw new TechnicalException();
+
                 await unitOfWork.CommitTransactionAsync();
             }
             catch (UnprocessableEntityException)
             {
                 throw;
             }
-            catch(Exception)
+            catch (Exception)
             {
                 await unitOfWork.RollbackTransactionAsync();
                 throw new TechnicalException();
