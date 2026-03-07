@@ -127,7 +127,7 @@ namespace Service
                 if (technician is null)
                 {
                     logger.LogError("[SERVICE] Technician record not found for user: {UserId}", user.Id);
-                    throw new UnauthorizedUserException();
+                    throw new UnauthorizedUserException("adadadadda");
                 }
 
                 logger.LogInformation("[SERVICE] Processing technician login flow for user: {UserId}", user.Id);
