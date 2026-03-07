@@ -67,7 +67,14 @@ namespace Persistance.Repositories
 
         public async Task<int> UpdateAsync(Technician technician)
         {
-            _context.Set<Technician>().Update(technician);
+            var existingTechnician = await _context.Set<Technician>()
+                .FirstOrDefaultAsync(t => t.Id == technician.Id);
+
+            if (existingTechnician is null)
+                return 0;
+
+            _context.Entry(existingTechnician).CurrentValues.SetValues(technician);
+
             return await _context.SaveChangesAsync();
         }
 
