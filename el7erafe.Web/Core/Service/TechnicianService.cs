@@ -147,6 +147,7 @@ namespace Service
 
             user.User.PhoneNumber = updatePhoneDTO.PhoneNumber;
             user.User.UserName = updatePhoneDTO.PhoneNumber;
+            user.User.NormalizedUserName = updatePhoneDTO.PhoneNumber.ToUpperInvariant();
             try
             {
                 await technicianRepository.UpdateAsync(user);
