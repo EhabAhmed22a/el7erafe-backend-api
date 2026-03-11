@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Persistance.Databases;
 
@@ -11,9 +12,11 @@ using Persistance.Databases;
 namespace Persistance.Identity.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260311005125_Added Offers Table")]
+    partial class AddedOffersTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -526,9 +529,6 @@ namespace Persistance.Identity.Migrations
                     b.Property<decimal>("Fees")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int?>("NumberOfDays")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("SentAt")
                         .HasColumnType("datetime2");
 
@@ -537,12 +537,6 @@ namespace Persistance.Identity.Migrations
 
                     b.Property<int>("TechnicianId")
                         .HasColumnType("int");
-
-                    b.Property<TimeOnly?>("WorkFrom")
-                        .HasColumnType("time");
-
-                    b.Property<TimeOnly?>("WorkTo")
-                        .HasColumnType("time");
 
                     b.HasKey("Id");
 

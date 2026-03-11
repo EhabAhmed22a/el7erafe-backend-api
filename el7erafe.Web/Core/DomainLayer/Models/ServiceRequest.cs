@@ -21,5 +21,6 @@ namespace DomainLayer.Models
         public int? TechnicianId { get; set; }
         public Client Client { get; set; } = default!;
         public int ClientId { get; set; }
+        public ICollection<Offer> Offers { get; set; } = new List<Offer>();
     }
 }
