@@ -5,10 +5,10 @@ namespace DomainLayer.Models.IdentityModule
     public class TechnicianAvailability
     {
         public int Id { get; set; }
-        public string TechnicianId { get; set; } = default!;
+        public int TechnicianId { get; set; } 
         public WeekDay? DayOfWeek { get; set; }
-        public TimeSpan FromTime { get; set; }
-        public TimeSpan ToTime { get; set; }
+        public TimeOnly FromTime { get; set; }
+        public TimeOnly ToTime { get; set; }
 
         public Technician Technician { get; set; } = default!;
     }
