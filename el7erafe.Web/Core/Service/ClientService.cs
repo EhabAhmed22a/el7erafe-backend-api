@@ -56,15 +56,25 @@ namespace Service
                 if (!regDTO.AvailableFrom.HasValue || !regDTO.AvailableTo.HasValue)
                     throw new UnprocessableEntityException("يجب تحديد وقت البداية والنهاية عندما لا تكون متاحاً طوال اليوم");
 
-                if (regDTO.AvailableFrom.Value >= regDTO.AvailableTo.Value)
-                    throw new UnprocessableEntityException("وقت البداية يجب أن يكون قبل وقت النهاية");
+                var fromTime = regDTO.AvailableFrom.Value;
+                var toTime = regDTO.AvailableTo.Value;
 
-                if ((regDTO.AvailableTo.Value - regDTO.AvailableFrom.Value).TotalHours > 23)
+                if (fromTime == toTime)
+                    throw new UnprocessableEntityException("وقت البداية والنهاية لا يمكن أن يكونا متطابقين");
+
+                TimeSpan duration = toTime - fromTime;
+
+                if (duration.TotalHours < 0)
+                {
+                    duration += TimeSpan.FromHours(24);
+                }
+
+                if (duration.TotalHours > 23)
                     throw new UnprocessableEntityException("إذا كنت متاحاً طوال اليوم، الرجاء اختيار 'متاح طوال اليوم'");
 
                 if (regDTO.ServiceDate == DateOnly.FromDateTime(DateTime.Today))
                 {
-                    if (regDTO.AvailableFrom.Value.ToTimeSpan() < DateTime.Now.TimeOfDay)
+                    if (fromTime.ToTimeSpan() < DateTime.Now.TimeOfDay)
                         throw new UnprocessableEntityException("وقت البداية لا يمكن أن يكون في الماضي");
                 }
             }

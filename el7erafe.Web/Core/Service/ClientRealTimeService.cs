@@ -1,8 +1,10 @@
 ﻿
+using System.Globalization;
 using DomainLayer.Contracts;
 using DomainLayer.Contracts.ChatModule;
 using DomainLayer.Exceptions;
 using DomainLayer.Models.ChatModule;
+using Service.Helpers;
 using ServiceAbstraction;
 using Shared.DataTransferObject.ServiceRequestDTOs;
 
@@ -45,9 +47,7 @@ namespace Service
                 serviceType = sr.Service?.NameAr ?? "غير معروف",
 
                 numberOfOffers = sr.Offers.Count,
-                clientTimeInterval = sr.AvailableFrom != null && sr.AvailableTo != null
-                    ? sr.AvailableFrom.ToString() + " - " + sr.AvailableTo.ToString()
-                    : null,
+                clientTimeInterval = HelperClass.FormatArabicTimeInterval(sr.AvailableFrom, sr.AvailableTo),
 
                 techName = sr.Technician?.Name,
                 techImage = sr.Technician?.ProfilePictureURL,
@@ -55,11 +55,12 @@ namespace Service
                 offerId = (int?)sr.Offers?.FirstOrDefault()?.Id,
                 fees = (decimal?)sr.Offers?.FirstOrDefault()?.Fees,
 
-                techTimeInterval = sr.Offers?.FirstOrDefault() != null && sr.Offers?.FirstOrDefault()?.WorkFrom != null
-                    ? sr.Offers.FirstOrDefault()?.WorkFrom.ToString() + " - " + sr.Offers?.FirstOrDefault()?.WorkTo.ToString()
-                    : null,
+                techTimeInterval = HelperClass.FormatArabicTimeInterval(
+                        sr.Offers?.FirstOrDefault()?.WorkFrom,
+                        sr.Offers?.FirstOrDefault()?.WorkTo
+                    ),
 
-                numberOfDays = sr.Offers.FirstOrDefault() != null
+                numberOfDays = sr.Offers?.FirstOrDefault() != null
                     ? (sr.Offers?.FirstOrDefault()?.NumberOfDays ?? 1)
                     : 1
             }).ToList();
