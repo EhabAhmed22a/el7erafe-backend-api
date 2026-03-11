@@ -86,6 +86,34 @@ namespace Persistance.Repositories
                 .Select(sr => sr.Id)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<ServiceRequest>> GetServiceRequestsByClientAsync(int clientId)
+        {
+            return await dbContext
+                .Set<ServiceRequest>()
+                .Where(sr => sr.ClientId == clientId)
+                .Include(s => s.Offers)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<ServiceRequest>> GetServiceRequestsByTechnicianAsync(int techId)
+        {
+            return await dbContext
+                .Set<ServiceRequest>()
+                .Where(sr => sr.TechnicianId == techId)
+                .Include(s => s.Offers)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<ServiceRequest>> GetNotResServiceRequestsByClientAsync(int clientId)
+        {
+            return await dbContext
+                .Set<ServiceRequest>()
+                .Where(sr => sr.ClientId == clientId)
+                .Include(s => s.Offers)
+                .Where(s => !s.Offers.Any())
+                .ToListAsync();
+        }
     }
 
     public static class TimeOnlyExtensions

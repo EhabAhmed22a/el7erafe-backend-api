@@ -4,6 +4,7 @@ using el7erafe.Web.CustomMiddleWares;
 using el7erafe.Web.Extensions;
 using el7erafe.Web.Filters;
 using Persistance;
+using Presentation.Hubs;
 using Serilog;
 using Service;
 using Service.Email;
@@ -123,6 +124,7 @@ namespace el7erafe.Web
             app.UseAuthorization();
 
             app.MapHub<ChatHub>("/chatHub");
+            app.MapHub<ClientHub>("/clientHub");
             app.MapControllers();
             #endregion
 

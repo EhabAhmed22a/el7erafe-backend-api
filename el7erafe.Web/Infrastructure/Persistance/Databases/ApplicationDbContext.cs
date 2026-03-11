@@ -1,4 +1,5 @@
-﻿using DomainLayer.Models;
+﻿using System.Reflection.Emit;
+using DomainLayer.Models;
 using DomainLayer.Models.ChatModule;
 using DomainLayer.Models.ChatModule.Enums;
 using DomainLayer.Models.IdentityModule;
@@ -21,6 +22,7 @@ namespace Persistance.Databases
         public DbSet<RejectionComment> rejectionComments { get; set; }
         public DbSet<ServiceRequest> ServiceRequests { get; set; }
         public DbSet<UserConnection> UserConnections { get; set; }
+        public DbSet<Offer> Offers { get; set; }
         public DbSet<Chat> Chats { get; set; }
         public DbSet<Message> Messages { get; set; }
 
@@ -36,6 +38,7 @@ namespace Persistance.Databases
             builder.Entity<Governorate>().ToTable("Governorates");
             builder.Entity<TechnicianService>().ToTable("TechnicianServices");
             builder.Entity<City>().ToTable("Cities");
+            builder.Entity<Offer>().ToTable("Offers");
             builder.Entity<Admin>().ToTable("Admins");
             builder.Entity<ServiceRequest>().ToTable("ServiceRequests");
             builder.Entity<RejectionComment>().ToTable("RejectionComments");
@@ -163,12 +166,12 @@ namespace Persistance.Databases
                 entity.HasOne(e => e.Client)
                     .WithMany(u => u.ClientChats)
                     .HasForeignKey(e => e.ClientId)
-                    .OnDelete(DeleteBehavior.Restrict); 
+                    .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(e => e.Technician)
                     .WithMany(u => u.TechnicianChats)
                     .HasForeignKey(e => e.TechnicianId)
-                    .OnDelete(DeleteBehavior.Restrict); 
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             builder.Entity<Message>(entity =>
@@ -193,7 +196,7 @@ namespace Persistance.Databases
 
                 entity.Property(e => e.Content)
                     .IsRequired()
-                    .HasMaxLength(4000); 
+                    .HasMaxLength(4000);
 
                 entity.Property(e => e.CreatedAt)
                     .IsRequired()
@@ -237,6 +240,23 @@ namespace Persistance.Databases
                     .HasForeignKey(e => e.ReceiverId)
                     .OnDelete(DeleteBehavior.Restrict); // Don't delete messages if receiver is deleted
             });
+
+            builder.Entity<Offer>(entity =>
+                {
+                    entity.Property(o => o.Fees)
+                    .HasColumnType("decimal(18,2)");
+
+                    entity.HasOne(o => o.ServiceRequest)
+                    .WithMany(sr => sr.Offers)
+                    .HasForeignKey(o => o.ServiceRequestId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                    entity.HasOne(o => o.Technician)
+                    .WithMany(t => t.Offers)
+                    .HasForeignKey(o => o.TechnicianId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                });
+
         }
     }
 }
