@@ -18,7 +18,7 @@ namespace Service
                 throw new TechNotFoundException(technicianId);
 
             if (blocks == null || !blocks.Any())
-                throw new ArgumentException("Schedule blocks cannot be empty");
+                throw new ArgumentException("يجب إدخال فترة زمنية واحدة على الأقل");
 
             ValidateSchedule(blocks);
 
@@ -144,7 +144,7 @@ namespace Service
             bool hasSpecific = blocks.Any(b => b.DayOfWeek != null);
 
             if (hasNull && hasSpecific)
-                throw new Exception("Cannot mix everyday availability with specific days");
+                throw new Exception("لا يمكن الجمع بين التوفر لكل أيام الأسبوع والتوفر لأيام محددة");
 
             foreach (var group in blocks.GroupBy(b => b.DayOfWeek))
             {
@@ -153,7 +153,7 @@ namespace Service
                 for (int i = 1; i < ordered.Count; i++)
                 {
                     if (ordered[i].FromTime < ordered[i - 1].ToTime)
-                        throw new Exception("Time blocks overlap");
+                        throw new Exception("الفترات الزمنية المحددة متداخلة");
                 }
             }
         }
