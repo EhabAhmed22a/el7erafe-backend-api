@@ -146,13 +146,49 @@ namespace Presentation.Controllers
             return Ok(result);
         }
 
-        [HttpPost("availability")]
+        [HttpPost("availability/set")]
         public async Task<IActionResult> SetAvailability(List<AvailabilityBlockDto> blocks)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
-            var result = await technicianAvailabilityService.CreateScheduleAsync(userId, blocks);
+            await technicianAvailabilityService.CreateScheduleAsync(userId, blocks);
+            return Ok(new { message = "تم ضبط وقت التوفر بنجاح" });
+
+        }
+
+        [HttpPatch("availability/update")]
+        public async Task<IActionResult> UpdateAvailability(int id,[FromBody] UpdateTechnicianAvailabilityDto dto)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+            await technicianAvailabilityService.UpdateAsync(userId, dto);
+            return Ok(new { message = "تم تحديث وقت التوفر بنجاح" });
+        }
+
+        [HttpDelete("availability/delete/{id}")]
+        public async Task<IActionResult> DeleteAvailability(int id)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId is null)
+                return Unauthorized();
+
+            await technicianAvailabilityService.DeleteTechnicianAvailableTimeAsync(userId, id);
+
+            return Ok(new { message = "تم حذف وقت التوفر بنجاح" });
+        }
+
+        [HttpGet("availability")]
+        public async Task<ActionResult<List<TechnicianAvailabilityResponseDto>>> GetAvailability()
+        {
+            var technicianId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (technicianId is null)
+                return Unauthorized();
+
+            var result = await technicianAvailabilityService.GetTechnicianAvailableTimeAsync(technicianId);
 
             return Ok(result);
         }
