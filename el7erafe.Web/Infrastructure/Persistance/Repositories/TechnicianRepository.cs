@@ -39,6 +39,7 @@ namespace Persistance.Repositories
                 .Include(t => t.City)
                     .ThenInclude(c => c.Governorate)
                 .Include(t => t.Service)
+                .Include(t => t.Availability)
                 .FirstOrDefaultAsync(t => t.UserId == userId);
         }
 
@@ -164,6 +165,7 @@ namespace Persistance.Repositories
                                .Include(t => t.City)
                                    .ThenInclude(c => c.Governorate)
                                .Include(t => t.Service)
+                               .Include(t => t.Availability)
                                .Where(t => t.ServiceId == serviceId 
                                 && t.Status == TechnicianStatus.Accepted
                                 && t.City.GovernorateId == governorateId);
