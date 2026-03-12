@@ -111,6 +111,8 @@ namespace Persistance.Repositories
                 .Set<ServiceRequest>()
                 .Where(sr => sr.ClientId == clientId)
                 .Include(s => s.Offers)
+                .Include(s => s.Service)
+                .Include(s => s.Technician)
                 .Where(s => !s.Offers.Any())
                 .ToListAsync();
         }
