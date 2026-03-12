@@ -26,5 +26,6 @@ namespace DomainLayer.Models.IdentityModule
         public string? AboutMe { get; set; }
         public ICollection<ServiceRequest> ServiceRequests { get; set; } = new List<ServiceRequest>();
         public ICollection<Offer> Offers { get; set; } = new List<Offer>();
+        public ICollection<TechnicianAvailability> Availability { get; set; }= new List<TechnicianAvailability>();
     }
 }

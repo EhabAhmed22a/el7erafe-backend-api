@@ -42,6 +42,7 @@ namespace Persistance.Databases
             builder.Entity<Admin>().ToTable("Admins");
             builder.Entity<ServiceRequest>().ToTable("ServiceRequests");
             builder.Entity<RejectionComment>().ToTable("RejectionComments");
+            builder.Entity<TechnicianAvailability>().ToTable("TechnicianAvailabilities");
             builder.Ignore<IdentityUserClaim<string>>();
             builder.Ignore<IdentityUserToken<string>>();
             builder.Ignore<IdentityUserLogin<string>>();
@@ -257,6 +258,34 @@ namespace Persistance.Databases
                     .OnDelete(DeleteBehavior.Restrict);
                 });
 
+            builder.Entity<TechnicianAvailability>(entity =>
+            {
+                entity.HasKey(ta => ta.Id);
+
+                entity.Property(ta => ta.FromTime)
+                    .IsRequired();
+
+                entity.Property(ta => ta.ToTime)
+                    .IsRequired();
+
+                entity.Property(ta => ta.DayOfWeek)
+                    .HasConversion<int?>();
+
+                entity.HasOne(ta => ta.Technician)
+                    .WithMany(t => t.Availability)
+                    .HasForeignKey(ta => ta.TechnicianId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(ta => new { ta.TechnicianId, ta.DayOfWeek });
+
+                entity.ToTable(t =>
+                {
+                    t.HasCheckConstraint(
+                        "CK_TechnicianAvailability_TimeRange",
+                        "[FromTime] < [ToTime]"
+                    );
+                });
+            });
         }
     }
 }

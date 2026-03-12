@@ -26,6 +26,7 @@ namespace Service
             services.AddScoped<IChatService, ChatService>();
             services.AddScoped<ITechnicianService, TechnicianFlowService>();
             services.AddScoped<IClientRealTimeService, ClientRealTimeService>();
+            services.AddScoped<ITechnicianAvailabilityService, TechnicianAvailabilityService>();
             services.AddSignalR();
             return services;
         }
