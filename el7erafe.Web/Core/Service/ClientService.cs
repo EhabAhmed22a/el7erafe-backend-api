@@ -223,19 +223,32 @@ namespace Service
 
             var governorate = await cityRepository.GetGovernateByCityId(city.Id);
 
-            var technicians = await technicianRepository.GetTechniciansByServiceAndLocationAsync(service.Id, governorate.Id, city.Id, requestRegDTO.Sorted);
+            var technicians = await technicianRepository
+                .GetTechniciansByServiceAndLocationAsync(service.Id, governorate.Id, city.Id, requestRegDTO.Sorted);
 
             if (technicians is null || !technicians.Any())
                 return new List<AvailableTechnicianDto>();
 
-            // Generate SAS URLs for all profile pictures
+            // FILTER BY AVAILABILITY
+            technicians = technicians
+                .Where(t => t.Availability.Any(a =>
+                    (a.DayOfWeek == null || (int)a.DayOfWeek == requestRegDTO.DayOfWeek) &&
+                    a.FromTime <= requestRegDTO.FromTime &&
+                    a.ToTime >= requestRegDTO.ToTime))
+                .ToList();
+
+            if (!technicians.Any())
+                return new List<AvailableTechnicianDto>();
+
             var sasUrls = await GenerateProfilePictureSasUrlsAsync(technicians);
 
-            // Map to DTOs
             var technicianDtos = new List<AvailableTechnicianDto>();
+
             foreach (var t in technicians)
             {
-                var portfolioImages = await blobStorageRepository.GetBlobUrlsWithPrefixAsync("technician-documents", $"portifolioImages_{t.Id}_");
+                var portfolioImages = await blobStorageRepository
+                    .GetBlobUrlsWithPrefixAsync("technician-documents", $"portifolioImages_{t.Id}_");
+
                 technicianDtos.Add(new AvailableTechnicianDto
                 {
                     Id = t.Id,
@@ -244,7 +257,9 @@ namespace Service
                     Rating = t.Rating,
                     City = t.City.NameAr,
                     About = t.AboutMe ?? string.Empty,
-                    ProfilePicture = sasUrls.ContainsKey(t.ProfilePictureURL) ? sasUrls[t.ProfilePictureURL] : string.Empty,
+                    ProfilePicture = sasUrls.ContainsKey(t.ProfilePictureURL)
+                        ? sasUrls[t.ProfilePictureURL]
+                        : string.Empty,
                     PortfolioImages = portfolioImages
                 });
             }
