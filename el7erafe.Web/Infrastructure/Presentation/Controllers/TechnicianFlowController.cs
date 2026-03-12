@@ -1,6 +1,5 @@
 ﻿
 
-using System.Security.Claims;
 using DomainLayer.Models.IdentityModule;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,15 +7,19 @@ using ServiceAbstraction;
 using ServiceAbstraction.Chat;
 using Shared.DataTransferObject.OtpDTOs;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
+using Shared.DataTransferObject.TechnicianSchedule;
 using Shared.DataTransferObject.UpdateDTOs;
+using System.Security.Claims;
 
 namespace Presentation.Controllers
 {
     [ApiController]
     [Route("api/tech")]
     [Authorize(AuthenticationSchemes = "Bearer", Roles = "Technician")]
-    public class TechnicianFlowController(ITechnicianService technicianService,
-                                          IChatService chatService) : ControllerBase
+    public class TechnicianFlowController(
+        ITechnicianService technicianService,
+        IChatService chatService,
+        ITechnicianAvailabilityService technicianAvailabilityService) : ControllerBase
     {
         [HttpGet("profile")]
         public async Task<IActionResult> GetProfile()
@@ -139,6 +142,17 @@ namespace Presentation.Controllers
                 return Unauthorized();
 
             var result = await chatService.GetInboxAsync(userId);
+
+            return Ok(result);
+        }
+
+        [HttpPost("availability")]
+        public async Task<IActionResult> SetAvailability(List<AvailabilityBlockDto> blocks)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+            var result = await technicianAvailabilityService.CreateScheduleAsync(userId, blocks);
 
             return Ok(result);
         }
