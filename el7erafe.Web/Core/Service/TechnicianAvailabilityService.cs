@@ -50,24 +50,6 @@ namespace Service
             }).ToList();
         }
 
-        public async Task<int> DeleteTechnicianAvailableTimeAsync(string technicianId, int id)
-        {
-            var technician = await technicianRepository.GetByUserIdAsync(technicianId);
-
-            if (technician is null)
-                throw new TechNotFoundException(technicianId);
-
-            var availability = await technicianAvailabilityRepository.GetByIdAsync(id);
-
-            if (availability is null)
-                throw new Exception("Availability not found");
-
-            if (availability.TechnicianId != technician.Id)
-                throw new UnauthorizedAccessException("You cannot delete this availability");
-
-            return await technicianAvailabilityRepository.DeleteAsync(id);
-        }
-
         public async Task<List<TechnicianAvailabilityResponseDto>> GetTechnicianAvailableTimeAsync(string technicianId)
         {
             var technician = await technicianRepository.GetByUserIdAsync(technicianId);
@@ -87,57 +69,6 @@ namespace Service
             }).ToList();
         }
 
-        public async Task<TechnicianAvailabilityResponseDto> UpdateAsync(string technicianId, UpdateTechnicianAvailabilityDto dto)
-        {
-            var technician = await technicianRepository.GetByUserIdAsync(technicianId);
-
-            if (technician is null)
-                throw new TechNotFoundException(technicianId);
-
-            var availability = await technicianAvailabilityRepository.GetByIdAsync(dto.Id);
-
-            if (availability is null)
-                throw new Exception("Availability not found");
-
-            if (availability.TechnicianId != technician.Id)
-                throw new UnauthorizedAccessException("You cannot update this availability");
-
-            var existingBlocks = await technicianAvailabilityRepository.GetByTechnicianIdAsync(technician.Id);
-
-            var blocksForValidation = existingBlocks
-                .Where(a => a.Id != dto.Id)
-                .Select(a => new AvailabilityBlockDto
-                {
-                    DayOfWeek = (int?)a.DayOfWeek,
-                    FromTime = a.FromTime,
-                    ToTime = a.ToTime
-                })
-                .ToList();
-
-            blocksForValidation.Add(new AvailabilityBlockDto
-            {
-                DayOfWeek = dto.DayOfWeek,
-                FromTime = dto.FromTime,
-                ToTime = dto.ToTime
-            });
-
-            ValidateSchedule(blocksForValidation);
-
-            availability.DayOfWeek = dto.DayOfWeek.HasValue ? (WeekDay)dto.DayOfWeek.Value : null;
-            availability.FromTime = dto.FromTime;
-            availability.ToTime = dto.ToTime;
-
-            await technicianAvailabilityRepository.UpdateAsync(availability);
-
-            return new TechnicianAvailabilityResponseDto
-            {
-                Id = availability.Id,
-                DayOfWeek = (int?)availability.DayOfWeek,
-                FromTime = availability.FromTime,
-                ToTime = availability.ToTime
-            };
-        }
-
         private void ValidateSchedule(List<AvailabilityBlockDto> blocks)
         {
             bool hasNull = blocks.Any(b => b.DayOfWeek == null);
@@ -145,6 +76,16 @@ namespace Service
 
             if (hasNull && hasSpecific)
                 throw new Exception("لا يمكن الجمع بين التوفر لكل أيام الأسبوع والتوفر لأيام محددة");
+
+            // Validate time format (hours only)
+            foreach (var block in blocks)
+            {
+                if (block.FromTime.Minute != 0 || block.ToTime.Minute != 0 ||
+                    block.FromTime.Second != 0 || block.ToTime.Second != 0)
+                {
+                    throw new Exception("يجب إدخال الوقت بالساعات فقط مثل 10:00 أو 14:00");
+                }
+            }
 
             foreach (var group in blocks.GroupBy(b => b.DayOfWeek))
             {

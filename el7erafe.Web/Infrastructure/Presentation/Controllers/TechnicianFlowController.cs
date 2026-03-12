@@ -157,29 +157,6 @@ namespace Presentation.Controllers
 
         }
 
-        [HttpPatch("availability/update")]
-        public async Task<IActionResult> UpdateAvailability(int id,[FromBody] UpdateTechnicianAvailabilityDto dto)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
-            await technicianAvailabilityService.UpdateAsync(userId, dto);
-            return Ok(new { message = "تم تحديث وقت التوفر بنجاح" });
-        }
-
-        [HttpDelete("availability/delete/{id}")]
-        public async Task<IActionResult> DeleteAvailability(int id)
-        {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            if (userId is null)
-                return Unauthorized();
-
-            await technicianAvailabilityService.DeleteTechnicianAvailableTimeAsync(userId, id);
-
-            return Ok(new { message = "تم حذف وقت التوفر بنجاح" });
-        }
-
         [HttpGet("availability")]
         public async Task<ActionResult<List<TechnicianAvailabilityResponseDto>>> GetAvailability()
         {

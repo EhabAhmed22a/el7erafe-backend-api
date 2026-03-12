@@ -1,12 +1,9 @@
-﻿
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Shared.DataTransferObject.TechnicianSchedule
 {
-    public class UpdateTechnicianAvailabilityDto
+    public class AvailabilityBlockDto
     {
-        [Required(ErrorMessage = "يجب ادخال ال id")]
-        public int Id { get; set; }
         [Range(1, 7, ErrorMessage = "يجب أن يكون رقم اليوم بين 1 و 7 أو تركه فارغًا للتوفر في جميع الأيام")]
         public int? DayOfWeek { get; set; }
 
