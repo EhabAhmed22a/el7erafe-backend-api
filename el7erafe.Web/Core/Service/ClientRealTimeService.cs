@@ -12,7 +12,8 @@ namespace Service
 {
     public class ClientRealTimeService(IUserConnectionRepository userConnectionRepository,
         IClientRepository clientRepository,
-        IServiceRequestRepository serviceRequestRepository) : IClientRealTimeService
+        IServiceRequestRepository serviceRequestRepository,
+        IBlobStorageRepository blobStorageRepository) : IClientRealTimeService
     {
         public async Task<UserConnection> AddUserConnectionAsync(string userId, string connectionId)
         {
@@ -39,31 +40,39 @@ namespace Service
 
             var notReservedRequests = await serviceRequestRepository.GetNotResServiceRequestsByClientAsync(user.Id);
 
-            return notReservedRequests.Select(sr => new ServiceRequestDTO
+            var mappingTasks = notReservedRequests.Select(async sr =>
             {
-                requestId = sr.Id,
-                isQuickReserve = sr.TechnicianId is null,
-                day = sr.ServiceDate,
-                serviceType = sr.Service?.NameAr ?? "غير معروف",
+                string? imageUrl = null;
+                if (!string.IsNullOrWhiteSpace(sr.Technician?.ProfilePictureURL))
+                {
+                    imageUrl = await blobStorageRepository.GetBlobUrlWithSasTokenAsync("technician-documents", sr.Technician.ProfilePictureURL);
+                }
+                return new ServiceRequestDTO
+                {
+                    requestId = sr.Id,
+                    isQuickReserve = sr.TechnicianId is null,
+                    day = sr.ServiceDate,
+                    serviceType = sr.Service?.NameAr ?? "غير معروف",
 
-                numberOfOffers = sr.Offers.Count,
-                clientTimeInterval = HelperClass.FormatArabicTimeInterval(sr.AvailableFrom, sr.AvailableTo),
+                    numberOfOffers = sr.Offers.Count,
+                    clientTimeInterval = HelperClass.FormatArabicTimeInterval(sr.AvailableFrom, sr.AvailableTo),
 
-                techName = sr.Technician?.Name,
-                techImage = sr.Technician?.ProfilePictureURL,
+                    techName = sr.Technician?.Name,
+                    techImage = imageUrl,
 
-                offerId = (int?)sr.Offers?.FirstOrDefault()?.Id,
-                fees = (decimal?)sr.Offers?.FirstOrDefault()?.Fees,
+                    offerId = sr.Offers?.FirstOrDefault()?.Id,
+                    fees = sr.Offers?.FirstOrDefault()?.Fees,
 
-                techTimeInterval = HelperClass.FormatArabicTimeInterval(
+                    techTimeInterval = HelperClass.FormatArabicTimeInterval(
                         sr.Offers?.FirstOrDefault()?.WorkFrom,
                         sr.Offers?.FirstOrDefault()?.WorkTo
                     ),
 
-                numberOfDays = sr.Offers?.FirstOrDefault() != null
-                    ? (sr.Offers?.FirstOrDefault()?.NumberOfDays ?? 1)
-                    : 1
-            }).ToList();
+                    numberOfDays = sr.Offers?.FirstOrDefault()?.NumberOfDays ?? 1
+                };
+            });
+
+            return (await Task.WhenAll(mappingTasks)).ToList();
         }
     }
 }
