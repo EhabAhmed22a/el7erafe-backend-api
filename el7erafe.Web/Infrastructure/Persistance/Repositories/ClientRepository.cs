@@ -63,16 +63,12 @@ namespace Persistance.Repositories
 
         public async Task<bool> DeleteAsync(string userId)
         {
-            var existingClient = await context.Set<Client>()
-                                            .FirstOrDefaultAsync(c => c.UserId == userId);
+            int deletedRows = await context.Set<ApplicationUser>()
+                                           .Where(u => u.Id == userId)
+                                           .ExecuteDeleteAsync();
 
-            if (existingClient is null)
-                return false;
-
-            var user = await context.Set<ApplicationUser>().FirstOrDefaultAsync(c => c.Id == userId);
-            context.Set<ApplicationUser>().Remove(user!);
-            await context.SaveChangesAsync();
-            return true;
+            // Returns true if the user existed and was deleted
+            return deletedRows > 0;
         }
 
         public async Task<bool> ExistsAsync(int id)

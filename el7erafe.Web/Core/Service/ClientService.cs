@@ -2,6 +2,7 @@
 using DomainLayer.Exceptions;
 using DomainLayer.Models;
 using DomainLayer.Models.IdentityModule;
+using Microsoft.AspNetCore.Identity;
 using Service.Helpers;
 using ServiceAbstraction;
 using Shared.DataTransferObject.ClientDTOs;
@@ -15,6 +16,7 @@ namespace Service
     public class ClientService(ITechnicianServicesRepository technicianServicesRepository,
             IClientRepository clientRepository,
             IBlobStorageRepository blobStorageRepository,
+            UserManager<ApplicationUser> userManager,
             IServiceRequestRepository serviceRequestRepository,
             ITechnicianServicesRepository servicesRepository,
             ITechnicianRepository technicianRepository,
@@ -54,15 +56,25 @@ namespace Service
                 if (!regDTO.AvailableFrom.HasValue || !regDTO.AvailableTo.HasValue)
                     throw new UnprocessableEntityException("يجب تحديد وقت البداية والنهاية عندما لا تكون متاحاً طوال اليوم");
 
-                if (regDTO.AvailableFrom.Value >= regDTO.AvailableTo.Value)
-                    throw new UnprocessableEntityException("وقت البداية يجب أن يكون قبل وقت النهاية");
+                var fromTime = regDTO.AvailableFrom.Value;
+                var toTime = regDTO.AvailableTo.Value;
 
-                if ((regDTO.AvailableTo.Value - regDTO.AvailableFrom.Value).TotalHours > 23)
+                if (fromTime == toTime)
+                    throw new UnprocessableEntityException("وقت البداية والنهاية لا يمكن أن يكونا متطابقين");
+
+                TimeSpan duration = toTime - fromTime;
+
+                if (duration.TotalHours < 0)
+                {
+                    duration += TimeSpan.FromHours(24);
+                }
+
+                if (duration.TotalHours > 23)
                     throw new UnprocessableEntityException("إذا كنت متاحاً طوال اليوم، الرجاء اختيار 'متاح طوال اليوم'");
 
                 if (regDTO.ServiceDate == DateOnly.FromDateTime(DateTime.Today))
                 {
-                    if (regDTO.AvailableFrom.Value.ToTimeSpan() < DateTime.Now.TimeOfDay)
+                    if (fromTime.ToTimeSpan() < DateTime.Now.TimeOfDay)
                         throw new UnprocessableEntityException("وقت البداية لا يمكن أن يكون في الماضي");
                 }
             }
@@ -100,46 +112,52 @@ namespace Service
                 ServiceDate = regDTO.ServiceDate,
                 AvailableFrom = regDTO.AvailableFrom,
                 AvailableTo = regDTO.AvailableTo,
-                CreatedAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
                 ClientId = clientId,
                 TechnicianId = regDTO.TechnicianId
             };
 
-            List<string> uploadedFiles = new List<string>();
-            await unitOfWork.BeginTransactionAsync();
-
-            try
+            if (!(regDTO.Images is not null && regDTO.Images.Count > 0))
             {
-                var serviceRequest = await serviceRequestRepository.CreateAsync(serviceReq);
-
-                if (regDTO.Images is not null && regDTO.Images.Count > 0)
+                try
                 {
-                    uploadedFiles = await blobStorageRepository.UploadMultipleFilesAsync(
-                        regDTO.Images,
-                        "service-requests-images",
-                        $"{serviceRequest.Id}_{clientId}");
-
-                    serviceRequest.LastImageURL = uploadedFiles.LastOrDefault();
-                    if(!await serviceRequestRepository.UpdateAsync(serviceRequest))
-                        throw new TechnicalException();
+                    await serviceRequestRepository.CreateAsync(serviceReq);
                 }
-
-                await unitOfWork.CommitTransactionAsync();
+                catch
+                {
+                    throw new TechnicalException();
+                }
             }
-            catch
+            else
             {
-                await unitOfWork.RollbackTransactionAsync();
-
-                foreach (var file in uploadedFiles)
+                List<string> uploadedFiles = new List<string>();
+                await unitOfWork.BeginTransactionAsync();
+                try
                 {
-                    try
-                    {
-                        await blobStorageRepository.DeleteFileAsync(file, "service-requests-images");
-                    }
-                    catch { }
-                }
+                    var serviceRequest = await serviceRequestRepository.CreateAsync(serviceReq);
 
-                throw new TechnicalException();
+                    await blobStorageRepository.UploadMultipleFilesAsync(
+                       regDTO.Images,
+                       "service-requests-images",
+                       $"{serviceRequest.Id}_{Guid.NewGuid()}");
+
+                    await unitOfWork.CommitTransactionAsync();
+                }
+                catch
+                {
+                    await unitOfWork.RollbackTransactionAsync();
+
+                    foreach (var file in uploadedFiles)
+                    {
+                        try
+                        {
+                            await blobStorageRepository.DeleteFileAsync(file, "service-requests-images");
+                        }
+                        catch { }
+                    }
+
+                    throw new TechnicalException();
+                }
             }
         }
 
@@ -149,23 +167,31 @@ namespace Service
             if (client is null)
                 throw new UserNotFoundException("المستخدم غير موجود");
 
-            // Get all service request ids for this client
-            var serviceRequestIds = await serviceRequestRepository.GetServiceRequestIdsByClientAsync(client.Id);
+            await unitOfWork.BeginTransactionAsync();
 
-            foreach (var srId in serviceRequestIds)
+            try
             {
-                var sr = await serviceRequestRepository.GetServiceById(srId);
-                if (sr is null)
-                    continue;
+                // Get all service request ids
+                var serviceRequestIds = await serviceRequestRepository.GetServiceRequestIdsByClientAsync(client.Id);
 
-                // If the service request has images, delete them from blob storage.
-                if (!string.IsNullOrWhiteSpace(sr.LastImageURL))
+                // Delete ALL images for all service requests
+                foreach (var srId in serviceRequestIds)
                 {
-                    await blobStorageRepository.DeleteMultipleFilesAsync(sr.LastImageURL, "service-requests-images");
+                    await blobStorageRepository.DeleteBlobsWithPrefixAsync("service-requests-images", $"{srId}_");
                 }
-            }
 
-            var deleted = await clientRepository.DeleteAsync(userId);
+                // Delete client from database
+                var deleted = await clientRepository.DeleteAsync(userId);
+                if (!deleted)
+                    throw new TechnicalException();
+
+                await unitOfWork.CommitTransactionAsync();
+            }
+            catch
+            {
+                await unitOfWork.RollbackTransactionAsync();
+                throw new TechnicalException();
+            }
         }
 
         public async Task<ClientProfileDTO> GetProfileAsync(string userId)
@@ -198,26 +224,47 @@ namespace Service
             var governorate = await cityRepository.GetGovernateByCityId(city.Id);
 
             var technicians = await technicianRepository
-                .GetTechniciansByServiceAndLocationAsync(service.Id,governorate.Id, city.Id, requestRegDTO.Sorted);
+                .GetTechniciansByServiceAndLocationAsync(service.Id, governorate.Id, city.Id, requestRegDTO.Sorted);
 
             if (technicians is null || !technicians.Any())
                 return new List<AvailableTechnicianDto>();
 
-            // Generate SAS URLs for all profile pictures
+            // FILTER BY AVAILABILITY
+            technicians = technicians
+                .Where(t => t.Availability.Any(a =>
+                    (a.DayOfWeek == null || (int)a.DayOfWeek == requestRegDTO.DayOfWeek) &&
+                    a.FromTime <= requestRegDTO.FromTime &&
+                    a.ToTime >= requestRegDTO.ToTime))
+                .ToList();
+
+            if (!technicians.Any())
+                return new List<AvailableTechnicianDto>();
+
             var sasUrls = await GenerateProfilePictureSasUrlsAsync(technicians);
 
-            // Map to DTOs
-            var result = technicians.Select(t => new AvailableTechnicianDto
-            {
-                Id = t.UserId,
-                Name = t.Name,
-                ServiceName = t.Service.NameAr,
-                Rating = t.Rating,
-                City = t.City.NameAr,
-                ProfilePicture = sasUrls.ContainsKey(t.ProfilePictureURL) ? sasUrls[t.ProfilePictureURL] : string.Empty
-            }).ToList();
+            var technicianDtos = new List<AvailableTechnicianDto>();
 
-            return result;
+            foreach (var t in technicians)
+            {
+                var portfolioImages = await blobStorageRepository
+                    .GetBlobUrlsWithPrefixAsync("technician-documents", $"portifolioImages_{t.Id}_");
+
+                technicianDtos.Add(new AvailableTechnicianDto
+                {
+                    Id = t.Id,
+                    Name = t.Name,
+                    ServiceName = t.Service.NameAr,
+                    Rating = t.Rating,
+                    City = t.City.NameAr,
+                    About = t.AboutMe ?? string.Empty,
+                    ProfilePicture = sasUrls.ContainsKey(t.ProfilePictureURL)
+                        ? sasUrls[t.ProfilePictureURL]
+                        : string.Empty,
+                    PortfolioImages = portfolioImages
+                });
+            }
+
+            return technicianDtos;
         }
 
         public async Task UpdateNameAndImage(string userId, UpdateNameImageDTO dTO)
@@ -260,9 +307,7 @@ namespace Service
 
         public async Task UpdatePhoneNumber(string userId, UpdatePhoneDTO dTO)
         {
-            var user = await clientRepository.GetByUserIdAsync(userId);
-            if (user is null)
-                throw new UserNotFoundException("المستخدم غير موجود");
+            var user = await CheckUser(userId);
 
             if (user.User.PhoneNumber == dTO.PhoneNumber)
                 throw new UpdateException("رقم الهاتف الجديد مطابق للرقم الحالي");
@@ -270,17 +315,11 @@ namespace Service
             if (await clientRepository.ExistsAsync(dTO.PhoneNumber))
                 throw new UnprocessableEntityException("رقم الهاتف مستخدم بالفعل من قبل عميل آخر");
 
-            user.User.PhoneNumber = dTO.PhoneNumber;
-            user.User.UserName = dTO.PhoneNumber;
-            try
-            {
-                if (!await clientRepository.UpdateAsync(user))
-                    throw new TechnicalException();
-            }
-            catch
-            {
+            var setPhoneResult = await userManager.SetPhoneNumberAsync(user.User, dTO.PhoneNumber);
+            var setNameResult = await userManager.SetUserNameAsync(user.User, dTO.PhoneNumber);
+
+            if (!setPhoneResult.Succeeded || !setNameResult.Succeeded)
                 throw new TechnicalException();
-            }
         }
 
         public async Task<OtpResponseDTO> UpdatePendingEmail(string userId, UpdateEmailDTO updateEmailDTO)
@@ -298,7 +337,9 @@ namespace Service
 
             try
             {
-                if (!await clientRepository.UpdateAsync(user))
+                var updateResult = await userManager.UpdateAsync(user.User);
+
+                if (!updateResult.Succeeded)
                     throw new TechnicalException();
             }
             catch
@@ -329,27 +370,38 @@ namespace Service
             var result = await otpHelper.VerifyOtp(identifier, otpCode.OtpCode);
 
             if (!result)
-            {
                 throw new InvalidOtpException();
-            }
 
-            if (await clientRepository.EmailExistsAsync(user.User.PendingEmail))
-                throw new UnprocessableEntityException("البريد الإلكتروني أصبح مستخدم بالفعل");
-
-            user.User.Email = user.User.PendingEmail;
-            user.User.NormalizedEmail = user.User.Email.ToUpperInvariant();
-            user.User.PendingEmail = null;
-
+            await unitOfWork.BeginTransactionAsync();
             try
             {
-                if (!await clientRepository.UpdateAsync(user))
+                if (await clientRepository.EmailExistsAsync(user.User.PendingEmail))
+                {
+                    await unitOfWork.RollbackTransactionAsync();
+                    throw new UnprocessableEntityException("البريد الإلكتروني أصبح مستخدم بالفعل");
+                }
+
+                await userManager.SetEmailAsync(user.User, user.User.PendingEmail);
+
+                user.User.PendingEmail = null;
+                user.User.EmailConfirmed = true;
+
+                var updateResult = await userManager.UpdateAsync(user.User);
+
+                if (!updateResult.Succeeded)
                     throw new TechnicalException();
+
+                await unitOfWork.CommitTransactionAsync();
             }
-            catch
+            catch (UnprocessableEntityException)
             {
+                throw;
+            }
+            catch (Exception)
+            {
+                await unitOfWork.RollbackTransactionAsync();
                 throw new TechnicalException();
             }
-
         }
 
         public async Task<OtpResponseDTO> ResendOtpForPendingEmail(string userId)
@@ -362,7 +414,7 @@ namespace Service
             }
 
             var identifier = otpHelper.GetOtpIdentifier(user.User.Id);
-            if (!otpHelper.CanResendOtp(identifier).Result)
+            if (!await otpHelper.CanResendOtp(identifier))
             {
                 throw new OtpAlreadySent();
             }

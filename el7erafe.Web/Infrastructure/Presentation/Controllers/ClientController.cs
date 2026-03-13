@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+using Presentation.Hubs;
 using ServiceAbstraction;
 using ServiceAbstraction.Chat;
 using Shared.DataTransferObject.ClientDTOs;
@@ -16,7 +18,9 @@ namespace Presentation.Controllers
     [Authorize(AuthenticationSchemes = "Bearer", Roles = "Client")]
     public class ClientController(IClientService _clientService,
         ILogger<ClientController> _logger,
-        IChatService chatService) : ControllerBase
+        IChatService chatService,
+        IHubContext<ClientHub> clientHub,
+        IClientRealTimeService clientRealTimeService) : ControllerBase
     {
         [HttpGet("/cf/services")]
         public async Task<ActionResult<string>> GetServicesAsync()
@@ -36,6 +40,8 @@ namespace Presentation.Controllers
                 return Unauthorized("المستخدم غير موجود");
 
             await _clientService.ServiceRequest(requestRegDTO, userId);
+            var freshData = await clientRealTimeService.GetServiceRequestsAsync(userId);
+            await clientHub.Clients.User(userId).SendAsync("ReceivePendingRequests", freshData);
             return Ok(new { message = "تم إرسال طلب الخدمة بنجاح. سيتم تعيين فني قريباً" });
         }
 

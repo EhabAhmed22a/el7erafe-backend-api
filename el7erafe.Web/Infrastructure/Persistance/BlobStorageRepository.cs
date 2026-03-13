@@ -58,7 +58,7 @@ namespace Persistance
 
                 var fileExtension = Path.GetExtension(file.FileName);
                 var fileName = customFileNames is not null
-                    ? $"{customFileNames}_{i + 1}{fileExtension}"
+                    ? $"{customFileNames}_{i+1}{fileExtension}"
                     : $"{Guid.NewGuid()}{fileExtension}";
 
                 var blobClient = containerClient.GetBlobClient(fileName);
@@ -244,5 +244,97 @@ namespace Persistance
             return result;
         }
 
+        public async Task<int> CountBlobsWithPrefixAsync(string containerName, string prefix)
+        {
+            var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+            int count = 0;
+
+            // ✅ CORRECT - using GetBlobsOptions object
+            var options = new GetBlobsOptions
+            {
+                Prefix = prefix
+            };
+
+            await foreach (var blobItem in containerClient.GetBlobsAsync(options))
+            {
+                count++;
+            }
+
+            return count;
+        }
+
+        public async Task<List<string>> GetBlobUrlsWithPrefixAsync(
+            string containerName,
+            string prefix,
+            int expiryHours = 1)
+        {
+            var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+            var urls = new List<string>();
+            var expiryTime = DateTimeOffset.UtcNow.AddHours(expiryHours);
+
+            UserDelegationKey? userDelegationKey = null;
+            if (!_env.IsDevelopment())
+            {
+                userDelegationKey = await _userDelegationKeyCache.GetUserDelegationKeyAsync();
+            }
+
+            // ✅ CORRECT - using GetBlobsOptions object
+            var options = new GetBlobsOptions
+            {
+                Prefix = prefix
+            };
+
+            await foreach (var blobItem in containerClient.GetBlobsAsync(options))
+            {
+                var blobClient = containerClient.GetBlobClient(blobItem.Name);
+
+                var sasBuilder = new BlobSasBuilder
+                {
+                    BlobContainerName = containerName,
+                    BlobName = blobItem.Name,
+                    Resource = "b",
+                    ExpiresOn = expiryTime
+                };
+                sasBuilder.SetPermissions(BlobSasPermissions.Read);
+
+                Uri sasUri;
+                if (_env.IsDevelopment())
+                {
+                    sasUri = blobClient.GenerateSasUri(sasBuilder);
+                }
+                else
+                {
+                    sasUri = blobClient.GenerateUserDelegationSasUri(sasBuilder, userDelegationKey!);
+                }
+
+                urls.Add(sasUri.ToString());
+            }
+
+            return urls;
+        }
+
+        public async Task<int> DeleteBlobsWithPrefixAsync(string containerName, string prefix)
+        {
+            var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+            int deletedCount = 0;
+
+            var options = new GetBlobsOptions
+            {
+                Prefix = prefix
+            };
+
+            await foreach (var blobItem in containerClient.GetBlobsAsync(options))
+            {
+                var blobClient = containerClient.GetBlobClient(blobItem.Name);
+                var result = await blobClient.DeleteIfExistsAsync();
+
+                if (result.Value)
+                {
+                    deletedCount++;
+                }
+            }
+
+            return deletedCount;
+        }
     }
 }

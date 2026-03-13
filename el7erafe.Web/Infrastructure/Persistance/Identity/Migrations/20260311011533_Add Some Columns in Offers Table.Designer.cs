@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Persistance.Databases;
 
@@ -11,9 +12,11 @@ using Persistance.Databases;
 namespace Persistance.Identity.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260311011533_Add Some Columns in Offers Table")]
+    partial class AddSomeColumnsinOffersTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -460,36 +463,6 @@ namespace Persistance.Identity.Migrations
                     b.ToTable("Technicians", (string)null);
                 });
 
-            modelBuilder.Entity("DomainLayer.Models.IdentityModule.TechnicianAvailability", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("DayOfWeek")
-                        .HasColumnType("int");
-
-                    b.Property<TimeOnly>("FromTime")
-                        .HasColumnType("time");
-
-                    b.Property<int>("TechnicianId")
-                        .HasColumnType("int");
-
-                    b.Property<TimeOnly>("ToTime")
-                        .HasColumnType("time");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TechnicianId", "DayOfWeek");
-
-                    b.ToTable("TechnicianAvailabilities", null, t =>
-                        {
-                            t.HasCheckConstraint("CK_TechnicianAvailability_TimeRange", "[FromTime] < [ToTime]");
-                        });
-                });
-
             modelBuilder.Entity("DomainLayer.Models.IdentityModule.TechnicianService", b =>
                 {
                     b.Property<int>("Id")
@@ -820,17 +793,6 @@ namespace Persistance.Identity.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("DomainLayer.Models.IdentityModule.TechnicianAvailability", b =>
-                {
-                    b.HasOne("DomainLayer.Models.IdentityModule.Technician", "Technician")
-                        .WithMany("Availability")
-                        .HasForeignKey("TechnicianId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Technician");
-                });
-
             modelBuilder.Entity("DomainLayer.Models.IdentityModule.UserToken", b =>
                 {
                     b.HasOne("DomainLayer.Models.IdentityModule.ApplicationUser", "User")
@@ -949,8 +911,6 @@ namespace Persistance.Identity.Migrations
 
             modelBuilder.Entity("DomainLayer.Models.IdentityModule.Technician", b =>
                 {
-                    b.Navigation("Availability");
-
                     b.Navigation("Offers");
 
                     b.Navigation("Rejection");

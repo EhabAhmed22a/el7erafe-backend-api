@@ -9,6 +9,7 @@ namespace Shared.DataTransferObject.ChatDTOs
         public string ReceiverId { get; set; } = default!;
         public string Content { get; set; } = default!;
         public DateTime CreatedAt { get; set; }
-        public string IsRead { get; set; } = default!;
+        public string MessageType { get; set; } = default!;
+        public string MessageStatus { get; set; } = default!;
     }
 }

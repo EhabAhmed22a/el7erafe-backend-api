@@ -60,6 +60,7 @@ namespace Service.Chat
 
         public async Task<MessageDto> SendMessageAsync(SendMessageDto messageDto, int chatId, string senderId)
         {
+            var messageType = ParseMessageType(messageDto.MessageType);
 
             var domainMessage = new Message
             {
@@ -67,7 +68,7 @@ namespace Service.Chat
                 SenderId = senderId,
                 ReceiverId = messageDto.ReceiverId,
                 Content = messageDto.Content,
-                Type = MessageType.Text,
+                Type = messageType,
                 CreatedAt = DateTime.UtcNow,
                 Status = MessageStatus.Sent,
             };
@@ -84,7 +85,8 @@ namespace Service.Chat
                 ReceiverId = created.ReceiverId,
                 Content = created.Content,
                 CreatedAt = created.CreatedAt,
-                IsRead = MessageStatus.Sent.ToString() 
+                MessageType = created.Type.ToString(),
+                MessageStatus = created.Status.ToString()
             };
         }
 
@@ -99,13 +101,18 @@ namespace Service.Chat
                 ReceiverId = message.ReceiverId,
                 Content = message.Content,
                 CreatedAt = message.CreatedAt,
-                IsRead = message.Status.ToString()
+                MessageType = message.Type.ToString(),
+                MessageStatus = message.Status.ToString()
             });
         }
 
-        public async Task MarkMessagesAsReadAsync(int chatId, string userId)
+        public async Task<List<int>> MarkMessagesAsReadAsync(int chatId, string userId)
         {
-            await _chatRepository.MarkMessagesAsReadAsync(chatId, userId);
+            return await _chatRepository.MarkMessagesAsReadAsync(chatId, userId);
+        }
+        public async Task MarkAllMessagesAsDeliveredAsync(string userId)
+        {
+            await _chatRepository.MarkAllMessagesAsDeliveredAsync(userId);
         }
 
         public async Task<int> GetUnreadCountAsync(string userId)
@@ -198,6 +205,14 @@ namespace Service.Chat
 
             message.Status = newStatus;
             await _chatRepository.UpdateMessageAsync(message);
+        }
+
+        private MessageType ParseMessageType(string type)
+        {
+            if (!Enum.TryParse<MessageType>(type, true, out var result))
+                throw new Exception("Invalid message type");
+
+            return result;
         }
     }
 }

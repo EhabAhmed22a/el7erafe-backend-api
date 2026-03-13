@@ -30,6 +30,8 @@ namespace Service.Hubs
             }
 
             await _userConnectionRepository.AddConnectionAsync(userId, connectionId);
+            await _chatService.MarkAllMessagesAsDeliveredAsync(userId);
+            await Clients.Others.SendAsync("UserOnline", userId);
 
             await base.OnConnectedAsync();
         }
@@ -37,9 +39,22 @@ namespace Service.Hubs
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             var connectionId = Context.ConnectionId;
+            var userId = Context.UserIdentifier;
 
             // JUST remove connection from database - nothing else
             await _userConnectionRepository.RemoveConnectionAsync(connectionId);
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                var isStillOnline =
+                    await _userConnectionRepository.IsUserOnlineAsync(userId);
+
+                // 🔥 If no more connections, notify offline
+                if (!isStillOnline)
+                {
+                    await Clients.Others.SendAsync("UserOffline", userId);
+                }
+            }
 
             await base.OnDisconnectedAsync(exception);
         }
@@ -53,18 +68,25 @@ namespace Service.Hubs
             if (string.IsNullOrEmpty(senderId))
                 throw new HubException("Unauthorized");
 
-            var chat = await _chatService.GetOrCreateChatAsync(senderId,messageDto.ReceiverId);
+            var chat = await _chatService.GetOrCreateChatAsync(senderId, messageDto.ReceiverId);
 
-            // Save message to database
             var savedMessage = await _chatService.SendMessageAsync(messageDto, chat.Id, senderId);
 
-            // Send to receiver ONLY (if they're online)
             var receiverConnections = await _userConnectionRepository.GetUserConnectionsAsync(messageDto.ReceiverId);
 
-            if (receiverConnections.Any())
+            bool isDelivered = receiverConnections.Any();
+
+            if (isDelivered)
             {
                 await _chatService.UpdateMessageStatusAsync(savedMessage.Id,MessageStatus.Delivered);
-                savedMessage.IsRead = MessageStatus.Delivered.ToString();
+                savedMessage.MessageStatus = MessageStatus.Delivered.ToString();
+            }
+
+            await Clients.Caller.SendAsync("MessageSent", savedMessage);
+
+            if (isDelivered)
+            {
+                await Clients.Caller.SendAsync("MessageStatusUpdated",savedMessage.Id,MessageStatus.Delivered.ToString());
             }
 
             foreach (var connectionId in receiverConnections)
@@ -72,8 +94,8 @@ namespace Service.Hubs
                 await Clients.Client(connectionId).SendAsync("ReceiveMessage", savedMessage);
             }
 
-            // Send confirmation back to sender
-            await Clients.Caller.SendAsync("MessageSent", savedMessage);
+            await SendInboxUpdateToUser(messageDto.ReceiverId);
+            await SendInboxUpdateToUser(senderId);
         }
 
         public async Task MarkMessagesAsRead(int chatId, string otherUserId)
@@ -87,31 +109,39 @@ namespace Service.Hubs
             }
 
             // Mark messages as read
-            await _chatService.MarkMessagesAsReadAsync(chatId, userId);
+            var updatedMessageIds = await _chatService.MarkMessagesAsReadAsync(chatId, userId);
 
             // Notify the other user
-            var otherUserConnections = await _userConnectionRepository.GetUserConnectionsAsync(otherUserId);
-            foreach (var connectionId in otherUserConnections)
+            if (updatedMessageIds.Any())
             {
-                await Clients.Client(connectionId).SendAsync("MessagesRead", chatId, userId);
+                var otherUserConnections =
+                    await _userConnectionRepository.GetUserConnectionsAsync(otherUserId);
+
+                foreach (var connectionId in otherUserConnections)
+                {
+                    await Clients.Client(connectionId).SendAsync(
+                        "MessagesRead",
+                        chatId,
+                        updatedMessageIds,
+                        MessageStatus.Read.ToString()
+                    );
+                }
             }
+            await SendInboxUpdateToUser(userId);
+            await SendInboxUpdateToUser(otherUserId);
         }
 
         // ========== CHAT MANAGEMENT ==========
 
-        public async Task<ChatDto> GetOrCreateChat(string clientId, string technicianId)
+        public async Task<ChatDto> GetOrCreateChat(string receiverId)
         {
             var userId = Context.UserIdentifier;
 
-            // Verify user is either the client or technician
-            if (userId != clientId && userId != technicianId)
-            {
+            if (string.IsNullOrEmpty(userId))
                 throw new HubException("Unauthorized");
-            }
 
-            // JUST create/get chat - no broadcasting
-            return await _chatService.GetOrCreateChatAsync(clientId, technicianId);
-
+            // JUST create/get chat
+            return await _chatService.GetOrCreateChatAsync(userId, receiverId);
         }
 
         public async Task<IEnumerable<MessageDto>> GetChatHistory(int chatId, int page = 1, int pageSize = 50)
@@ -126,6 +156,20 @@ namespace Service.Hubs
             }
 
             return await _chatService.GetChatHistoryAsync(chatId, page, pageSize);
+        }
+
+        private async Task SendInboxUpdateToUser(string userId)
+        {
+            var inbox = await _chatService.GetInboxAsync(userId);
+
+            var connections = await _userConnectionRepository
+                .GetUserConnectionsAsync(userId);
+
+            foreach (var connectionId in connections)
+            {
+                await Clients.Client(connectionId)
+                    .SendAsync("InboxUpdated", inbox);
+            }
         }
     }
 }

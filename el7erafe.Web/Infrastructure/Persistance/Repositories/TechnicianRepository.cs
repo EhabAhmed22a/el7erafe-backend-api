@@ -39,6 +39,7 @@ namespace Persistance.Repositories
                 .Include(t => t.City)
                     .ThenInclude(c => c.Governorate)
                 .Include(t => t.Service)
+                .Include(t => t.Availability)
                 .FirstOrDefaultAsync(t => t.UserId == userId);
         }
 
@@ -67,7 +68,14 @@ namespace Persistance.Repositories
 
         public async Task<int> UpdateAsync(Technician technician)
         {
-            _context.Set<Technician>().Update(technician);
+            var existingTechnician = await _context.Set<Technician>()
+                .FirstOrDefaultAsync(t => t.Id == technician.Id);
+
+            if (existingTechnician is null)
+                return 0;
+
+            _context.Entry(existingTechnician).CurrentValues.SetValues(technician);
+
             return await _context.SaveChangesAsync();
         }
 
@@ -157,6 +165,7 @@ namespace Persistance.Repositories
                                .Include(t => t.City)
                                    .ThenInclude(c => c.Governorate)
                                .Include(t => t.Service)
+                               .Include(t => t.Availability)
                                .Where(t => t.ServiceId == serviceId 
                                 && t.Status == TechnicianStatus.Accepted
                                 && t.City.GovernorateId == governorateId);
