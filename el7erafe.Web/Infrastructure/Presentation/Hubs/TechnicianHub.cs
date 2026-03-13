@@ -1,12 +1,13 @@
-﻿using DomainLayer.Exceptions;
+﻿
+using DomainLayer.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using ServiceAbstraction;
 
 namespace Presentation.Hubs
 {
-    [Authorize(AuthenticationSchemes = "Bearer", Roles = "Client")]
-    public class ClientHub(IClientRealTimeService clientRealTimeService) : Hub
+    [Authorize(AuthenticationSchemes = "Bearer", Roles = "Technician")]
+    public class TechnicianHub(ITechnicianRealTimeService technicianRealTimeService): Hub
     {
         public override async Task OnConnectedAsync()
         {
@@ -15,14 +16,14 @@ namespace Presentation.Hubs
                 Context.Abort();
                 throw new UserNotFoundException("المستخدم غير موجود");
             }
-            await clientRealTimeService.AddUserConnectionAsync(Context.UserIdentifier, Context.ConnectionId);
+            await technicianRealTimeService.AddUserConnectionAsync(Context.UserIdentifier, Context.ConnectionId);
 
             await base.OnConnectedAsync();
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            await clientRealTimeService.RemoveConnectionAsync(Context.ConnectionId);
+            await technicianRealTimeService.RemoveConnectionAsync(Context.ConnectionId);
             await base.OnDisconnectedAsync(exception);
         }
     }

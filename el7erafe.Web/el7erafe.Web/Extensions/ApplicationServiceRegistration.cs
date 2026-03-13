@@ -34,7 +34,7 @@ namespace el7erafe.Web.Extensions
                         var path = context.HttpContext.Request.Path;
 
                         if (!string.IsNullOrEmpty(accessToken) &&
-                            path.StartsWithSegments("/chatHub") || path.StartsWithSegments("/clientHub"))
+                            (path.StartsWithSegments("/chatHub") || path.StartsWithSegments("/clientHub")|| path.StartsWithSegments("/technicianHub")))
                         {
                             context.Token = accessToken;
                         }

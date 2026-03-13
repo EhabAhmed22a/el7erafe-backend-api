@@ -15,7 +15,7 @@ namespace DomainLayer.Contracts
         Task<IEnumerable<int>> GetServiceRequestIdsByClientAsync(int clientId);
         Task<IEnumerable<int>> GetServiceRequestIdsByTechnicianAsync(int techId);
         Task<IEnumerable<ServiceRequest>> GetServiceRequestsByClientAsync(int clientId);
-        Task<IEnumerable<ServiceRequest>> GetNotResServiceRequestsByClientAsync(int clientId);
-        Task<IEnumerable<ServiceRequest>> GetServiceRequestsByTechnicianAsync(int techId);
+        Task<IEnumerable<ServiceRequest>> GetPendingServiceRequestsByClientAsync(int clientId);
+        Task<IEnumerable<ServiceRequest>> GetAvailableServiceRequestsByTechnicianAsync(int techId, int serId, int govId);
     }
 }

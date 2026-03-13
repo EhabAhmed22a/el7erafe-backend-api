@@ -3,7 +3,9 @@ using DomainLayer.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+using Presentation.Hubs;
 using ServiceAbstraction;
 using Shared.DataTransferObject.ClientIdentityDTOs;
 using Shared.DataTransferObject.LoginDTOs;
@@ -13,7 +15,7 @@ namespace Presentation.Controllers
 {
     [ApiController]
     [Route("api/auth")]
-    public class LoginController(ILoginService loginService, IClientAuthenticationService clientAuthenticationService, ILogger<LoginController> logger) : ControllerBase
+    public class LoginController(IHubContext<ClientHub> clientHub, IHubContext<TechnicianHub> technicianHub, ILoginService loginService, IClientAuthenticationService clientAuthenticationService, ILogger<LoginController> logger) : ControllerBase
     {
         /// <summary>
         /// Authenticates a user and returns JWT token with user information.
@@ -34,7 +36,12 @@ namespace Presentation.Controllers
         public async Task<ActionResult<UserDTO>> Login(LoginDTO loginDTO)
         {
             logger.LogInformation("[API] Login attempt for: {PhoneNumber}", loginDTO.PhoneNumber);
-            return Ok(await loginService.LoginAsync(loginDTO));
+            var user = await loginService.LoginAsync(loginDTO);
+            if (user.type.Equals("C"))
+                await clientHub.Clients.User(user.userId).SendAsync("ForceDisconnect");
+            else
+                await technicianHub.Clients.User(user.userId).SendAsync("ForceDisconnect");
+            return Ok(user);
         }
 
         /// <summary>
@@ -130,7 +137,7 @@ namespace Presentation.Controllers
 
             logger.LogInformation("[API] Calling loginService.ResetPasswordAsync for user: {UserId}", userId);
             await loginService.ResetPasswordAsync(resetPasswordDTO, userId, currentTime - tokenIssuedAt);
-            return Ok(new {message = "تم تغيير كلمة السر بنجاح. يمكنك الآن تسجيل الدخول"});
+            return Ok(new { message = "تم تغيير كلمة السر بنجاح. يمكنك الآن تسجيل الدخول" });
         }
     }
 }

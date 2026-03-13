@@ -125,6 +125,7 @@ namespace el7erafe.Web
 
             app.MapHub<ChatHub>("/chatHub");
             app.MapHub<ClientHub>("/clientHub");
+            app.MapHub<TechnicianHub>("/technicianHub");
             app.MapControllers();
             #endregion
 

@@ -2,6 +2,7 @@
 using DomainLayer.Exceptions;
 using DomainLayer.Models;
 using DomainLayer.Models.IdentityModule;
+using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.AspNetCore.Identity;
 using Service.Helpers;
 using ServiceAbstraction;
@@ -44,7 +45,7 @@ namespace Service
             return result;
         }
 
-        public async Task ServiceRequest(ServiceRequestRegDTO regDTO, string userId)
+        public async Task<BroadCastServiceRequestDTO> ServiceRequest(ServiceRequestRegDTO regDTO, string userId)
         {
             if (regDTO.AllDayAvailability)
             {
@@ -87,13 +88,18 @@ namespace Service
             if (city is null)
                 throw new CityNotFoundException(regDTO.CityName ?? "");
 
-            if (!await servicesRepository.ExistsAsync(regDTO.ServiceId))
-                throw new TechnicalException();
+            var service = await servicesRepository.GetByIdAsync(regDTO.ServiceId);
+            if (service is null) throw new TechnicalException();
 
             if (regDTO.TechnicianId is not null)
             {
-                if (await technicianRepository.GetByIdAsync((int)regDTO.TechnicianId) is null)
+                var technician = await technicianRepository.GetByIdAsync((int)regDTO.TechnicianId);
+                if (technician is null)
                     throw new UserNotFoundException("الفني المحدد غير موجود");
+
+                var gov = await cityRepository.GetGovernateByCityId(city.Id);
+                if (gov is null || technician.City.GovernorateId != gov.Id)
+                    throw new TechnicalException();
             }
 
             int clientId = client.Id;
@@ -114,14 +120,17 @@ namespace Service
                 AvailableTo = regDTO.AvailableTo,
                 CreatedAt = DateTime.UtcNow,
                 ClientId = clientId,
-                TechnicianId = regDTO.TechnicianId
+                TechnicianId = regDTO.TechnicianId,
+                Status = ServiceReqStatus.Pending
             };
+            ServiceRequest? createdRequest = null;
+            bool noImages = !(regDTO.Images is not null && regDTO.Images.Count > 0);
 
-            if (!(regDTO.Images is not null && regDTO.Images.Count > 0))
+            if (noImages)
             {
                 try
                 {
-                    await serviceRequestRepository.CreateAsync(serviceReq);
+                    createdRequest = await serviceRequestRepository.CreateAsync(serviceReq);
                 }
                 catch
                 {
@@ -134,12 +143,12 @@ namespace Service
                 await unitOfWork.BeginTransactionAsync();
                 try
                 {
-                    var serviceRequest = await serviceRequestRepository.CreateAsync(serviceReq);
+                    createdRequest = await serviceRequestRepository.CreateAsync(serviceReq);
 
                     await blobStorageRepository.UploadMultipleFilesAsync(
-                       regDTO.Images,
+                       regDTO.Images!,
                        "service-requests-images",
-                       $"{serviceRequest.Id}_{Guid.NewGuid()}");
+                       $"{createdRequest.Id}_{Guid.NewGuid()}");
 
                     await unitOfWork.CommitTransactionAsync();
                 }
@@ -159,6 +168,35 @@ namespace Service
                     throw new TechnicalException();
                 }
             }
+            List<string> serviceURLs = new List<string>();
+            if (!noImages)
+            {
+                serviceURLs = await blobStorageRepository.GetBlobUrlsWithPrefixAsync("service-requests-images", $"{createdRequest.Id}_");
+            }
+
+            string? clientImageURL = null;
+            if (client.ImageURL is not null)
+                clientImageURL = await blobStorageRepository.GetBlobUrlWithSasTokenAsync("client-profilepics", client.ImageURL);
+
+            return new BroadCastServiceRequestDTO()
+            {
+                requestId = createdRequest.Id,
+                clientName = client.Name,
+                clientImage = clientImageURL,
+                day = createdRequest.ServiceDate,
+                clientTimeInterval = HelperClass.FormatArabicTimeInterval(createdRequest.AvailableFrom, createdRequest.AvailableTo),
+                serviceType = service?.NameAr,
+                description = createdRequest.Description,
+                serviceImages = serviceURLs,
+                governorate = city.Governorate?.NameAr,
+                city = city.NameAr,
+                street = createdRequest.Street,
+                specialSign = createdRequest.SpecialSign,
+                From = createdRequest.AvailableFrom,
+                To = createdRequest.AvailableTo,
+                GovernorateId = city.GovernorateId,
+                ServiceId = createdRequest.ServiceId
+            };
         }
 
         public async Task DeleteAccount(string userId)
@@ -425,6 +463,55 @@ namespace Service
             {
                 Message = "تم إعادة إرسال الرمز إلى بريدك الإلكتروني الجديد."
             };
+        }
+
+        public async Task<List<ServiceRequestDTO>> GetPendingServiceRequestsAsync(string userId)
+        {
+            var user = await clientRepository.GetByUserIdAsync(userId);
+            if (user is null)
+                throw new UserNotFoundException("المستخدم غير موجود");
+            try
+            {
+                var notReservedRequests = await serviceRequestRepository.GetPendingServiceRequestsByClientAsync(user.Id);
+
+                var mappingTasks = notReservedRequests.Select(async sr =>
+                {
+                    string? imageUrl = null;
+                    if (!string.IsNullOrWhiteSpace(sr.Technician?.ProfilePictureURL))
+                    {
+                        imageUrl = await blobStorageRepository.GetBlobUrlWithSasTokenAsync("technician-documents", sr.Technician.ProfilePictureURL);
+                    }
+                    return new ServiceRequestDTO
+                    {
+                        requestId = sr.Id,
+                        isQuickReserve = sr.TechnicianId is null,
+                        day = sr.ServiceDate,
+                        serviceType = sr.Service?.NameAr ?? "غير معروف",
+
+                        numberOfOffers = sr.Offers.Count,
+                        clientTimeInterval = HelperClass.FormatArabicTimeInterval(sr.AvailableFrom, sr.AvailableTo),
+
+                        techName = sr.Technician?.Name,
+                        techImage = imageUrl,
+
+                        offerId = sr.Offers?.FirstOrDefault()?.Id,
+                        fees = sr.Offers?.FirstOrDefault()?.Fees,
+
+                        techTimeInterval = HelperClass.FormatArabicTimeInterval(
+                            sr.Offers?.FirstOrDefault()?.WorkFrom,
+                            sr.Offers?.FirstOrDefault()?.WorkTo
+                        ),
+
+                        numberOfDays = sr.Offers?.FirstOrDefault()?.NumberOfDays ?? 1
+                    };
+                });
+
+                return (await Task.WhenAll(mappingTasks)).ToList();
+            }
+            catch
+            {
+                throw new TechnicalException();
+            }
         }
 
         private async Task<Client> CheckUser(string userId)
