@@ -28,7 +28,7 @@ namespace Persistance.Repositories
         }
         public async Task<City?> GetCityByNameAsync(string cityName)
         {
-            return await dbContext.Set<City>().FirstOrDefaultAsync(c => c.NameAr == cityName);
+            return await dbContext.Set<City>().Include(c => c.Governorate).FirstOrDefaultAsync(c => c.NameAr == cityName);
         }
     }
 }

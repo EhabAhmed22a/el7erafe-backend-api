@@ -8,6 +8,7 @@ using Service.Helpers;
 using ServiceAbstraction;
 using Shared.DataTransferObject.ClientIdentityDTOs;
 using Shared.DataTransferObject.OtpDTOs;
+using Shared.DataTransferObject.ServiceRequestDTOs;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
 using Shared.DataTransferObject.UpdateDTOs;
 
@@ -299,6 +300,59 @@ namespace Service
             {
                 await unitOfWork.RollbackTransactionAsync();
                 throw;
+            }
+        }
+
+
+        public async Task<List<BroadCastServiceRequestDTO>> GetAvailableRequests(string userId)
+        {
+            var user = await CheckUser(userId);
+
+            var availableRequests = await serviceRequestRepository.GetAvailableServiceRequestsByTechnicianAsync(user.Id, user.ServiceId, user.City.GovernorateId);
+
+            var mappingTasks = availableRequests.Select(async req =>
+            {
+                List<string> serviceURLs = await blobStorageRepository.GetBlobUrlsWithPrefixAsync("service-requests-images", $"{req.Id}_");
+
+                string? clientImageURL = null;
+                if (!string.IsNullOrEmpty(req.Client?.ImageURL))
+                {
+                    clientImageURL = await blobStorageRepository.GetBlobUrlWithSasTokenAsync("client-profilepics", req.Client.ImageURL);
+                }
+
+                return new BroadCastServiceRequestDTO()
+                {
+                    requestId = req.Id,
+                    clientName = req.Client?.Name,
+                    clientImage = clientImageURL,
+                    day = req.ServiceDate,
+                    clientTimeInterval = HelperClass.FormatArabicTimeInterval(req.AvailableFrom, req.AvailableTo),
+                    serviceType = req.Service?.NameAr,
+                    description = req.Description,
+                    serviceImages = serviceURLs,
+                    governorate = req.City?.Governorate?.NameAr,
+                    city = req.City?.NameAr,
+                    street = req.Street,
+                    specialSign = req.SpecialSign,
+                    From = req.AvailableFrom,
+                    To = req.AvailableTo,
+                    GovernorateId = req.City?.GovernorateId ?? 0,
+                    ServiceId = req.ServiceId
+                };
+            });
+
+            return (await Task.WhenAll(mappingTasks)).ToList();
+        }
+
+        public async Task<Technician?> GetTechnicianByIdAsync(int techId)
+        {
+            try
+            {
+                return await technicianRepository.GetByIdAsync(techId);
+            }
+            catch
+            {
+                throw new TechnicalException();
             }
         }
 

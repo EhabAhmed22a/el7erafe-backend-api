@@ -1,6 +1,7 @@
 ﻿using DomainLayer.Contracts;
 using DomainLayer.Models;
 using DomainLayer.Models.IdentityModule;
+using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.EntityFrameworkCore;
 using Persistance.Databases;
 
@@ -96,16 +97,47 @@ namespace Persistance.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<ServiceRequest>> GetServiceRequestsByTechnicianAsync(int techId)
+        public async Task<IEnumerable<ServiceRequest>> GetAvailableServiceRequestsByTechnicianAsync(int techId, int serviceId, int govId)
         {
-            return await dbContext
-                .Set<ServiceRequest>()
-                .Where(sr => sr.TechnicianId == techId)
-                .Include(s => s.Offers)
+            var techSchedule = await dbContext.Set<TechnicianAvailability>()
+                .Where(ta => ta.TechnicianId == techId)
                 .ToListAsync();
+
+            var potentialRequests = await dbContext.Set<ServiceRequest>()
+                .Include(sr => sr.Technician)
+                .Include(s => s.Offers)
+                .Include(s => s.Service)
+                .Include(s => s.Client)
+                .Include(s => s.City)
+                    .ThenInclude(c => c.Governorate)
+                .Where(sr =>
+                    sr.Status == ServiceReqStatus.Pending &&
+                    (
+                        (sr.TechnicianId == techId) // Direct requests
+                        ||
+                        (sr.TechnicianId == null && sr.ServiceId == serviceId && sr.City.GovernorateId == govId) // Quick Reserves
+                    )
+                )
+                .ToListAsync();
+
+            var validRequests = potentialRequests.Where(sr =>
+            {
+                if (sr.TechnicianId == techId) return true;
+
+                var requestDayInt = (int)sr.ServiceDate.DayOfWeek;
+
+                return techSchedule.Any(ta =>
+                    (ta.DayOfWeek == null || (int)ta.DayOfWeek == requestDayInt) &&
+                    ((sr.AvailableFrom == null && sr.AvailableTo == null)
+                        ||
+                        (sr.AvailableFrom <= ta.ToTime && sr.AvailableTo >= ta.FromTime))
+                );
+            }).ToList();
+
+            return validRequests;
         }
 
-        public async Task<IEnumerable<ServiceRequest>> GetNotResServiceRequestsByClientAsync(int clientId)
+        public async Task<IEnumerable<ServiceRequest>> GetPendingServiceRequestsByClientAsync(int clientId)
         {
             return await dbContext
                 .Set<ServiceRequest>()
@@ -113,7 +145,7 @@ namespace Persistance.Repositories
                 .Include(s => s.Offers)
                 .Include(s => s.Service)
                 .Include(s => s.Technician)
-                .Where(s => !s.Offers.Any())
+                .Where(s => s.Status == ServiceReqStatus.Pending)
                 .ToListAsync();
         }
     }

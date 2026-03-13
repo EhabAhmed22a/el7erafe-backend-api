@@ -169,5 +169,15 @@ namespace Presentation.Controllers
 
             return Ok(result);
         }
+
+        [HttpGet("getavailablerequests")]
+        public async Task<IActionResult> GetAvailableRequests()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            return Ok(await technicianService.GetAvailableRequests(userId));
+        }
     }
 }

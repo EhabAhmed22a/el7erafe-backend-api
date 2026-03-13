@@ -21,6 +21,7 @@ namespace Persistance.Repositories
         {
             return await _context.Set<Technician>()
                 .Include(t => t.User)
+                .Include(t => t.City)
                 .FirstOrDefaultAsync(t => t.Id == id);
         }
 
@@ -28,6 +29,7 @@ namespace Persistance.Repositories
         {
             return await _context.Set<Technician>()
                 .Include(t => t.User)
+                .Include(t => t.City)
                 .FirstOrDefaultAsync(t => t.UserId == userId);
         }
 
