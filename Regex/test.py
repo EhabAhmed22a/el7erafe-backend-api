@@ -14,7 +14,11 @@ except Exception as e:
 # We test it on phrases it hasn't exactly seen, to ensure it learned the *pattern*
 tests = [
     {"text": "كلمني زيرو عشره ضروري", "expected": "__label__unsafe"},
-    {"text": "الشغل هياخد كام يوم يا هندسة", "expected": "__label__safe"}
+    {"text": "الشغل هياخد كام يوم يا هندسة", "expected": "__label__safe"},
+     {"text": "لما نتقابل اديني رقمك", "expected": "__label__unsafe"},
+      {"text": "يعم خلاص لما تيجي هبقي اديك نمرتي", "expected": "__label__unsafe"}
+     
+
 ]
 
 # 3. The Minimum Passing Grade

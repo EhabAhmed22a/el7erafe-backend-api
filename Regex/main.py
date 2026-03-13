@@ -69,7 +69,7 @@ async def moderate_text(request: ModerationRequest):
     confidence = float(predictions[1][0]) # e.g., 0.95
 
     # If the ML model is highly confident it's unsafe
-    if predicted_label == "__label__unsafe" and confidence > 0.80:
+    if predicted_label == "__label__unsafe" and confidence > 0.50:
         return {
             "is_safe": False, 
             "reason": "unsafe_intent_detected", 

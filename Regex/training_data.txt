@@ -49,3 +49,5 @@ __label__unsafe سجل رقمي عندك
 __label__unsafe كلمني على الاخضر
 __label__unsafe ابعتلي مسدج على الواتساب
 __label__unsafe بقولك ايه متيجي اديك رقمي ونتكلم
+__label__unsafe لما نتقابل اديني رقمك
+__label__unsafe لما نتقابل ادينيك نمرتي
