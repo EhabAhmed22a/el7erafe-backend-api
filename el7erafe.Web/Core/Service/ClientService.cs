@@ -268,12 +268,12 @@ namespace Service
                 return new List<AvailableTechnicianDto>();
 
             // FILTER BY AVAILABILITY
-            technicians = technicians
-                .Where(t => t.Availability.Any(a =>
-                    (a.DayOfWeek == null || (int)a.DayOfWeek == requestRegDTO.DayOfWeek) &&
-                    a.FromTime <= requestRegDTO.FromTime &&
-                    a.ToTime >= requestRegDTO.ToTime))
-                .ToList();
+            //technicians = technicians
+            //    .Where(t => t.Availability.Any(a =>
+            //        (a.DayOfWeek == null || (int)a.DayOfWeek == requestRegDTO.DayOfWeek) &&
+            //        a.FromTime <= requestRegDTO.FromTime &&
+            //        a.ToTime >= requestRegDTO.ToTime))
+            //    .ToList();
 
             if (!technicians.Any())
                 return new List<AvailableTechnicianDto>();
