@@ -5,6 +5,7 @@ namespace DomainLayer.Contracts
     public interface ITechnicianAvailabilityRepository
     {
         Task<TechnicianAvailability> CreateAsync(TechnicianAvailability availability);
+        Task CreateDefaultAvailabilityForTechnicianAsync(int technicianId);
         Task<TechnicianAvailability?> GetByIdAsync(int id);
         Task<IEnumerable<TechnicianAvailability>?> GetByTechnicianIdAsync(int technicianId);
         Task<int> UpdateAsync(TechnicianAvailability availability);
