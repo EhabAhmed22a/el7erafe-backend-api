@@ -1,16 +1,15 @@
 ﻿
-using System.Globalization;
 using DomainLayer.Contracts;
 using DomainLayer.Contracts.ChatModule;
 using DomainLayer.Exceptions;
 using DomainLayer.Models.ChatModule;
-using Service.Helpers;
 using ServiceAbstraction;
-using Shared.DataTransferObject.ServiceRequestDTOs;
 
 namespace Service
 {
-    public class ClientRealTimeService(IUserConnectionRepository userConnectionRepository) : IClientRealTimeService
+    public class TechnicianRealTimeService(IUserConnectionRepository userConnectionRepository,
+        ITechnicianRepository technicianRepository
+        ) : ITechnicianRealTimeService
     {
         public async Task<UserConnection> AddUserConnectionAsync(string userId, string connectionId)
         {
@@ -35,6 +34,5 @@ namespace Service
                 throw new TechnicalException();
             }
         }
-
     }
 }

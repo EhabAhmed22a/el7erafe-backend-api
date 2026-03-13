@@ -27,6 +27,7 @@ namespace Service
             services.AddScoped<ITechnicianService, TechnicianFlowService>();
             services.AddScoped<IClientRealTimeService, ClientRealTimeService>();
             services.AddScoped<ITechnicianAvailabilityService, TechnicianAvailabilityService>();
+            services.AddScoped<ITechnicianRealTimeService, TechnicianRealTimeService>();
             services.AddSignalR();
             return services;
         }

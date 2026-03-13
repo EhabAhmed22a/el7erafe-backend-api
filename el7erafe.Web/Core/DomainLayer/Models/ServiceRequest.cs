@@ -1,5 +1,6 @@
 ﻿
 using DomainLayer.Models.IdentityModule;
+using DomainLayer.Models.IdentityModule.Enums;
 
 namespace DomainLayer.Models
 {
@@ -22,5 +23,6 @@ namespace DomainLayer.Models
         public Client Client { get; set; } = default!;
         public int ClientId { get; set; }
         public ICollection<Offer> Offers { get; set; } = new List<Offer>();
+        public ServiceReqStatus Status { get; set; } = default!;
     }
 }

@@ -17,10 +17,12 @@ namespace Presentation.Controllers
     [Route("api")]
     [Authorize(AuthenticationSchemes = "Bearer", Roles = "Client")]
     public class ClientController(IClientService _clientService,
+        ITechnicianService technicianService,
         ILogger<ClientController> _logger,
         IChatService chatService,
         IHubContext<ClientHub> clientHub,
-        IClientRealTimeService clientRealTimeService) : ControllerBase
+        IHubContext<TechnicianHub> technicianHub,
+        ITechnicianAvailabilityService technicianAvailabilityService) : ControllerBase
     {
         [HttpGet("/cf/services")]
         public async Task<ActionResult<string>> GetServicesAsync()
@@ -39,10 +41,27 @@ namespace Presentation.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("المستخدم غير موجود");
 
-            await _clientService.ServiceRequest(requestRegDTO, userId);
-            var freshData = await clientRealTimeService.GetServiceRequestsAsync(userId);
-            await clientHub.Clients.User(userId).SendAsync("ReceivePendingRequests", freshData);
+            var newData = await _clientService.ServiceRequest(requestRegDTO, userId);
+            await clientHub.Clients.User(userId).SendAsync("ReceivePendingRequests", newData);
+
+            var targetTechs = await technicianAvailabilityService.GetAvailableTechnicianByUserIdsAsync(newData.ServiceId, newData.GovernorateId, newData.day ?? DateOnly.MinValue, newData.From, newData.To);
+            if (targetTechs.Any())
+            {
+                await technicianHub.Clients.Users(targetTechs).SendAsync("ReceiveNewQuickRequest", newData);
+            }
+
             return Ok(new { message = "تم إرسال طلب الخدمة بنجاح. سيتم تعيين فني قريباً" });
+        }
+
+        [HttpGet("cf/getpendingservicerequests")]
+        public async Task<IActionResult> GetPendingSerReq()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            return Ok(await _clientService.GetPendingServiceRequestsAsync(userId));
         }
 
         [HttpPost("cf/select_technician")]
@@ -53,7 +72,14 @@ namespace Presentation.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("المستخدم غير موجود");
 
-            await _clientService.ServiceRequest(requestRegDTO, userId);
+            var newData = await _clientService.ServiceRequest(requestRegDTO, userId);
+            await clientHub.Clients.User(userId).SendAsync("ReceivePendingRequests", newData);
+
+            if (requestRegDTO.TechnicianId.HasValue)
+            {
+                var technician = await technicianService.GetTechnicianByIdAsync((int) requestRegDTO.TechnicianId);
+                await technicianHub.Clients.User(technician?.User.Id!).SendAsync("ReceiveNewDirectRequest", newData);
+            }
             return Ok(new { message = "تم إرسال طلب الخدمة للفني المحدد. في انتظار قبوله" });
         }
 
@@ -109,11 +135,11 @@ namespace Presentation.Controllers
             bool hasImage = update.Image is not null && update.Image.Length > 0;
             string message;
             if (hasName && hasImage)
-                message = "تم تحديث الاسم و رقم الهاتف";
+                message = "تم تحديث الاسم و الصورة";
             else if (hasName)
                 message = "تم تحديث الاسم";
             else if (hasImage)
-                message = "تم تحديث رقم الهاتف";
+                message = "تم تحديث الصورة";
             else
                 message = "تم التحديث بنجاح";
             return Ok(new { message = message });
