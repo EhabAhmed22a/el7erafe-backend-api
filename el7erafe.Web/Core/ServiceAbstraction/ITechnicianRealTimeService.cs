@@ -1,11 +1,10 @@
 ﻿
 using DomainLayer.Models.ChatModule;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
-using Shared.DataTransferObject.ServiceRequestDTOs;
+using Shared.DataTransferObject.TechnicianIdentityDTOs;
 
 namespace ServiceAbstraction
 {
-    public interface IClientRealTimeService
+    public interface ITechnicianRealTimeService
     {
         Task<UserConnection> AddUserConnectionAsync(string userId, string connectionId);
         Task RemoveConnectionAsync(string connectionId);
