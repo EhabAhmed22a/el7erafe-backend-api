@@ -18,7 +18,10 @@ namespace Service
                 throw new TechNotFoundException(technicianId);
 
             if (blocks == null || !blocks.Any())
-                throw new ArgumentException("يجب إدخال فترة زمنية واحدة على الأقل");
+            {
+                await technicianAvailabilityRepository.DeleteByTechnicianIdAsync(technician.Id);
+                return [];
+            }
 
             ValidateSchedule(blocks);
 
@@ -43,7 +46,6 @@ namespace Service
 
             return created.Select(a => new TechnicianAvailabilityResponseDto
             {
-                Id = a.Id,
                 DayOfWeek = (int?)a.DayOfWeek,
                 FromTime = a.FromTime,
                 ToTime = a.ToTime
@@ -62,7 +64,6 @@ namespace Service
 
             return availabilities.Select(a => new TechnicianAvailabilityResponseDto
             {
-                Id = a.Id,
                 DayOfWeek = (int?)a.DayOfWeek,
                 FromTime = a.FromTime,
                 ToTime = a.ToTime
@@ -80,6 +81,9 @@ namespace Service
             // Validate time format (hours only)
             foreach (var block in blocks)
             {
+                if (block.FromTime >= block.ToTime)
+                    throw new Exception("وقت البداية يجب أن يكون قبل وقت النهاية");
+
                 if (block.FromTime.Minute != 0 || block.ToTime.Minute != 0 ||
                     block.FromTime.Second != 0 || block.ToTime.Second != 0)
                 {
@@ -94,7 +98,7 @@ namespace Service
                 for (int i = 1; i < ordered.Count; i++)
                 {
                     if (ordered[i].FromTime < ordered[i - 1].ToTime)
-                        throw new Exception("الفترات الزمنية المحددة متداخلة");
+                        throw new ArgumentException("الفترات الزمنية المحددة متداخلة");
                 }
             }
         }
