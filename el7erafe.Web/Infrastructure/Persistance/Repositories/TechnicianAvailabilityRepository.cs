@@ -15,6 +15,18 @@ namespace Persistance.Repositories
             return availability;
         }
 
+        public Task CreateDefaultAvailabilityForTechnicianAsync(int technicianId)
+        {
+            var defaultAvailability = new TechnicianAvailability
+            {
+                TechnicianId = technicianId,
+                DayOfWeek = null,
+                FromTime = TimeOnly.Parse("00:00:00"),
+                ToTime = TimeOnly.Parse("23:00:00")
+            };
+            return CreateAsync(defaultAvailability);
+        }
+
         public async Task<int> DeleteAsync(int id)
         {
             var availability = await dbContext.Set<TechnicianAvailability>().FindAsync(id);

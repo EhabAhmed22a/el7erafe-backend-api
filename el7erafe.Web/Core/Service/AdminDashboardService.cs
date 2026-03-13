@@ -17,7 +17,7 @@ namespace Service
         IRejectionCommentsRepository rejectionCommentsRepository,
         ILogger<AdminDashboardService> logger,
         IRejectionRepository rejectionRepository,
-        IUserTokenRepository userTokenRepository) : IAdminDashboardService
+        ITechnicianAvailabilityRepository technicianAvailabilityRepository) : IAdminDashboardService
     {
         public async Task<ClientListDTO> GetClientsAsync(int? pageNumber, int? pageSize)
         {
@@ -572,6 +572,8 @@ namespace Service
                 technician.Status = TechnicianStatus.Accepted;
                 await technicianRepository.UpdateAsync(technician);
                 logger.LogInformation("[SERVICE] Technician with user ID: {UserId} has been approved successfully", userId);
+                await technicianAvailabilityRepository.CreateDefaultAvailabilityForTechnicianAsync(technician.Id);
+                logger.LogInformation("[SERVICE] Default availability created for approved technician with user ID: {UserId}", userId);
             }
         }
         public async Task RejectTechnicianAsync(RejectTechDTO rejectTechDTO)

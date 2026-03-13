@@ -21,7 +21,11 @@ namespace Persistance.Repositories
         {
             return await _context.Set<Technician>()
                 .Include(t => t.User)
+                .Include(t => t.Rejection)
                 .Include(t => t.City)
+                    .ThenInclude(c => c.Governorate)
+                .Include(t => t.Service)
+                .Include(t => t.Availability)
                 .FirstOrDefaultAsync(t => t.Id == id);
         }
 
@@ -29,7 +33,11 @@ namespace Persistance.Repositories
         {
             return await _context.Set<Technician>()
                 .Include(t => t.User)
+                .Include(t => t.Rejection)
                 .Include(t => t.City)
+                    .ThenInclude(c => c.Governorate)
+                .Include(t => t.Service)
+                .Include(t => t.Availability)
                 .FirstOrDefaultAsync(t => t.UserId == userId);
         }
 
@@ -49,9 +57,11 @@ namespace Persistance.Repositories
         {
             return await _context.Set<Technician>()
                 .Include(t => t.User)
-                .Include(c => c.Service)
-                .Include(c => c.City)
-                    .ThenInclude(city => city.Governorate)
+                .Include(t => t.Rejection)
+                .Include(t => t.City)
+                    .ThenInclude(c => c.Governorate)
+                .Include(t => t.Service)
+                .Include(t => t.Availability)
                 .Where(t => t.Status != TechnicianStatus.Pending)
                 .ToListAsync();
         }
@@ -60,9 +70,11 @@ namespace Persistance.Repositories
         {
             return await _context.Set<Technician>()
                 .Include(t => t.User)
-                .Include(t => t.Service)
+                .Include(t => t.Rejection)
                 .Include(t => t.City)
-                    .ThenInclude(city => city.Governorate)
+                    .ThenInclude(c => c.Governorate)
+                .Include(t => t.Service)
+                .Include(t => t.Availability)
                 .OrderBy(t => t.User.CreatedAt)
                 .Where(t => t.Status == status)
                 .ToListAsync();
@@ -129,10 +141,12 @@ namespace Persistance.Repositories
         public async Task<IEnumerable<Technician>?> GetPagedAsync(int pageNumber, int pageSize)
         {
             return await context.Set<Technician>()
-                .Include(c => c.User)
-                .Include(c => c.Service)
-                .Include(c => c.City)
-                    .ThenInclude(city => city.Governorate)
+                .Include(t => t.User)
+                .Include(t => t.Rejection)
+                .Include(t => t.City)
+                    .ThenInclude(c => c.Governorate)
+                .Include(t => t.Service)
+                .Include(t => t.Availability)
                 .Where(t => t.Status != TechnicianStatus.Pending)
                 .OrderBy(c => c.User.CreatedAt)
                 .Skip((pageNumber - 1) * pageSize)
@@ -143,10 +157,12 @@ namespace Persistance.Repositories
         public async Task<IEnumerable<Technician>?> GetPagedByStatusAsync(TechnicianStatus status, int pageNumber, int pageSize)
         {
             return await context.Set<Technician>()
-                .Include(c => c.User)
-                .Include(c => c.Service)
-                .Include(c => c.City)
-                    .ThenInclude(city => city.Governorate)
+                .Include(t => t.User)
+                .Include(t => t.Rejection)
+                .Include(t => t.City)
+                    .ThenInclude(c => c.Governorate)
+                .Include(t => t.Service)
+                .Include(t => t.Availability)
                 .Where(c => c.Status == status)
                 .OrderBy(c => c.User.CreatedAt)
                 .Skip((pageNumber - 1) * pageSize)
