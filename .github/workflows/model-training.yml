@@ -41,7 +41,7 @@ jobs:
       - name: Run Strict QA Tests 🧪
         run: python test.py
 
-      # 6. Login to Azure
+        # 6. Login to Azure Container Registry (ACR)
       - name: Login to Azure Container Registry
         uses: azure/docker-login@v1
         with:
