@@ -1,4 +1,5 @@
 ﻿
+using DomainLayer.Models.IdentityModule;
 using Shared.DataTransferObject.ClientDTOs;
 using Shared.DataTransferObject.ClientIdentityDTOs;
 using Shared.DataTransferObject.OtpDTOs;
@@ -10,7 +11,8 @@ namespace ServiceAbstraction
     public interface IClientService
     {
         Task<ServiceListDto> GetClientServicesAsync();
-        Task ServiceRequest(ServiceRequestRegDTO requestRegDTO, string userId);
+        Task<BroadCastServiceRequestDTO> ServiceRequest(ServiceRequestRegDTO requestRegDTO, string userId);
+        Task<List<ServiceRequestDTO>> GetPendingServiceRequestsAsync(string userId);
         Task DeleteAccount(string userId);
         Task<ClientProfileDTO> GetProfileAsync(string userId);
         Task<List<AvailableTechnicianDto>> GetAvailableTechniciansAsync(GetAvailableTechniciansRequest requestRegDTO);

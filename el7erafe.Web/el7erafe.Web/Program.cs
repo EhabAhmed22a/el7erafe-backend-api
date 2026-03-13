@@ -3,6 +3,7 @@ using Azure.Storage.Blobs;
 using el7erafe.Web.CustomMiddleWares;
 using el7erafe.Web.Extensions;
 using el7erafe.Web.Filters;
+using Microsoft.AspNetCore.Authorization;
 using Persistance;
 using Presentation.Hubs;
 using Serilog;
@@ -120,11 +121,16 @@ namespace el7erafe.Web
                 app.UseSwaggerUI();
             }
             app.UseHttpsRedirection();
+            app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapHub<ChatHub>("/chatHub");
-            app.MapHub<ClientHub>("/clientHub");
+            app.MapHub<TechnicianHub>("/technicianHub")
+               .RequireAuthorization(new AuthorizeAttribute { Roles = "Technician" });
+
+            app.MapHub<ClientHub>("/clientHub")
+               .RequireAuthorization(new AuthorizeAttribute { Roles = "Client" });
             app.MapControllers();
             #endregion
 

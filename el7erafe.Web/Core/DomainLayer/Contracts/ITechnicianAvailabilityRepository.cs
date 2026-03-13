@@ -1,4 +1,6 @@
-﻿using DomainLayer.Models.IdentityModule;
+﻿using System.Threading.Tasks;
+using DomainLayer.Models.IdentityModule;
+using DomainLayer.Models.IdentityModule.Enums;
 
 namespace DomainLayer.Contracts
 {
@@ -11,6 +13,7 @@ namespace DomainLayer.Contracts
         Task<int> UpdateAsync(TechnicianAvailability availability);
         Task<bool> ExistsAsync(int id);
         Task<bool> ExistsForTechnicianAsync(int technicianId);
+        Task<ICollection<string>> GetAvailableTechsForRequestAsync(int serviceId, int govId, WeekDay date, TimeOnly? from, TimeOnly? to);
         Task<int> DeleteAsync(int id);
         Task<int> DeleteByTechnicianIdAsync(int technicianId);
     }

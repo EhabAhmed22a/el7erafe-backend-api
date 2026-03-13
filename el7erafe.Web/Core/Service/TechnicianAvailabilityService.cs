@@ -9,7 +9,8 @@ namespace Service
 {
     public class TechnicianAvailabilityService(
         ITechnicianAvailabilityRepository technicianAvailabilityRepository,
-        ITechnicianRepository technicianRepository) : ITechnicianAvailabilityService
+        ITechnicianRepository technicianRepository,
+        ICityRepository cityRepository) : ITechnicianAvailabilityService
     {
         public async Task<List<TechnicianAvailabilityResponseDto>> CreateScheduleAsync(string technicianId, List<AvailabilityBlockDto> blocks)
         {
@@ -68,6 +69,22 @@ namespace Service
                 FromTime = a.FromTime,
                 ToTime = a.ToTime
             }).ToList();
+        }
+
+        public async Task<List<string>> GetAvailableTechnicianByUserIdsAsync(int serviceId, int govId, DateOnly date, TimeOnly? from, TimeOnly? to)
+        {
+            try
+            {
+                var requestedDay = (WeekDay)date.DayOfWeek;
+
+                var availableTechs = await technicianAvailabilityRepository.GetAvailableTechsForRequestAsync(serviceId, govId, requestedDay, from, to);
+
+                return availableTechs.ToList();
+            }
+            catch
+            {
+                throw new TechnicalException();
+            }
         }
 
         private void ValidateSchedule(List<AvailabilityBlockDto> blocks)

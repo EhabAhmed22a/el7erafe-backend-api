@@ -1,5 +1,6 @@
 ﻿using DomainLayer.Contracts;
 using DomainLayer.Models.IdentityModule;
+using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.EntityFrameworkCore;
 using Persistance.Databases;
 
@@ -59,6 +60,34 @@ namespace Persistance.Repositories
         public async Task<bool> ExistsForTechnicianAsync(int technicianId)
         {
             return await dbContext.Set<TechnicianAvailability>().AnyAsync(ta => ta.TechnicianId == technicianId);
+        }
+
+        public async Task<ICollection<string>> GetAvailableTechsForRequestAsync(int serviceId, int govId, WeekDay date, TimeOnly? from, TimeOnly? to)
+        {
+            var query = dbContext.Set<TechnicianAvailability>()
+                .AsQueryable();
+
+            query = query.Where(a =>
+                a.Technician.City.Governorate.Id == govId &&
+                a.Technician.ServiceId == serviceId);
+
+
+            query = query.Where(a => a.DayOfWeek == date || a.DayOfWeek == null);
+
+            if (from.HasValue && to.HasValue)
+            {
+                var fromTime = from.Value;
+                var toTime = to.Value;
+                query = query.Where(a => fromTime <= a.ToTime && toTime >= a.FromTime);
+            }
+           
+            var availableIds = await query
+                .Where(a => !string.IsNullOrEmpty(a.Technician.User.Id))
+                .Select(a => a.Technician.User.Id)
+                .Distinct()
+                .ToListAsync();
+
+            return availableIds;
         }
 
         public async Task<TechnicianAvailability?> GetByIdAsync(int id)
