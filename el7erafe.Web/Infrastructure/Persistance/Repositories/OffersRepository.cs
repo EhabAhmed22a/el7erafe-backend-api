@@ -24,6 +24,34 @@ namespace Persistance.Repositories
                     o.ServiceRequestId == requestId);
         }
 
+        public async Task<IEnumerable<Offer>> GetValidQuickOffersForClientAsync(int serReqId, int clientId)
+        {
+            return await dbContext.Set<Offer>()
+                .Include(o => o.Technician)
+                .Include(o => o.ServiceRequest)
+                    .ThenInclude(sr => sr.Service)
+                .Where(o =>
+                    o.ServiceRequestId == serReqId &&
+                    o.ServiceRequest.ClientId == clientId && 
+                    o.ServiceRequest.Status == ServiceReqStatus.Pending
+                    && o.ServiceRequest.TechnicianId == null)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Offer>> GetValidTechOfferForClientsAsync(int serReqId, int clientId)
+        {
+            return await dbContext.Set<Offer>()
+                .Include(o => o.Technician)
+                .Include(o => o.ServiceRequest)
+                    .ThenInclude(sr => sr.Service)
+                .Where(o =>
+                    o.ServiceRequestId == serReqId &&
+                    o.ServiceRequest.ClientId == clientId &&
+                    o.ServiceRequest.Status == ServiceReqStatus.Pending
+                    && o.ServiceRequest.TechnicianId != null)
+                .ToListAsync();
+        }
+
         public async Task<bool> HasTimeConflict(int technicianId, TimeOnly fromTime, TimeOnly toTime, DateOnly serviceDate, int? numberOfDays)
         {
             var endDate = numberOfDays.HasValue

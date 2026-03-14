@@ -348,7 +348,7 @@ namespace Service
             return (await Task.WhenAll(mappingTasks)).ToList();
         }
 
-        public async Task<string?> DeclineRequestAsync(string userId, CancelReqDTO cancelReqDTO)
+        public async Task<string?> DeclineRequestAsync(string userId, ReqIdDTO cancelReqDTO)
         {
             var user = await CheckUser(userId);
 

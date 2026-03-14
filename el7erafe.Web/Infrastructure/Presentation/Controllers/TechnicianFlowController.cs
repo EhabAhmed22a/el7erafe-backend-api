@@ -188,7 +188,7 @@ namespace Presentation.Controllers
         }
 
         [HttpPatch("decline-request")]
-        public async Task<IActionResult> DeclineRequest(CancelReqDTO cancelReqDTO)
+        public async Task<IActionResult> DeclineRequest(ReqIdDTO cancelReqDTO)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
