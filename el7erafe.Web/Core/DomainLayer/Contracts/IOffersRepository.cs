@@ -8,6 +8,6 @@ namespace DomainLayer.Contracts
 
         Task<bool> HasTechnicianAlreadyOffered(int technicianId, int requestId);
 
-        Task<bool> HasTimeConflict(int technicianId, TimeSpan fromTime, TimeSpan toTime, DateTime serviceDate, int? numberOfDays);
+        Task<bool> HasTimeConflict(int technicianId, TimeOnly fromTime, TimeOnly toTime, DateOnly serviceDate, int? numberOfDays);
     }
 }

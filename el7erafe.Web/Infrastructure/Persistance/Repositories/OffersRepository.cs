@@ -1,6 +1,7 @@
 ﻿
 using DomainLayer.Contracts;
 using DomainLayer.Models;
+using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.EntityFrameworkCore;
 using Persistance.Databases;
 
@@ -23,9 +24,21 @@ namespace Persistance.Repositories
                     o.ServiceRequestId == requestId);
         }
 
-        public Task<bool> HasTimeConflict(int technicianId, TimeSpan fromTime, TimeSpan toTime, DateTime serviceDate, int? numberOfDays)
+        public async Task<bool> HasTimeConflict(int technicianId, TimeOnly fromTime, TimeOnly toTime, DateOnly serviceDate, int? numberOfDays)
         {
-            throw new NotImplementedException();
+            var endDate = numberOfDays.HasValue
+                ? serviceDate.AddDays(numberOfDays.Value)
+                : serviceDate;
+
+            return await dbContext.ServiceRequests
+                .Where(r =>
+                    r.TechnicianId == technicianId &&
+                    r.Status == ServiceReqStatus.Reserved &&
+                    r.ServiceDate >= serviceDate &&
+                    r.ServiceDate <= endDate)
+                .AnyAsync(r =>
+                    fromTime < r.AvailableTo &&
+                    toTime > r.AvailableFrom);
         }
     }
 }
