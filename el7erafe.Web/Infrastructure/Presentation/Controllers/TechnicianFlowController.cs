@@ -24,7 +24,9 @@ namespace Presentation.Controllers
         ITechnicianFlowService technicianService,
         IChatService chatService,
         IHubContext<ClientHub> clientHub,
-        ITechnicianAvailabilityService technicianAvailabilityService) : ControllerBase
+        ITechnicianAvailabilityService technicianAvailabilityService,
+        IOfferService offerService,
+        IClientService clientService) : ControllerBase
     {
         [HttpGet("profile")]
         public async Task<IActionResult> GetProfile()
@@ -198,5 +200,19 @@ namespace Presentation.Controllers
                                        .SendAsync("RequestRejected", cancelReqDTO.requestId);
             return Ok(new { message = "تم رفض الطلب" });
         }
+
+        [HttpPost("make-offer")]
+        public async Task<IActionResult> MakeOffer(MakeOfferDto dto) {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            var result = await offerService.MakeOfferAsync(dto, userId);
+            var client = await clientService.GetClientByIdAsync(result.ClientId);
+
+            await clientHub.Clients.User(client?.User.Id!)
+                .SendAsync("ReceiveNewOffer", result);
+
+            return Ok(new { message = "تم تقديم العرض بنجاح" }); }
     }
 }
