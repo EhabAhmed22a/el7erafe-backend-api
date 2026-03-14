@@ -21,7 +21,7 @@ namespace Presentation.Controllers
     [Route("api/tech")]
     [Authorize(AuthenticationSchemes = "Bearer", Roles = "Technician")]
     public class TechnicianFlowController(
-        ITechnicianService technicianService,
+        ITechnicianFlowService technicianService,
         IChatService chatService,
         ITechnicianAvailabilityService technicianAvailabilityService) : ControllerBase
     {
