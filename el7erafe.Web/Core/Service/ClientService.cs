@@ -522,6 +522,9 @@ namespace Service
             if (service is null)
                 throw new TechnicalException();
 
+            if (service.Status != ServiceReqStatus.Pending)
+                throw new RequestAlreadyCanceledException();
+
             string? techUserId = null;
             if (service.TechnicianId is not null)
                 techUserId = service.Technician?.UserId;

@@ -7,14 +7,14 @@ using Shared.DataTransferObject.UpdateDTOs;
 
 namespace ServiceAbstraction
 {
-    public interface ITechnicianService
+    public interface ITechnicianFlowService
     {
         Task<TechnicianProfileDTO> GetProfile(string userId);
         Task UpdateBasicInfo(string userId, UpdateTechnicianDTO updateTechnicianDTO);
         Task UpdatePhoneNumber (string userId, UpdatePhoneDTO updatePhoneDTO);
         Task<OtpResponseDTO> UpdatePendingEmail(string userId, UpdateEmailDTO updateEmailDTO);
         Task<Technician?> GetTechnicianByIdAsync(int techId);
-
+        Task<string?> DeclineRequestAsync(string userId, CancelReqDTO cancelReqDTO);
         Task<List<BroadCastServiceRequestDTO>> GetAvailableRequests(string userId);
         Task UpdateEmailAsync(string userId, OtpCodeDTO otpCode);
         Task<OtpResponseDTO> ResendOtpForPendingEmail(string userId);

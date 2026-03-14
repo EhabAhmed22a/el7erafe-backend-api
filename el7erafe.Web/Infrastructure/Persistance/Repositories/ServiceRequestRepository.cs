@@ -113,10 +113,13 @@ namespace Persistance.Repositories
                 .Where(sr =>
                     sr.Status == ServiceReqStatus.Pending &&
                     (
-                        (sr.TechnicianId == techId) // Direct requests
+                        (sr.TechnicianId == techId)
                         ||
-                        (sr.TechnicianId == null && sr.ServiceId == serviceId && sr.City.GovernorateId == govId) // Quick Reserves
+                        (sr.TechnicianId == null && sr.ServiceId == serviceId && sr.City.GovernorateId == govId)
                     )
+                    && !dbContext.Set<IgnoredServiceRequest>().Any(ignored =>
+                            ignored.TechnicianId == techId &&
+                            ignored.ServiceRequestId == sr.Id)
                 )
                 .ToListAsync();
 
@@ -148,6 +151,16 @@ namespace Persistance.Repositories
                 .Where(s => s.Status == ServiceReqStatus.Pending)
                 .ToListAsync();
         }
+
+        public async Task<bool> DeleteServiceRequestsByTechnicianIdAsync(int techId)
+        {
+            int deletedRows = await dbContext.Set<ServiceRequest>()
+                                     .Where(sr => sr.TechnicianId == techId)
+                                     .ExecuteDeleteAsync();
+
+            return deletedRows > 0;
+        }
+
     }
 
     public static class TimeOnlyExtensions
