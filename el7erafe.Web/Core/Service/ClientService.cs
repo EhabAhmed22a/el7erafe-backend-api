@@ -103,7 +103,7 @@ namespace Service
             }
 
             int clientId = client.Id;
-            if (await serviceRequestRepository.IsServiceAlreadyReq(clientId, regDTO.ServiceId))
+            if (await serviceRequestRepository.IsServicePending(clientId, regDTO.ServiceId))
                 throw new ServiceAlreadyRequestedException();
 
             //******Still some Logic to be added after Implementing Reservations in the application******//
@@ -514,9 +514,33 @@ namespace Service
             }
         }
 
-        public async Task<Client?> GetClientByIdAsync(int clientId)
-        {     
-            return await clientRepository.GetByIdAsync(clientId);
+        public async Task<string?> CancelRequestAsync(string userId, CancelReqDTO reqDTO)
+        {
+            var user = await CheckUser(userId);
+
+            var service = await serviceRequestRepository.GetServiceById(reqDTO.requestId);
+            if (service is null)
+                throw new TechnicalException();
+
+            if (service.Status != ServiceReqStatus.Pending)
+                throw new RequestAlreadyCanceledException();
+
+            string? techUserId = null;
+            if (service.TechnicianId is not null)
+                techUserId = service.Technician?.UserId;
+
+            service.Status = ServiceReqStatus.Canceled;
+
+            try
+            {
+                if (!await serviceRequestRepository.UpdateAsync(service))
+                    throw new TechnicalException();
+            }
+            catch
+            {
+                throw new TechnicalException();
+            }
+            return techUserId;
         }
 
         private async Task<Client> CheckUser(string userId)

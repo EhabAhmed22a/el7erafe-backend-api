@@ -22,6 +22,7 @@ namespace Persistance.Databases
         public DbSet<RejectionComment> rejectionComments { get; set; }
         public DbSet<ServiceRequest> ServiceRequests { get; set; }
         public DbSet<UserConnection> UserConnections { get; set; }
+        public DbSet<IgnoredServiceRequest> IgnoredServiceRequests { get; set; }
         public DbSet<Offer> Offers { get; set; }
         public DbSet<Chat> Chats { get; set; }
         public DbSet<Message> Messages { get; set; }
@@ -37,6 +38,7 @@ namespace Persistance.Databases
             builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles");
             builder.Entity<Governorate>().ToTable("Governorates");
             builder.Entity<TechnicianService>().ToTable("TechnicianServices");
+            builder.Entity<IgnoredServiceRequest>().ToTable("IgnoredServiceRequests");
             builder.Entity<City>().ToTable("Cities");
             builder.Entity<Offer>().ToTable("Offers");
             builder.Entity<Admin>().ToTable("Admins");
@@ -285,6 +287,19 @@ namespace Persistance.Databases
                         "[FromTime] < [ToTime]"
                     );
                 });
+            });
+
+            builder.Entity<IgnoredServiceRequest>(entity =>
+            {
+                entity.HasOne(i => i.ServiceRequest)
+                    .WithMany()
+                    .HasForeignKey(i => i.ServiceRequestId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(i => i.Technician)
+                    .WithMany()
+                    .HasForeignKey(i => i.TechnicianId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }
