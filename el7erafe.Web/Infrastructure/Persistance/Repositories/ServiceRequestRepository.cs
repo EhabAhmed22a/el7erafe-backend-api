@@ -31,11 +31,11 @@ namespace Persistance.Repositories
                     .AnyAsync(sr => sr.ClientId == clientId && sr.AvailableFrom.OverlapsWith(sr.AvailableTo, AvailableFrom, AvailableTo) && sr.ServiceDate == Date);
         }
 
-        public async Task<bool> IsServiceAlreadyReq(int? clientId, int? serviceId)
+        public async Task<bool> IsServicePending(int? clientId, int? serviceId)
         {
             return await dbContext
                 .Set<ServiceRequest>()
-                .AnyAsync(sr => sr.ClientId == clientId && sr.ServiceId == serviceId);
+                .AnyAsync(sr => sr.ClientId == clientId && sr.ServiceId == serviceId && sr.Status == ServiceReqStatus.Pending);
         }
 
         public async Task<ServiceRequest> CreateAsync(ServiceRequest serviceRequest)
