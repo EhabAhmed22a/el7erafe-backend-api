@@ -22,5 +22,6 @@ namespace ServiceAbstraction
         Task UpdateEmailAsync(string userId, OtpCodeDTO otpCode);
         Task<string?> CancelRequestAsync(string userId, CancelReqDTO reqDTO);
         Task<OtpResponseDTO> ResendOtpForPendingEmail(string userId);
+        Task<Client?> GetClientByIdAsync(int clientId);
     }
 }
