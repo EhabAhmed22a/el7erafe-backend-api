@@ -2,8 +2,11 @@
 using Azure;
 using DomainLayer.Contracts;
 using DomainLayer.Exceptions;
+using DomainLayer.Models;
 using DomainLayer.Models.IdentityModule;
+using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using Service.Helpers;
 using ServiceAbstraction;
 using Shared.DataTransferObject.ClientIdentityDTOs;
@@ -16,9 +19,10 @@ namespace Service
 {
     public class TechnicianFlowService(ITechnicianRepository technicianRepository, IBlobStorageRepository blobStorageRepository,
         IUnitOfWork unitOfWork,
+        IIgnoredServiceRequestsRepository ignoredServiceRequestsRepository,
         OtpHelper otpHelper,
         UserManager<ApplicationUser> userManager,
-        IServiceRequestRepository serviceRequestRepository) : ITechnicianService
+        IServiceRequestRepository serviceRequestRepository) : ITechnicianFlowService
     {
         public async Task<TechnicianProfileDTO> GetProfile(string userId)
         {
@@ -264,7 +268,7 @@ namespace Service
         {
             var technician = await CheckUser(userId);
 
-            //await CheckReservations() - will be added later
+            // await CheckReservations() - will be added later
 
             await unitOfWork.BeginTransactionAsync();
 
@@ -272,10 +276,11 @@ namespace Service
             {
                 var serviceRequestIds = await serviceRequestRepository.GetServiceRequestIdsByTechnicianAsync(technician.Id);
 
-                foreach (var srId in serviceRequestIds)
-                {
-                    await serviceRequestRepository.DeleteAsync(srId);
-                }
+                if (!await serviceRequestRepository.DeleteServiceRequestsByTechnicianIdAsync(technician.Id))
+                    throw new TechnicalException();
+
+                if (!await ignoredServiceRequestsRepository.DeleteAllByTechnicianId(technician.Id))
+                    throw new TechnicalException();
 
                 int deleted = await technicianRepository.DeleteAsync(userId);
                 if (deleted == 0)
@@ -283,18 +288,21 @@ namespace Service
 
                 await unitOfWork.CommitTransactionAsync();
 
+                var blobDeleteTasks = new List<Task>();
 
                 foreach (var srId in serviceRequestIds)
                 {
-                    await blobStorageRepository.DeleteBlobsWithPrefixAsync("service-requests-images", $"{srId}_");
+                    blobDeleteTasks.Add(blobStorageRepository.DeleteBlobsWithPrefixAsync("service-requests-images", $"{srId}_"));
                 }
 
-                await blobStorageRepository.DeleteFileAsync(technician.CriminalHistoryURL, "technician-documents");
-                await blobStorageRepository.DeleteFileAsync(technician.NationalIdBackURL, "technician-documents");
-                await blobStorageRepository.DeleteFileAsync(technician.NationalIdFrontURL, "technician-documents");
-                await blobStorageRepository.DeleteFileAsync(technician.ProfilePictureURL, "technician-documents");
-                if (await blobStorageRepository.CountBlobsWithPrefixAsync("technician-documents", $"portifolioImages_{technician.Id}_") > 0)
-                    await blobStorageRepository.DeleteBlobsWithPrefixAsync("technician-documents", $"portifolioImages_{technician.Id}_");
+                blobDeleteTasks.Add(blobStorageRepository.DeleteFileAsync(technician.CriminalHistoryURL, "technician-documents"));
+                blobDeleteTasks.Add(blobStorageRepository.DeleteFileAsync(technician.NationalIdBackURL, "technician-documents"));
+                blobDeleteTasks.Add(blobStorageRepository.DeleteFileAsync(technician.NationalIdFrontURL, "technician-documents"));
+                blobDeleteTasks.Add(blobStorageRepository.DeleteFileAsync(technician.ProfilePictureURL, "technician-documents"));
+
+                blobDeleteTasks.Add(blobStorageRepository.DeleteBlobsWithPrefixAsync("technician-documents", $"portifolioImages_{technician.Id}_"));
+
+                await Task.WhenAll(blobDeleteTasks);
             }
             catch
             {
@@ -302,7 +310,6 @@ namespace Service
                 throw;
             }
         }
-
 
         public async Task<List<BroadCastServiceRequestDTO>> GetAvailableRequests(string userId)
         {
@@ -344,6 +351,54 @@ namespace Service
             return (await Task.WhenAll(mappingTasks)).ToList();
         }
 
+        public async Task<string?> DeclineRequestAsync(string userId, CancelReqDTO cancelReqDTO)
+        {
+            var user = await CheckUser(userId);
+
+            var service = await serviceRequestRepository.GetServiceById(cancelReqDTO.requestId);
+            if (service is null)
+                throw new TechnicalException();
+
+            var clientUserId = service.Client.UserId;
+
+            if (service.TechnicianId == user.Id)
+            {
+                try
+                {
+                    service.Status = ServiceReqStatus.Rejected;
+                    if (!await serviceRequestRepository.UpdateAsync(service))
+                        throw new TechnicalException();
+                    return clientUserId;
+                }
+                catch
+                {
+                    throw new TechnicalException();
+                }
+            }
+            else
+            {
+                try
+                {
+                    var tech = await technicianRepository.GetByUserIdAsync(userId);
+                    if (tech is null)
+                        throw new TechnicalException();
+                    if (await ignoredServiceRequestsRepository.IsAlreadyIgnoredAsync(tech.Id, service.Id))
+                        throw new RequestAlreadyDeclinedException();
+                    await ignoredServiceRequestsRepository.CreateAsync(new IgnoredServiceRequest { TechnicianId = tech.Id, ServiceRequestId = service.Id });
+                    return string.Empty;
+                }
+                catch(RequestAlreadyDeclinedException)
+                {
+                    throw;
+                }
+                catch (Exception)
+                {
+                    throw new TechnicalException();
+                }
+            }
+            
+        }
+
         public async Task<Technician?> GetTechnicianByIdAsync(int techId)
         {
             try
@@ -363,7 +418,6 @@ namespace Service
                 throw new UserNotFoundException("المستخدم غير موجود");
             return user;
         }
-
         private bool IsEmptyUpdateRequest(UpdateTechnicianDTO dTO)
         {
             return string.IsNullOrWhiteSpace(dTO.AboutMe) &&

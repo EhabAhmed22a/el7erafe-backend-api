@@ -3,9 +3,12 @@
 using DomainLayer.Models.IdentityModule;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using Presentation.Hubs;
 using ServiceAbstraction;
 using ServiceAbstraction.Chat;
 using Shared.DataTransferObject.OtpDTOs;
+using Shared.DataTransferObject.ServiceRequestDTOs;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
 using Shared.DataTransferObject.TechnicianSchedule;
 using Shared.DataTransferObject.UpdateDTOs;
@@ -17,8 +20,9 @@ namespace Presentation.Controllers
     [Route("api/tech")]
     [Authorize(AuthenticationSchemes = "Bearer", Roles = "Technician")]
     public class TechnicianFlowController(
-        ITechnicianService technicianService,
+        ITechnicianFlowService technicianService,
         IChatService chatService,
+        IHubContext<ClientHub> clientHub,
         ITechnicianAvailabilityService technicianAvailabilityService) : ControllerBase
     {
         [HttpGet("profile")]
@@ -178,6 +182,20 @@ namespace Presentation.Controllers
                 return Unauthorized("المستخدم غير موجود");
 
             return Ok(await technicianService.GetAvailableRequests(userId));
+        }
+
+        [HttpPatch("decline-request")]
+        public async Task<IActionResult> DeclineRequest(CancelReqDTO cancelReqDTO)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            var clientUserId = await technicianService.DeclineRequestAsync(userId, cancelReqDTO);
+            if(!string.IsNullOrEmpty(clientUserId))
+                await clientHub.Clients.User(clientUserId)
+                                       .SendAsync("RequestRejected", cancelReqDTO.requestId);
+            return Ok(new { message = "تم رفض الطلب" });
         }
     }
 }

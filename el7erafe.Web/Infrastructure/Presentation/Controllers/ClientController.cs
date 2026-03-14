@@ -17,7 +17,7 @@ namespace Presentation.Controllers
     [Route("api")]
     [Authorize(AuthenticationSchemes = "Bearer", Roles = "Client")]
     public class ClientController(IClientService _clientService,
-        ITechnicianService technicianService,
+        ITechnicianFlowService technicianService,
         ILogger<ClientController> _logger,
         IChatService chatService,
         IHubContext<ClientHub> clientHub,
