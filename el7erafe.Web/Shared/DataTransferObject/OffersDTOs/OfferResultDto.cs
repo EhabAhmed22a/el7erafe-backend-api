@@ -1,4 +1,6 @@
 ﻿
+using System.Text.Json.Serialization;
+
 namespace Shared.DataTransferObject.OffersDTOs
 {
     public class OfferResultDto
@@ -28,5 +30,8 @@ namespace Shared.DataTransferObject.OffersDTOs
         public string Comments { get; set; } = default!;
 
         public int? NumberOfDays { get; set; }
+
+        [JsonIgnore]
+        public int ClientId { get; set; }
     }
 }

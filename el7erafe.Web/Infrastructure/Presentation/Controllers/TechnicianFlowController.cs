@@ -3,8 +3,11 @@
 using DomainLayer.Models.IdentityModule;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using Presentation.Hubs;
 using ServiceAbstraction;
 using ServiceAbstraction.Chat;
+using Shared.DataTransferObject.OffersDTOs;
 using Shared.DataTransferObject.OtpDTOs;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
 using Shared.DataTransferObject.TechnicianSchedule;
@@ -18,8 +21,11 @@ namespace Presentation.Controllers
     [Authorize(AuthenticationSchemes = "Bearer", Roles = "Technician")]
     public class TechnicianFlowController(
         ITechnicianService technicianService,
+        IClientService clientService,
         IChatService chatService,
-        ITechnicianAvailabilityService technicianAvailabilityService) : ControllerBase
+        ITechnicianAvailabilityService technicianAvailabilityService,
+        IOfferService offerService,
+        IHubContext<ClientHub> clientHub) : ControllerBase
     {
         [HttpGet("profile")]
         public async Task<IActionResult> GetProfile()
@@ -178,6 +184,25 @@ namespace Presentation.Controllers
                 return Unauthorized("المستخدم غير موجود");
 
             return Ok(await technicianService.GetAvailableRequests(userId));
+        }
+
+        [HttpPost("make-offer")]
+        public async Task<IActionResult> MakeOffer(MakeOfferDto dto)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            var result = await offerService.MakeOfferAsync(dto, userId);
+
+            var client = await clientService.GetClientByIdAsync(result.ClientId);
+            if (client != null)
+            {
+                await clientHub.Clients.User(client.User.Id)
+                    .SendAsync("ReceiveNewOffer", result);
+            }
+
+            return Ok(new { message = "تم تقديم العرض بنجاح" });
         }
     }
 }

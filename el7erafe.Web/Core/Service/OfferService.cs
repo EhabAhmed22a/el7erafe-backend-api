@@ -73,7 +73,8 @@ namespace Service
                 Fees = offer.Fees,
                 FromTime = offer.WorkFrom.Value,
                 ToTime = offer.WorkTo.Value,
-                NumberOfDays = offer.NumberOfDays
+                NumberOfDays = offer.NumberOfDays,
+                ClientId = request.ClientId
             };
         }
     }

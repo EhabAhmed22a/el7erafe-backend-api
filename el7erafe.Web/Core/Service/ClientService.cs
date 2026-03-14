@@ -514,6 +514,11 @@ namespace Service
             }
         }
 
+        public async Task<Client?> GetClientByIdAsync(int clientId)
+        {     
+            return await clientRepository.GetByIdAsync(clientId);
+        }
+
         private async Task<Client> CheckUser(string userId)
         {
             var user = await clientRepository.GetByUserIdAsync(userId);

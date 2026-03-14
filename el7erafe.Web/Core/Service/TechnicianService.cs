@@ -1,12 +1,9 @@
-﻿
-using Azure;
-using DomainLayer.Contracts;
+﻿using DomainLayer.Contracts;
 using DomainLayer.Exceptions;
 using DomainLayer.Models.IdentityModule;
 using Microsoft.AspNetCore.Identity;
 using Service.Helpers;
 using ServiceAbstraction;
-using Shared.DataTransferObject.ClientIdentityDTOs;
 using Shared.DataTransferObject.OtpDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
