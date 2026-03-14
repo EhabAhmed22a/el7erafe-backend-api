@@ -6,7 +6,7 @@ using Shared.DataTransferObject.OffersDTOs;
 
 namespace Service
 {
-    internal class OfferService(
+    public class OfferService(
         IOffersRepository offersRepository,
         IServiceRequestRepository serviceRequestRepository,
         ITechnicianRepository technicianRepository,
