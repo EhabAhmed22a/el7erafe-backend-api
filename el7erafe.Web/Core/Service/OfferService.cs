@@ -1,4 +1,5 @@
 ﻿using DomainLayer.Contracts;
+using DomainLayer.Exceptions;
 using DomainLayer.Models;
 using ServiceAbstraction;
 using Shared.DataTransferObject.OffersDTOs;
@@ -14,27 +15,23 @@ namespace Service
         public async Task<OfferResultDto> MakeOfferAsync(MakeOfferDto dto, string technicianUserId)
         {
             if (dto.FromTime >= dto.ToTime)
-                throw new Exception("fromTime must be earlier than toTime");
+                throw new ArgumentException("يجب أن يكون وقت البداية قبل وقت النهاية.");
 
-            // 2️⃣ Get technician
             var technician = await technicianRepository.GetByUserIdAsync(technicianUserId);
 
             if (technician == null)
-                throw new Exception("Technician not found");
+                throw new TechNotFoundException(technicianUserId);
 
-            // 3️⃣ Get service request
             var request = await serviceRequestRepository.GetServiceById(dto.RequestId);
 
             if (request == null)
-                throw new Exception("Service request not found");
+                throw new KeyNotFoundException("طلب الخدمة غير موجود.");
 
-            // 4️⃣ Prevent duplicate offers
             var alreadyOffered = await offersRepository.HasTechnicianAlreadyOffered(technician.Id, dto.RequestId);
 
             if (alreadyOffered)
-                throw new Exception("You already placed an offer on this request");
+                throw new InvalidOperationException("لقد قمت بتقديم عرض على هذا الطلب بالفعل.");
 
-            // 5️⃣ Check time conflict
             var hasConflict = await offersRepository.HasTimeConflict(
                 technician.Id,
                 dto.FromTime,
@@ -43,9 +40,8 @@ namespace Service
                 dto.NumberOfDays);
 
             if (hasConflict)
-                throw new Exception("Offer time conflicts with an existing reservation");
+                throw new InvalidOperationException("وقت العرض يتعارض مع حجز مؤكد لديك.");
 
-            // 6️⃣ Create offer
             var offer = new Offer
             {
                 Fees = dto.Fees,
@@ -57,10 +53,8 @@ namespace Service
                 NumberOfDays = dto.NumberOfDays
             };
 
-            // 7️⃣ Save
             await offersRepository.AddOfferAsync(offer);
 
-            // 8️⃣ Return DTO
             return new OfferResultDto
             {
                 OfferId = offer.Id,

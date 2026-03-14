@@ -1,4 +1,6 @@
 ﻿
+using System.ComponentModel.DataAnnotations;
+
 namespace Shared.DataTransferObject.OffersDTOs
 {
     public class MakeOfferDto
@@ -11,6 +13,7 @@ namespace Shared.DataTransferObject.OffersDTOs
 
         public TimeOnly ToTime { get; set; }
 
+        [Range(1, int.MaxValue, ErrorMessage = "عدد الأيام يجب أن يكون أكبر من صفر.")]
         public int? NumberOfDays { get; set; }
     }
 }
