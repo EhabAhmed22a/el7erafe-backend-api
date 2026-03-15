@@ -24,6 +24,7 @@ namespace Presentation.Controllers
         ITechnicianFlowService technicianService,
         IChatService chatService,
         IHubContext<ClientHub> clientHub,
+        IHubContext<TechnicianHub> technicianHub,
         ITechnicianAvailabilityService technicianAvailabilityService,
         IOfferService offerService,
         IClientService clientService) : ControllerBase
@@ -208,11 +209,25 @@ namespace Presentation.Controllers
                 return Unauthorized("المستخدم غير موجود");
 
             var result = await offerService.MakeOfferAsync(dto, userId);
-            var client = await clientService.GetClientByIdAsync(result.ClientId);
 
-            await clientHub.Clients.User(client?.User.Id!)
-                .SendAsync("ReceiveNewOffer", result);
+            await clientHub.Clients.User(result.ClientUserId).SendAsync("ReceiveNewOffer", result.ClientOffer);
 
-            return Ok(new { message = "تم تقديم العرض بنجاح" }); }
+            await technicianHub.Clients.User(userId).SendAsync("ReceivePendingOffer", result.TechnicianOffer);
+
+            return Ok(new { message = "تم تقديم العرض بنجاح" });
+        }
+
+        [HttpGet("pending-offers")]
+        public async Task<IActionResult> GetPendingOffers()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var result = await technicianService.GetPendingOffersAsync(userId);
+
+            return Ok(result);
+        }
     }
 }

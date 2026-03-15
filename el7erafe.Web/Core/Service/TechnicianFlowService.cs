@@ -4,9 +4,9 @@ using DomainLayer.Models;
 using DomainLayer.Models.IdentityModule;
 using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using Service.Helpers;
 using ServiceAbstraction;
+using Shared.DataTransferObject.OffersDTOs;
 using Shared.DataTransferObject.OtpDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
@@ -19,7 +19,8 @@ namespace Service
         IIgnoredServiceRequestsRepository ignoredServiceRequestsRepository,
         OtpHelper otpHelper,
         UserManager<ApplicationUser> userManager,
-        IServiceRequestRepository serviceRequestRepository) : ITechnicianFlowService
+        IServiceRequestRepository serviceRequestRepository,
+        IOffersRepository offersRepository) : ITechnicianFlowService
     {
         public async Task<TechnicianProfileDTO> GetProfile(string userId)
         {
@@ -394,6 +395,51 @@ namespace Service
                 }
             }
             
+        }
+
+        public async Task<List<PendingOfferDto>> GetPendingOffersAsync(string technicianUserId)
+        {
+            var technician = await technicianRepository.GetByUserIdAsync(technicianUserId);
+
+            if (technician == null)
+                throw new TechNotFoundException(technicianUserId);
+
+            var offers = await offersRepository.GetPendingOffersForTechAsync(technician.Id);
+
+            var result = new List<PendingOfferDto>();
+
+            foreach (var offer in offers)
+            {
+                List<string> serviceURLs = await blobStorageRepository.GetBlobUrlsWithPrefixAsync("service-requests-images", $"{offer.Id}_");
+                result.Add(new PendingOfferDto
+                {
+                    OfferId = offer.Id,
+                    Description = offer.ServiceRequest.Description,
+                    ClientName = offer.ServiceRequest.Client.Name,
+                    ClientImage = await blobStorageRepository.GetBlobUrlWithSasTokenAsync(
+                        "client-profilepics",
+                        offer.ServiceRequest.Client.ImageURL),
+
+                    Fees = offer.Fees,
+                    ServiceType = offer.ServiceRequest.Service.NameAr,
+
+                    TechTimeInterval = HelperClass.FormatArabicTimeInterval(offer.WorkFrom, offer.WorkTo),
+
+                    Day = offer.ServiceRequest.ServiceDate,
+
+                    EndDay = offer.NumberOfDays != null
+                        ? offer.ServiceRequest.ServiceDate.AddDays(offer.NumberOfDays.Value - 1)
+                        : null,
+
+                    Governorate = offer.ServiceRequest.City.Governorate.NameAr,
+                    City = offer.ServiceRequest.City.NameAr,
+                    Street = offer.ServiceRequest.Street,
+                    ServiceImages = serviceURLs,
+                    SpecialSign = offer.ServiceRequest.SpecialSign
+                });
+            }
+
+            return result;
         }
 
         public async Task<Technician?> GetTechnicianByIdAsync(int techId)
