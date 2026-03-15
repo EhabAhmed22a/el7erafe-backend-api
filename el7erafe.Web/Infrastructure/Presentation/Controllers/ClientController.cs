@@ -220,7 +220,7 @@ namespace Presentation.Controllers
             return Ok(result);
         }
 
-        [HttpGet("cf/getquickoffers")]
+        [HttpGet("cf/offers/quick")]
         public async Task<IActionResult> GetQuickOffers(ReqIdDTO reqIdDTO)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -228,10 +228,10 @@ namespace Presentation.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            return Ok(await _clientService.GetQuickOffersAsync(userId, reqIdDTO));
+            return Ok(await _clientService.GetOffersAsync(userId, reqIdDTO.requestId, true));
         }
 
-        [HttpGet("cf/gettechoffers")]
+        [HttpGet("cf/offers/specific")]
         public async Task<IActionResult> GetTechOffers(ReqIdDTO reqIdDTO)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -239,7 +239,7 @@ namespace Presentation.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            return Ok(await _clientService.GetTechReserveOffersAsync(userId, reqIdDTO));
+            return Ok(await _clientService.GetOffersAsync(userId, reqIdDTO.requestId, false));
         }
     }
 }

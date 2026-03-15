@@ -1,5 +1,4 @@
-﻿
-using DomainLayer.Models.IdentityModule;
+﻿using DomainLayer.Models.IdentityModule;
 using Shared.DataTransferObject.ClientDTOs;
 using Shared.DataTransferObject.ClientIdentityDTOs;
 using Shared.DataTransferObject.OffersDTOs;
@@ -16,8 +15,7 @@ namespace ServiceAbstraction
         Task<List<ServiceRequestDTO>> GetPendingServiceRequestsAsync(string userId);
         Task DeleteAccount(string userId);
         Task<ClientProfileDTO> GetProfileAsync(string userId);
-        Task<List<OfferResultDto>> GetTechReserveOffersAsync(string userId, ReqIdDTO reqIdDTO);
-        Task<List<OfferResultDto>> GetQuickOffersAsync(string userId, ReqIdDTO reqIdDTO);
+        Task<List<OfferResultDto>> GetOffersAsync(string userId, int requestId, bool isQuick);
         Task<List<AvailableTechnicianDto>> GetAvailableTechniciansAsync(GetAvailableTechniciansRequest requestRegDTO);
         Task UpdateNameAndImage(string userId, UpdateNameImageDTO dTO);
         Task UpdatePhoneNumber(string userId, UpdatePhoneDTO dTO);

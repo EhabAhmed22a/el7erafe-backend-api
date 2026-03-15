@@ -527,100 +527,20 @@ namespace Service
             }
         }
 
-        public async Task<List<OfferResultDto>> GetQuickOffersAsync(string userId, ReqIdDTO reqIdDTO)
-        {
-            var user = await CheckUser(userId);
-
-            try
-            {
-
-                var validOffers = await offersRepository.GetValidQuickOffersForClientAsync(reqIdDTO.requestId, user.Id);
-
-                if (!validOffers.Any())
-                    return new List<OfferResultDto>();
-
-                var mappingTasks = validOffers.Select(async offer =>
-                {
-                    string techImageUrl = string.Empty;
-                    if (!string.IsNullOrWhiteSpace(offer.Technician?.ProfilePictureURL))
-                    {
-                        techImageUrl = await blobStorageRepository.GetBlobUrlWithSasTokenAsync("technician-documents", offer.Technician.ProfilePictureURL);
-                    }
-
-                    return new OfferResultDto
-                    {
-                        OfferId = offer.Id,
-                        RequestId = offer.ServiceRequestId,
-
-                        TechName = offer.Technician?.Name ?? "فني",
-                        TechImage = techImageUrl,
-                        NumberOfSuccessJobs = 0, // will do later
-                        Rate = offer.Technician?.Rating ?? 0,
-
-                        ServiceType = offer.ServiceRequest?.Service?.NameAr ?? "غير معروف",
-                        Fees = offer.Fees,
-                        FromTime = offer.WorkFrom,
-                        ToTime = offer.WorkTo,
-                        Day = offer.ServiceRequest.ServiceDate,
-                        NumberOfDays = offer.NumberOfDays,
-                        Comments = null,
-
-                        ClientId = offer.ServiceRequest.ClientId
-                    };
-                });
-
-                return (await Task.WhenAll(mappingTasks)).ToList();
-            }
-            catch (Exception)
-            {
-                throw new TechnicalException();
-            }
-        }
-
-        public async Task<List<OfferResultDto>> GetTechReserveOffersAsync(string userId, ReqIdDTO reqIdDTO)
+        public async Task<List<OfferResultDto>> GetOffersAsync(string userId, int requestId, bool isQuick)
         {
             var client = await CheckUser(userId);
 
             try
             {
-                var validOffers = await offersRepository.GetValidTechOfferForClientsAsync(reqIdDTO.requestId, client.Id);
+                var validOffers = await offersRepository.GetValidOffersForClientAsync(requestId, client.Id, isQuick);
 
                 if (!validOffers.Any())
                     return new List<OfferResultDto>();
 
-                var mappingTasks = validOffers.Select(async offer =>
-                {
-                    string techImageUrl = string.Empty;
-                    if (!string.IsNullOrWhiteSpace(offer.Technician?.ProfilePictureURL))
-                    {
-                        techImageUrl = await blobStorageRepository.GetBlobUrlWithSasTokenAsync("technician-documents", offer.Technician.ProfilePictureURL);
-                    }
-
-                    return new OfferResultDto
-                    {
-                        OfferId = offer.Id,
-                        RequestId = offer.ServiceRequestId,
-
-                        TechName = offer.Technician?.Name ?? "فني",
-                        TechImage = techImageUrl,
-                        NumberOfSuccessJobs = 0, // will do later
-                        Rate = offer.Technician?.Rating ?? 0,
-
-                        ServiceType = offer.ServiceRequest?.Service?.NameAr ?? "غير معروف",
-                        Fees = offer.Fees,
-                        FromTime = offer.WorkFrom,
-                        ToTime = offer.WorkTo,
-                        Day = offer.ServiceRequest.ServiceDate,
-                        NumberOfDays = offer.NumberOfDays,
-                        Comments = null,
-
-                        ClientId = offer.ServiceRequest.ClientId
-                    };
-                });
-
-                return (await Task.WhenAll(mappingTasks)).ToList();
+                return (await Task.WhenAll(validOffers.Select(MapOffer))).ToList();
             }
-            catch (Exception)
+            catch
             {
                 throw new TechnicalException();
             }
@@ -690,6 +610,35 @@ namespace Service
             {
                 return new Dictionary<string, string>();
             }
+        }
+        private async Task<OfferResultDto> MapOffer(Offer offer)
+        {
+            string techImageUrl = string.Empty;
+
+            if (!string.IsNullOrWhiteSpace(offer.Technician?.ProfilePictureURL))
+            {
+                techImageUrl = await blobStorageRepository.GetBlobUrlWithSasTokenAsync("technician-documents",offer.Technician.ProfilePictureURL);
+            }
+
+            return new OfferResultDto
+            {
+                OfferId = offer.Id,
+                RequestId = offer.ServiceRequestId,
+
+                TechName = offer.Technician?.Name ?? "فني",
+                TechImage = techImageUrl,
+                NumberOfSuccessJobs = 0,
+                Rate = offer.Technician?.Rating ?? 0,
+
+                ServiceType = offer.ServiceRequest?.Service?.NameAr ?? "غير معروف",
+                Fees = offer.Fees,
+                TechTimeInterval = HelperClass.FormatArabicTimeInterval(offer.WorkFrom, offer.WorkTo),
+                Day = offer.ServiceRequest.ServiceDate,
+                NumberOfDays = offer.NumberOfDays,
+                Comments = null,
+
+                ClientId = offer.ServiceRequest.ClientId
+            };
         }
 
     }
