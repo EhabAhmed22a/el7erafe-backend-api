@@ -210,11 +210,9 @@ namespace Presentation.Controllers
 
             var result = await offerService.MakeOfferAsync(dto, userId);
 
-            await clientHub.Clients.User(result.ClientUserId)
-                .SendAsync("ReceiveNewOffer", result.ClientOffer);
+            await clientHub.Clients.User(result.ClientUserId).SendAsync("ReceiveNewOffer", result.ClientOffer);
 
-            await technicianHub.Clients.User(userId)
-                .SendAsync("ReceivePendingOffer", result.TechnicianOffer);
+            await technicianHub.Clients.User(userId).SendAsync("ReceivePendingOffer", result.TechnicianOffer);
 
             return Ok(new { message = "تم تقديم العرض بنجاح" });
         }
