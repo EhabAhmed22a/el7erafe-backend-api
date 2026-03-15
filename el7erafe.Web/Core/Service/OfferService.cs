@@ -13,7 +13,7 @@ namespace Service
         ITechnicianRepository technicianRepository,
         IBlobStorageRepository blobStorageRepository) : IOfferService
     {
-        public async Task<OfferResultDto> MakeOfferAsync(MakeOfferDto dto, string technicianUserId)
+        public async Task<MakeOfferEventResultDto> MakeOfferAsync(MakeOfferDto dto, string technicianUserId)
         {
             if (dto.FromTime >= dto.ToTime)
                 throw new ArgumentException("يجب أن يكون وقت البداية قبل وقت النهاية.");
@@ -56,19 +56,54 @@ namespace Service
 
             await offersRepository.AddOfferAsync(offer);
 
-            return new OfferResultDto
+            var techTimeInterval = HelperClass.FormatArabicTimeInterval(offer.WorkFrom,offer.WorkTo);
+
+            var clientOffer = new OfferResultDto
             {
                 OfferId = offer.Id,
                 RequestId = dto.RequestId,
                 Day = request.ServiceDate,
                 ServiceType = technician.Service.NameAr,
                 TechName = technician.Name,
-                TechImage = await blobStorageRepository.GetBlobUrlWithSasTokenAsync("technician-documents",technician.ProfilePictureURL),
+                TechImage = await blobStorageRepository.GetBlobUrlWithSasTokenAsync("technician-documents", technician.ProfilePictureURL),
                 Rate = technician.Rating,
                 Fees = offer.Fees,
-                TechTimeInterval = HelperClass.FormatArabicTimeInterval(offer.WorkFrom, offer.WorkTo),
+                TechTimeInterval = techTimeInterval,
                 NumberOfDays = offer.NumberOfDays,
                 ClientId = request.ClientId
+            };
+
+            List<string> serviceURLs =await blobStorageRepository.GetBlobUrlsWithPrefixAsync("service-requests-images",$"{request.Id}_");
+
+            var techOffer = new PendingOfferDto
+            {
+                OfferId = offer.Id,
+
+                Description = request.Description,
+
+                ClientName = request.Client.Name,
+
+                ClientImage = string.IsNullOrWhiteSpace(request.Client.ImageURL)? null: await blobStorageRepository.GetBlobUrlWithSasTokenAsync("client-profilepics",request.Client.ImageURL),
+                Fees = offer.Fees,
+                ServiceType = request.Service.NameAr,
+                TechTimeInterval = techTimeInterval,
+                Day = request.ServiceDate,
+                EndDay = offer.NumberOfDays != null
+                                ? request.ServiceDate.AddDays(offer.NumberOfDays.Value - 1)
+                                : null,
+
+                Governorate = request.City?.Governorate?.NameAr,
+                City = request.City?.NameAr,
+                Street = request.Street,
+                ServiceImages = serviceURLs,
+                SpecialSign = request.SpecialSign
+            };
+
+            return new MakeOfferEventResultDto
+            {
+                ClientOffer = clientOffer,
+                TechnicianOffer = techOffer,
+                ClientUserId = request.Client.UserId
             };
         }
     }
