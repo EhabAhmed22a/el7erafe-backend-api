@@ -180,7 +180,7 @@ namespace Presentation.Controllers
         }
 
         [HttpPatch("cf/cancel-request")]
-        public async Task<IActionResult> CancelRequest(CancelReqDTO cancelReqDTO)
+        public async Task<IActionResult> CancelRequest(ReqIdDTO cancelReqDTO)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
@@ -218,6 +218,28 @@ namespace Presentation.Controllers
             var result = await chatService.GetInboxAsync(userId);
 
             return Ok(result);
+        }
+
+        [HttpGet("cf/offers/quick")]
+        public async Task<IActionResult> GetQuickOffers(ReqIdDTO reqIdDTO)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            return Ok(await _clientService.GetOffersAsync(userId, reqIdDTO.requestId, true));
+        }
+
+        [HttpGet("cf/offers/specific")]
+        public async Task<IActionResult> GetTechOffers(ReqIdDTO reqIdDTO)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            return Ok(await _clientService.GetOffersAsync(userId, reqIdDTO.requestId, false));
         }
     }
 }

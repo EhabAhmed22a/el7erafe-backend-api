@@ -1,13 +1,16 @@
-﻿using DomainLayer.Contracts;
+﻿using System.Collections.Generic;
+using DomainLayer.Contracts;
 using DomainLayer.Exceptions;
 using DomainLayer.Models;
 using DomainLayer.Models.IdentityModule;
 using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Service.Helpers;
 using ServiceAbstraction;
 using Shared.DataTransferObject.ClientDTOs;
 using Shared.DataTransferObject.ClientIdentityDTOs;
+using Shared.DataTransferObject.OffersDTOs;
 using Shared.DataTransferObject.OtpDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
 using Shared.DataTransferObject.UpdateDTOs;
@@ -23,7 +26,8 @@ namespace Service
             ITechnicianRepository technicianRepository,
             ICityRepository cityRepository,
             OtpHelper otpHelper,
-            IUnitOfWork unitOfWork) : IClientService
+            IUnitOfWork unitOfWork,
+            IOffersRepository offersRepository) : IClientService
     {
         public async Task<ServiceListDto> GetClientServicesAsync()
         {
@@ -476,33 +480,42 @@ namespace Service
 
                 var mappingTasks = notReservedRequests.Select(async sr =>
                 {
+                    // 1. Determine the request type
+                    bool isQuick = sr.TechnicianId is null;
+
+                    // 2. Resolve the targeted Technician's image (Only exists for Direct Requests)
                     string? imageUrl = null;
                     if (!string.IsNullOrWhiteSpace(sr.Technician?.ProfilePictureURL))
                     {
                         imageUrl = await blobStorageRepository.GetBlobUrlWithSasTokenAsync("technician-documents", sr.Technician.ProfilePictureURL);
                     }
+
+                    // 3. The Logic Check: ONLY grab the single offer details if it's a Direct Request
+                    var directOffer = isQuick ? null : sr.Offers?.FirstOrDefault();
+
                     return new ServiceRequestDTO
                     {
                         requestId = sr.Id,
-                        isQuickReserve = sr.TechnicianId is null,
+                        isQuickReserve = isQuick,
                         day = sr.ServiceDate,
                         serviceType = sr.Service?.NameAr ?? "غير معروف",
-
-                        numberOfOffers = sr.Offers.Count,
                         clientTimeInterval = HelperClass.FormatArabicTimeInterval(sr.AvailableFrom, sr.AvailableTo),
 
+                        // Tell the mobile app exactly how many offers exist
+                        numberOfOffers = sr.Offers?.Count ?? null,
+
+                        // The specific Technician info (Null for Quick Reserves)
                         techName = sr.Technician?.Name,
                         techImage = imageUrl,
 
-                        offerId = sr.Offers?.FirstOrDefault()?.Id,
-                        fees = sr.Offers?.FirstOrDefault()?.Fees,
-
+                        // Offer Specifics (Null for Quick Reserves, Populated for Direct Requests)
+                        offerId = directOffer?.Id,
+                        fees = directOffer?.Fees,
                         techTimeInterval = HelperClass.FormatArabicTimeInterval(
-                            sr.Offers?.FirstOrDefault()?.WorkFrom,
-                            sr.Offers?.FirstOrDefault()?.WorkTo
+                            directOffer?.WorkFrom,
+                            directOffer?.WorkTo
                         ),
-
-                        numberOfDays = sr.Offers?.FirstOrDefault()?.NumberOfDays ?? 1
+                        numberOfDays = directOffer?.NumberOfDays ?? 1
                     };
                 });
 
@@ -514,7 +527,26 @@ namespace Service
             }
         }
 
-        public async Task<string?> CancelRequestAsync(string userId, CancelReqDTO reqDTO)
+        public async Task<List<OfferResultDto>> GetOffersAsync(string userId, int requestId, bool isQuick)
+        {
+            var client = await CheckUser(userId);
+
+            try
+            {
+                var validOffers = await offersRepository.GetValidOffersForClientAsync(requestId, client.Id, isQuick);
+
+                if (!validOffers.Any())
+                    return new List<OfferResultDto>();
+
+                return (await Task.WhenAll(validOffers.Select(MapOffer))).ToList();
+            }
+            catch
+            {
+                throw new TechnicalException();
+            }
+        }
+
+        public async Task<string?> CancelRequestAsync(string userId, ReqIdDTO reqDTO)
         {
             var user = await CheckUser(userId);
 
@@ -541,6 +573,11 @@ namespace Service
                 throw new TechnicalException();
             }
             return techUserId;
+        }
+
+        public async Task<Client?> GetClientByIdAsync(int clientId)
+        {
+            return await clientRepository.GetByIdAsync(clientId);
         }
 
         private async Task<Client> CheckUser(string userId)
@@ -574,5 +611,35 @@ namespace Service
                 return new Dictionary<string, string>();
             }
         }
+        private async Task<OfferResultDto> MapOffer(Offer offer)
+        {
+            string techImageUrl = string.Empty;
+
+            if (!string.IsNullOrWhiteSpace(offer.Technician?.ProfilePictureURL))
+            {
+                techImageUrl = await blobStorageRepository.GetBlobUrlWithSasTokenAsync("technician-documents",offer.Technician.ProfilePictureURL);
+            }
+
+            return new OfferResultDto
+            {
+                OfferId = offer.Id,
+                RequestId = offer.ServiceRequestId,
+
+                TechName = offer.Technician?.Name ?? "فني",
+                TechImage = techImageUrl,
+                NumberOfSuccessJobs = 0,
+                Rate = offer.Technician?.Rating ?? 0,
+
+                ServiceType = offer.ServiceRequest?.Service?.NameAr ?? "غير معروف",
+                Fees = offer.Fees,
+                TechTimeInterval = HelperClass.FormatArabicTimeInterval(offer.WorkFrom, offer.WorkTo),
+                Day = offer.ServiceRequest.ServiceDate,
+                NumberOfDays = offer.NumberOfDays,
+                Comments = null,
+
+                ClientId = offer.ServiceRequest.ClientId
+            };
+        }
+
     }
 }

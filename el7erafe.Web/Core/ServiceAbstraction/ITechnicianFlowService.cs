@@ -14,7 +14,7 @@ namespace ServiceAbstraction
         Task UpdatePhoneNumber (string userId, UpdatePhoneDTO updatePhoneDTO);
         Task<OtpResponseDTO> UpdatePendingEmail(string userId, UpdateEmailDTO updateEmailDTO);
         Task<Technician?> GetTechnicianByIdAsync(int techId);
-        Task<string?> DeclineRequestAsync(string userId, CancelReqDTO cancelReqDTO);
+        Task<string?> DeclineRequestAsync(string userId, ReqIdDTO cancelReqDTO);
         Task<List<BroadCastServiceRequestDTO>> GetAvailableRequests(string userId);
         Task UpdateEmailAsync(string userId, OtpCodeDTO otpCode);
         Task<OtpResponseDTO> ResendOtpForPendingEmail(string userId);

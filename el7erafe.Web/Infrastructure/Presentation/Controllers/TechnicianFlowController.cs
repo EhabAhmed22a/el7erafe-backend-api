@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.SignalR;
 using Presentation.Hubs;
 using ServiceAbstraction;
 using ServiceAbstraction.Chat;
+using Shared.DataTransferObject.OffersDTOs;
 using Shared.DataTransferObject.OtpDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
@@ -23,7 +24,9 @@ namespace Presentation.Controllers
         ITechnicianFlowService technicianService,
         IChatService chatService,
         IHubContext<ClientHub> clientHub,
-        ITechnicianAvailabilityService technicianAvailabilityService) : ControllerBase
+        ITechnicianAvailabilityService technicianAvailabilityService,
+        IOfferService offerService,
+        IClientService clientService) : ControllerBase
     {
         [HttpGet("profile")]
         public async Task<IActionResult> GetProfile()
@@ -185,17 +188,31 @@ namespace Presentation.Controllers
         }
 
         [HttpPatch("decline-request")]
-        public async Task<IActionResult> DeclineRequest(CancelReqDTO cancelReqDTO)
+        public async Task<IActionResult> DeclineRequest(ReqIdDTO cancelReqDTO)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("المستخدم غير موجود");
 
             var clientUserId = await technicianService.DeclineRequestAsync(userId, cancelReqDTO);
-            if(!string.IsNullOrEmpty(clientUserId))
+            if (!string.IsNullOrEmpty(clientUserId))
                 await clientHub.Clients.User(clientUserId)
                                        .SendAsync("RequestRejected", cancelReqDTO.requestId);
             return Ok(new { message = "تم رفض الطلب" });
         }
+
+        [HttpPost("make-offer")]
+        public async Task<IActionResult> MakeOffer(MakeOfferDto dto) {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            var result = await offerService.MakeOfferAsync(dto, userId);
+            var client = await clientService.GetClientByIdAsync(result.ClientId);
+
+            await clientHub.Clients.User(client?.User.Id!)
+                .SendAsync("ReceiveNewOffer", result);
+
+            return Ok(new { message = "تم تقديم العرض بنجاح" }); }
     }
 }
