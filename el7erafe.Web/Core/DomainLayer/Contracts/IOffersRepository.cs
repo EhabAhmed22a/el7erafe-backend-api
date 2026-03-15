@@ -9,5 +9,6 @@ namespace DomainLayer.Contracts
         Task<bool> HasTechnicianAlreadyOffered(int technicianId, int requestId);
         Task<IEnumerable<Offer>> GetValidOffersForClientAsync(int serReqId, int clientId, bool isQuick);
         Task<bool> HasTimeConflict(int technicianId, TimeOnly fromTime, TimeOnly toTime, DateOnly serviceDate, int? numberOfDays);
+        Task<List<Offer>> GetPendingOffersForTechAsync(int technicianId);
     }
 }

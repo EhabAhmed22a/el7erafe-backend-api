@@ -221,7 +221,7 @@ namespace Presentation.Controllers
         }
 
         [HttpGet("cf/offers/quick")]
-        public async Task<IActionResult> GetQuickOffers(ReqIdDTO reqIdDTO)
+        public async Task<IActionResult> GetQuickOffers([FromQuery] ReqIdDTO reqIdDTO)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -232,7 +232,7 @@ namespace Presentation.Controllers
         }
 
         [HttpGet("cf/offers/specific")]
-        public async Task<IActionResult> GetTechOffers(ReqIdDTO reqIdDTO)
+        public async Task<IActionResult> GetTechOffers([FromQuery] ReqIdDTO reqIdDTO)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
