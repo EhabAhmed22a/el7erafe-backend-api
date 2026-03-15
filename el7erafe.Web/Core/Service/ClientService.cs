@@ -103,7 +103,7 @@ namespace Service
             }
 
             int clientId = client.Id;
-            if (await serviceRequestRepository.IsServiceAlreadyReq(clientId, regDTO.ServiceId))
+            if (await serviceRequestRepository.IsServicePending(clientId, regDTO.ServiceId))
                 throw new ServiceAlreadyRequestedException();
 
             //******Still some Logic to be added after Implementing Reservations in the application******//
@@ -268,12 +268,12 @@ namespace Service
                 return new List<AvailableTechnicianDto>();
 
             // FILTER BY AVAILABILITY
-            technicians = technicians
-                .Where(t => t.Availability.Any(a =>
-                    (a.DayOfWeek == null || (int)a.DayOfWeek == requestRegDTO.DayOfWeek) &&
-                    a.FromTime <= requestRegDTO.FromTime &&
-                    a.ToTime >= requestRegDTO.ToTime))
-                .ToList();
+            //technicians = technicians
+            //    .Where(t => t.Availability.Any(a =>
+            //        (a.DayOfWeek == null || (int)a.DayOfWeek == requestRegDTO.DayOfWeek) &&
+            //        a.FromTime <= requestRegDTO.FromTime &&
+            //        a.ToTime >= requestRegDTO.ToTime))
+            //    .ToList();
 
             if (!technicians.Any())
                 return new List<AvailableTechnicianDto>();
@@ -512,6 +512,35 @@ namespace Service
             {
                 throw new TechnicalException();
             }
+        }
+
+        public async Task<string?> CancelRequestAsync(string userId, CancelReqDTO reqDTO)
+        {
+            var user = await CheckUser(userId);
+
+            var service = await serviceRequestRepository.GetServiceById(reqDTO.requestId);
+            if (service is null)
+                throw new TechnicalException();
+
+            if (service.Status != ServiceReqStatus.Pending)
+                throw new RequestAlreadyCanceledException();
+
+            string? techUserId = null;
+            if (service.TechnicianId is not null)
+                techUserId = service.Technician?.UserId;
+
+            service.Status = ServiceReqStatus.Canceled;
+
+            try
+            {
+                if (!await serviceRequestRepository.UpdateAsync(service))
+                    throw new TechnicalException();
+            }
+            catch
+            {
+                throw new TechnicalException();
+            }
+            return techUserId;
         }
 
         private async Task<Client> CheckUser(string userId)

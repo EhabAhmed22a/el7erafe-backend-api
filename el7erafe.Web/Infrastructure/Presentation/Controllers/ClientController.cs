@@ -17,7 +17,7 @@ namespace Presentation.Controllers
     [Route("api")]
     [Authorize(AuthenticationSchemes = "Bearer", Roles = "Client")]
     public class ClientController(IClientService _clientService,
-        ITechnicianService technicianService,
+        ITechnicianFlowService technicianService,
         ILogger<ClientController> _logger,
         IChatService chatService,
         IHubContext<ClientHub> clientHub,
@@ -177,6 +177,22 @@ namespace Presentation.Controllers
             await _clientService.UpdateEmailAsync(userId, otpCode);
 
             return Ok(new { message = "تم تحديث البريد الإلكتروني بنجاح" });
+        }
+
+        [HttpPatch("cf/cancel-request")]
+        public async Task<IActionResult> CancelRequest(CancelReqDTO cancelReqDTO)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            var techUserId = await _clientService.CancelRequestAsync(userId, cancelReqDTO);
+            if (techUserId is not null)
+                await technicianHub.Clients.User(techUserId).SendAsync("RemoveCanceledRequest", cancelReqDTO.requestId);
+            else
+                await technicianHub.Clients.All.SendAsync("RemoveCanceledRequest", cancelReqDTO.requestId);
+
+            return Ok(new { message = "تم الغاء الطلب بنجاح" });
         }
 
         [HttpPost("cf/resend-otp-pendingemail")]

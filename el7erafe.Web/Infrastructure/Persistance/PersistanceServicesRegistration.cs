@@ -51,6 +51,7 @@ namespace Persistance
             services.AddScoped<ICityRepository, CityRepository>();
             services.AddScoped<IChatRepository, ChatRepository>();
             services.AddScoped<IUserConnectionRepository, UserConnectionRepository>();
+            services.AddScoped<IIgnoredServiceRequestsRepository, IgnoredServiceRequestsRepository>();
             services.AddScoped<IUserDelegationKeyCache, UserDelegationKeyCache>();
             services.AddScoped<ITechnicianAvailabilityRepository, TechnicianAvailabilityRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();

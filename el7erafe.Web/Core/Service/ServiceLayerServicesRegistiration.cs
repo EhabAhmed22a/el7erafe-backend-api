@@ -24,7 +24,7 @@ namespace Service
             services.AddScoped<IAdminDashboardService, AdminDashboardService>();
             services.AddScoped<IClientService, ClientService>();
             services.AddScoped<IChatService, ChatService>();
-            services.AddScoped<ITechnicianService, TechnicianFlowService>();
+            services.AddScoped<ITechnicianFlowService, TechnicianFlowService>();
             services.AddScoped<IClientRealTimeService, ClientRealTimeService>();
             services.AddScoped<ITechnicianAvailabilityService, TechnicianAvailabilityService>();
             services.AddScoped<ITechnicianRealTimeService, TechnicianRealTimeService>();

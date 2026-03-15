@@ -20,6 +20,7 @@ namespace ServiceAbstraction
         Task UpdatePhoneNumber(string userId, UpdatePhoneDTO dTO);
         Task<OtpResponseDTO> UpdatePendingEmail(string userId, UpdateEmailDTO updateEmailDTO);
         Task UpdateEmailAsync(string userId, OtpCodeDTO otpCode);
+        Task<string?> CancelRequestAsync(string userId, CancelReqDTO reqDTO);
         Task<OtpResponseDTO> ResendOtpForPendingEmail(string userId);
     }
 }
