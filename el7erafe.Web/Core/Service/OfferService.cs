@@ -1,6 +1,7 @@
 ﻿using DomainLayer.Contracts;
 using DomainLayer.Exceptions;
 using DomainLayer.Models;
+using Service.Helpers;
 using ServiceAbstraction;
 using Shared.DataTransferObject.OffersDTOs;
 
@@ -65,8 +66,7 @@ namespace Service
                 TechImage = await blobStorageRepository.GetBlobUrlWithSasTokenAsync("technician-documents",technician.ProfilePictureURL),
                 Rate = technician.Rating,
                 Fees = offer.Fees,
-                FromTime = offer.WorkFrom.Value,
-                ToTime = offer.WorkTo.Value,
+                TechTimeInterval = HelperClass.FormatArabicTimeInterval(offer.WorkFrom, offer.WorkTo),
                 NumberOfDays = offer.NumberOfDays,
                 ClientId = request.ClientId
             };

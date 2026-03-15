@@ -24,21 +24,7 @@ namespace Persistance.Repositories
                     o.ServiceRequestId == requestId);
         }
 
-        public async Task<IEnumerable<Offer>> GetValidQuickOffersForClientAsync(int serReqId, int clientId)
-        {
-            return await dbContext.Set<Offer>()
-                .Include(o => o.Technician)
-                .Include(o => o.ServiceRequest)
-                    .ThenInclude(sr => sr.Service)
-                .Where(o =>
-                    o.ServiceRequestId == serReqId &&
-                    o.ServiceRequest.ClientId == clientId && 
-                    o.ServiceRequest.Status == ServiceReqStatus.Pending
-                    && o.ServiceRequest.TechnicianId == null)
-                .ToListAsync();
-        }
-
-        public async Task<IEnumerable<Offer>> GetValidTechOfferForClientsAsync(int serReqId, int clientId)
+        public async Task<IEnumerable<Offer>> GetValidOffersForClientAsync(int serReqId, int clientId, bool isQuick)
         {
             return await dbContext.Set<Offer>()
                 .Include(o => o.Technician)
@@ -47,8 +33,10 @@ namespace Persistance.Repositories
                 .Where(o =>
                     o.ServiceRequestId == serReqId &&
                     o.ServiceRequest.ClientId == clientId &&
-                    o.ServiceRequest.Status == ServiceReqStatus.Pending
-                    && o.ServiceRequest.TechnicianId != null)
+                    o.ServiceRequest.Status == ServiceReqStatus.Pending &&
+                    (isQuick
+                        ? o.ServiceRequest.TechnicianId == null
+                        : o.ServiceRequest.TechnicianId != null))
                 .ToListAsync();
         }
 
