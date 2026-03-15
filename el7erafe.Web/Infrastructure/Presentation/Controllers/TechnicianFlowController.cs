@@ -214,5 +214,18 @@ namespace Presentation.Controllers
                 .SendAsync("ReceiveNewOffer", result);
 
             return Ok(new { message = "تم تقديم العرض بنجاح" }); }
+
+        [HttpGet("tech/pending-offers")]
+        public async Task<IActionResult> GetPendingOffers()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var result = await offerService.GetPendingOffersAsync(userId);
+
+            return Ok(result);
+        }
     }
 }
