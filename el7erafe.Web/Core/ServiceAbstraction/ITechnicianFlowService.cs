@@ -1,5 +1,5 @@
-﻿
-using DomainLayer.Models.IdentityModule;
+﻿using DomainLayer.Models.IdentityModule;
+using Shared.DataTransferObject.OffersDTOs;
 using Shared.DataTransferObject.OtpDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
@@ -16,6 +16,7 @@ namespace ServiceAbstraction
         Task<Technician?> GetTechnicianByIdAsync(int techId);
         Task<string?> DeclineRequestAsync(string userId, ReqIdDTO cancelReqDTO);
         Task<List<BroadCastServiceRequestDTO>> GetAvailableRequests(string userId);
+        Task<List<PendingOfferDto>> GetPendingOffersAsync(string technicianUserId);
         Task UpdateEmailAsync(string userId, OtpCodeDTO otpCode);
         Task<OtpResponseDTO> ResendOtpForPendingEmail(string userId);
         Task DeleteAccount(string userId);

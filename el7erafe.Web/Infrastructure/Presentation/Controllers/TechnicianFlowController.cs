@@ -215,7 +215,7 @@ namespace Presentation.Controllers
 
             return Ok(new { message = "تم تقديم العرض بنجاح" }); }
 
-        [HttpGet("tech/pending-offers")]
+        [HttpGet("pending-offers")]
         public async Task<IActionResult> GetPendingOffers()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -223,7 +223,7 @@ namespace Presentation.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            var result = await offerService.GetPendingOffersAsync(userId);
+            var result = await technicianService.GetPendingOffersAsync(userId);
 
             return Ok(result);
         }

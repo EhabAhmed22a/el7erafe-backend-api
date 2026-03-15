@@ -56,5 +56,20 @@ namespace Persistance.Repositories
                     fromTime < r.AvailableTo &&
                     toTime > r.AvailableFrom);
         }
+
+        public async Task<List<Offer>> GetPendingOffersForTechAsync(int technicianId)
+        {
+            return await dbContext.Set<Offer>()
+                .Include(o => o.ServiceRequest)
+                    .ThenInclude(sr => sr.Client)
+                .Include(o => o.ServiceRequest)
+                    .ThenInclude(sr => sr.Service)
+                .Include(o => o.ServiceRequest)
+                    .ThenInclude(sr => sr.City)
+                .Where(o =>
+                    o.TechnicianId == technicianId &&
+                    o.ServiceRequest.Status == ServiceReqStatus.Pending)
+                .ToListAsync();
+        }
     }
 }
