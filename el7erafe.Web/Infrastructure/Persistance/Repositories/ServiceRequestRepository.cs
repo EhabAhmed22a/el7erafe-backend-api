@@ -105,7 +105,6 @@ namespace Persistance.Repositories
 
             var potentialRequests = await dbContext.Set<ServiceRequest>()
                 .Include(sr => sr.Technician)
-                .Include(s => s.Offers)
                 .Include(s => s.Service)
                 .Include(s => s.Client)
                 .Include(s => s.City)
@@ -117,6 +116,9 @@ namespace Persistance.Repositories
                         ||
                         (sr.TechnicianId == null && sr.ServiceId == serviceId && sr.City.GovernorateId == govId)
                     )
+                    && !dbContext.Set<Offer>().Any(o =>
+                            o.TechnicianId == techId &&
+                            o.ServiceRequestId == sr.Id)
                     && !dbContext.Set<IgnoredServiceRequest>().Any(ignored =>
                             ignored.TechnicianId == techId &&
                             ignored.ServiceRequestId == sr.Id)
