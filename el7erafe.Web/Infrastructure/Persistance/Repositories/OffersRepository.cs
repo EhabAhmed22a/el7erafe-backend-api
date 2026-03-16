@@ -71,5 +71,16 @@ namespace Persistance.Repositories
                     o.ServiceRequest.Status == ServiceReqStatus.Pending)
                 .ToListAsync();
         }
+
+        public async Task<Offer?> GetByIdAsync(int offerId)
+        {
+            return await dbContext.Offers
+                .Include(o => o.Technician)
+                .Include(o => o.ServiceRequest)
+                    .ThenInclude(sr => sr.Client)
+                .Include(o => o.ServiceRequest)
+                    .ThenInclude(sr => sr.Service)
+                .FirstOrDefaultAsync(o => o.Id == offerId);
+        }
     }
 }

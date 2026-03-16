@@ -10,13 +10,17 @@ namespace Persistance.Repositories
         public async Task AddAsync(Reservation reservation)
         {
             await dbcontext.Reservations.AddAsync(reservation);
-            await dbcontext.SaveChangesAsync();
         }
 
         public async Task<Reservation?> GetByOfferIdAsync(int offerId)
         {
             return await dbcontext.Reservations
                 .FirstOrDefaultAsync(r => r.OfferId == offerId);
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await dbcontext.SaveChangesAsync();
         }
     }
 }
