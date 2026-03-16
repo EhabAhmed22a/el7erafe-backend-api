@@ -6,6 +6,7 @@ using Presentation.Hubs;
 using ServiceAbstraction;
 using ServiceAbstraction.Chat;
 using Shared.DataTransferObject.ClientDTOs;
+using Shared.DataTransferObject.OffersDTOs;
 using Shared.DataTransferObject.OtpDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
 using Shared.DataTransferObject.UpdateDTOs;
@@ -243,13 +244,13 @@ namespace Presentation.Controllers
         }
 
         [HttpPost("cf/offers/accept")]
-        public async Task<IActionResult> AcceptOffer([FromBody] ReqIdDTO offerId)
+        public async Task<IActionResult> AcceptOffer([FromBody] OfferIdDto offerId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("المستخدم غير موجود");
 
-            var result = await _clientService.AcceptOffer(offerId.requestId);
+            var result = await _clientService.AcceptOffer(offerId.offerId);
 
             await technicianHub.Clients.Users(result.TechnicianUserIds).SendAsync("OfferAccepted",
                 new {
