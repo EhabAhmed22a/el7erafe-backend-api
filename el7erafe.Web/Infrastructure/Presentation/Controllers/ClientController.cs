@@ -77,7 +77,7 @@ namespace Presentation.Controllers
 
             if (requestRegDTO.TechnicianId.HasValue)
             {
-                var technician = await technicianService.GetTechnicianByIdAsync((int) requestRegDTO.TechnicianId);
+                var technician = await technicianService.GetTechnicianByIdAsync((int)requestRegDTO.TechnicianId);
                 await technicianHub.Clients.User(technician?.User.Id!).SendAsync("ReceiveNewDirectRequest", newData);
             }
             return Ok(new { message = "تم إرسال طلب الخدمة للفني المحدد. في انتظار قبوله" });
@@ -240,6 +240,18 @@ namespace Presentation.Controllers
                 return Unauthorized();
 
             return Ok(await _clientService.GetOffersAsync(userId, reqIdDTO.requestId, false));
+        }
+
+        [HttpPost("cf/offers/accept")]
+        public async Task<IActionResult> AcceptOffer([FromBody] ReqIdDTO offerId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            await _clientService.AcceptOffer(offerId.requestId);
+
+            return Ok(new { message = "تم قبول العرض بنجاح" });
         }
     }
 }
