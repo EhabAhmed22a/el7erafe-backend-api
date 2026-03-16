@@ -7,7 +7,7 @@ namespace DomainLayer.Models.IdentityModule.Enums
         CancelledByTech = 2,
         CancelledByClient = 3,
         InProgress = 4,
-        InPayement = 5,
+        InPayment = 5,
         Done = 6,
     }
 }
