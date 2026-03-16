@@ -56,6 +56,7 @@ namespace Persistance
             services.AddScoped<ITechnicianAvailabilityRepository, TechnicianAvailabilityRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IOffersRepository, OffersRepository>();
+            services.AddScoped<IReservationRepository, ReservationRepository>();
             services.AddSingleton<BlobServiceClient>(serviceProvider =>
             {
                 var configuration = serviceProvider.GetRequiredService<IConfiguration>();
