@@ -82,5 +82,14 @@ namespace Persistance.Repositories
                     .ThenInclude(sr => sr.Service)
                 .FirstOrDefaultAsync(o => o.Id == offerId);
         }
+
+        public async Task<List<string>> GetTechniciansUserIdByRequestId(int requestId)
+        {
+            return await dbContext.Offers
+                .Where(o => o.ServiceRequestId == requestId)
+                .Select(o => o.Technician.UserId)
+                .Distinct()
+                .ToListAsync();
+        }
     }
 }

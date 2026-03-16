@@ -249,7 +249,13 @@ namespace Presentation.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("المستخدم غير موجود");
 
-            await _clientService.AcceptOffer(offerId.requestId);
+            var result = await _clientService.AcceptOffer(offerId.requestId);
+
+            await technicianHub.Clients.Users(result.TechnicianUserIds).SendAsync("OfferAccepted",
+                new {
+                    requestId = result.RequestId,
+                    acceptedOfferId = result.AcceptedOfferId
+                });
 
             return Ok(new { message = "تم قبول العرض بنجاح" });
         }

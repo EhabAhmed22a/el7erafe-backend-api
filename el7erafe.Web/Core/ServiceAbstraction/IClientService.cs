@@ -24,6 +24,6 @@ namespace ServiceAbstraction
         Task<string?> CancelRequestAsync(string userId, ReqIdDTO reqDTO);
         Task<OtpResponseDTO> ResendOtpForPendingEmail(string userId);
         Task<Client?> GetClientByIdAsync(int clientId);
-        Task AcceptOffer(int offerId);
+        Task<AcceptOfferResultDto> AcceptOffer(int offerId);
     }
 }

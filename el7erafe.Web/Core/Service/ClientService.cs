@@ -581,7 +581,7 @@ namespace Service
             return await clientRepository.GetByIdAsync(clientId);
         }
 
-        public async Task AcceptOffer(int offerId)
+        public async Task<AcceptOfferResultDto> AcceptOffer(int offerId)
         {
             var existing = await reservationRepository.GetByOfferIdAsync(offerId);
 
@@ -613,6 +613,15 @@ namespace Service
 
             await reservationRepository.AddAsync(reservation);
             await reservationRepository.SaveChangesAsync();
+
+            var techIds = await offersRepository.GetTechniciansUserIdByRequestId(offer.ServiceRequestId);
+
+            return new AcceptOfferResultDto
+            {
+                RequestId = offer.ServiceRequestId,
+                AcceptedOfferId = offer.Id,
+                TechnicianUserIds = techIds
+            };
         }
 
         private async Task<Client> CheckUser(string userId)
