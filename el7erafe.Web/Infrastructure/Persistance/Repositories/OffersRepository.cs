@@ -67,7 +67,7 @@ namespace Persistance.Repositories
                     .ThenInclude(sr => sr.City)
                 .Where(o =>
                     o.TechnicianId == technicianId &&
-                    o.ServiceRequest.Status == ServiceReqStatus.Pending)
+                    o.Status == OfferStatus.Pending) 
                 .ToListAsync();
         }
 
