@@ -366,9 +366,11 @@ namespace Service
             {
                 try
                 {
-                    service.Status = ServiceReqStatus.Rejected;
+                    service.Status = ServiceReqStatus.Canceled;
+
                     if (!await serviceRequestRepository.UpdateAsync(service))
                         throw new TechnicalException();
+
                     return clientUserId;
                 }
                 catch
@@ -383,12 +385,20 @@ namespace Service
                     var tech = await technicianRepository.GetByUserIdAsync(userId);
                     if (tech is null)
                         throw new TechnicalException();
+
                     if (await ignoredServiceRequestsRepository.IsAlreadyIgnoredAsync(tech.Id, service.Id))
                         throw new RequestAlreadyDeclinedException();
-                    await ignoredServiceRequestsRepository.CreateAsync(new IgnoredServiceRequest { TechnicianId = tech.Id, ServiceRequestId = service.Id });
+
+                    await ignoredServiceRequestsRepository.CreateAsync(
+                        new IgnoredServiceRequest
+                        {
+                            TechnicianId = tech.Id,
+                            ServiceRequestId = service.Id
+                        });
+
                     return string.Empty;
                 }
-                catch(RequestAlreadyDeclinedException)
+                catch (RequestAlreadyDeclinedException)
                 {
                     throw;
                 }
@@ -397,7 +407,6 @@ namespace Service
                     throw new TechnicalException();
                 }
             }
-            
         }
 
         public async Task<List<PendingOfferDto>> GetPendingOffersAsync(string technicianUserId)

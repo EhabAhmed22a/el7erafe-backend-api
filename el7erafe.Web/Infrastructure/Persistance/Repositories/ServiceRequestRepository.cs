@@ -162,6 +162,13 @@ namespace Persistance.Repositories
             return deletedRows > 0;
         }
 
+        public async Task UpdateStatusAsync(int requestId, ServiceReqStatus status)
+        {
+            await dbContext.ServiceRequests
+                   .Where(sr => sr.Id == requestId)
+                   .ExecuteUpdateAsync(setters => setters
+                       .SetProperty(sr => sr.Status, status));
+        }
     }
 
     public static class TimeOnlyExtensions
