@@ -32,6 +32,7 @@ namespace Persistance.Repositories
                 .Where(o =>
                     o.ServiceRequestId == serReqId &&
                     o.ServiceRequest.ClientId == clientId &&
+                    o.Status == OfferStatus.Pending &&
                     o.ServiceRequest.Status == ServiceReqStatus.Pending &&
                     (isQuick
                         ? o.ServiceRequest.TechnicianId == null
