@@ -203,7 +203,8 @@ namespace Presentation.Controllers
         }
 
         [HttpPost("make-offer")]
-        public async Task<IActionResult> MakeOffer(MakeOfferDto dto) {
+        public async Task<IActionResult> MakeOffer(MakeOfferDto dto)
+        {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("المستخدم غير موجود");
@@ -227,6 +228,16 @@ namespace Presentation.Controllers
 
             var result = await technicianService.GetPendingOffersAsync(userId);
 
+            return Ok(result);
+        }
+
+        [HttpGet("calendar")]
+        public async Task<IActionResult> GetCalendar(DateTime? date)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+            var result = await technicianService.GetCalendar(userId, date ?? DateTime.Now);
             return Ok(result);
         }
     }
