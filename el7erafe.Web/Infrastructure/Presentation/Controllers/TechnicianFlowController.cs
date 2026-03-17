@@ -240,5 +240,20 @@ namespace Presentation.Controllers
             var result = await technicianService.GetCalendar(userId, date ?? DateTime.Now);
             return Ok(result);
         }
+
+        [HttpPost("start-job")]
+        public async Task<IActionResult> StartJob([FromBody] int reservationId)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            var clientUserId = await technicianService.StartJob(userId, reservationId);
+
+            await clientHub.Clients.User(clientUserId).SendAsync("JobStarted", new { reservationId });
+
+            return Ok(new {message = "تم بدء العمل" });
+        }
     }
 }

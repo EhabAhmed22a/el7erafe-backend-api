@@ -497,7 +497,7 @@ namespace Service
             return (await Task.WhenAll(tasks)).ToList();
         }
 
-        public async Task StartJob(string userId, int reservationId)
+        public async Task<string> StartJob(string userId, int reservationId)
         {
             var user = await CheckUser(userId);
 
@@ -531,6 +531,7 @@ namespace Service
             reservation.Status = ReservationStatus.InProgress;
 
             await reservationRepository.UpdateReservation(reservation);
+            return reservation.Offer.ServiceRequest.Client.UserId;
         }
 
         public async Task<Technician?> GetTechnicianByIdAsync(int techId)
