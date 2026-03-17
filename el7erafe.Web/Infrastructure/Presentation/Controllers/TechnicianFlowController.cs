@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.SignalR;
 using Presentation.Hubs;
 using ServiceAbstraction;
 using ServiceAbstraction.Chat;
+using Shared.DataTransferObject.Calendar;
 using Shared.DataTransferObject.OffersDTOs;
 using Shared.DataTransferObject.OtpDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
@@ -239,6 +240,21 @@ namespace Presentation.Controllers
                 return Unauthorized("المستخدم غير موجود");
             var result = await technicianService.GetCalendar(userId, date ?? DateTime.Now);
             return Ok(result);
+        }
+
+        [HttpPost("start-job")]
+        public async Task<IActionResult> StartJob([FromBody] ReservationIdDto reservationId)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            var clientUserId = await technicianService.StartJob(userId, reservationId.ReservationId);
+
+            await clientHub.Clients.User(clientUserId).SendAsync("JobStarted", new { reservationId });
+
+            return Ok(new {message = "تم بدء العمل" });
         }
     }
 }

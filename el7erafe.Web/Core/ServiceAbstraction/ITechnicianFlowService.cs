@@ -21,6 +21,7 @@ namespace ServiceAbstraction
         Task UpdateEmailAsync(string userId, OtpCodeDTO otpCode);
         Task<OtpResponseDTO> ResendOtpForPendingEmail(string userId);
         Task<List<TechnicianCalendarDto>> GetCalendar(string userId, DateTime? date);
+        Task<string> StartJob(string userId, int reservationId);
         Task DeleteAccount(string userId);
     }
 }
