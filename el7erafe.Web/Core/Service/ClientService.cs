@@ -586,28 +586,28 @@ namespace Service
             var existing = await reservationRepository.GetByOfferIdAsync(offerId);
 
             if (existing != null)
-                throw new Exception("Offer already accepted");
+                throw new Exception("تم قبول هذا العرض بالفعل");
 
             var offer = await offersRepository.GetByIdAsync(offerId);
 
             if (offer == null)
-                throw new Exception("Offer not found");
+                throw new Exception("لم يتم العثور على العرض");
 
             var request = await serviceRequestRepository.GetServiceById(offer.ServiceRequestId);
 
             if (request == null)
-                throw new Exception("Service request not found");
+                throw new Exception("لم يتم العثور على طلب الخدمة");
 
             if (request.Status != ServiceReqStatus.Pending)
-                throw new Exception("Service request already reserved");
+                throw new Exception("تم حجز طلب الخدمة بالفعل");
 
-            // Update service request status
             request.Status = ServiceReqStatus.Reserved;
             offer.Status = OfferStatus.Accepted;
 
+            var rejectedTechIds = await offersRepository.GetRejectedTechnicianUserIds(request.Id, offer.Id);
+
             await offersRepository.RejectOtherOffers(offer.ServiceRequestId, offer.Id);
 
-            // Create reservation
             var reservation = new Reservation
             {
                 OfferId = offer.Id,
@@ -618,7 +618,6 @@ namespace Service
             await reservationRepository.SaveChangesAsync();
 
             var acceptedTechUserId = offer.Technician.UserId;
-            var rejectedTechIds = await offersRepository.GetRejectedTechnicianUserIds(request.Id, offer.Id);
 
             return new AcceptOfferResultDto
             {
@@ -626,6 +625,26 @@ namespace Service
                 AcceptedOfferId = offer.Id,
                 AcceptedTechnicianUserId = acceptedTechUserId,
                 RejectedTechnicianUserIds = rejectedTechIds
+            };
+        }
+
+        public async Task<DeclineOfferResultDto> DeclineOffer(int offerId)
+        {
+            var offer = await offersRepository.GetByIdAsync(offerId);
+
+            if (offer == null)
+                throw new Exception("لم يتم العثور على العرض");
+
+            if (offer.Status != OfferStatus.Pending)
+                throw new Exception("لا يمكن تنفيذ العملية، العرض لم يعد قيد الانتظار");
+
+            await offersRepository.RejectOfferAsync(offerId);
+
+            return new DeclineOfferResultDto
+            {
+                RequestId = offer.ServiceRequestId,
+                OfferId = offer.Id,
+                TechnicianUserId = offer.Technician.UserId
             };
         }
 

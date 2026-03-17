@@ -12,5 +12,6 @@ namespace DomainLayer.Contracts
         Task<List<Offer>> GetPendingOffersForTechAsync(int technicianId);
         Task<List<string>> GetRejectedTechnicianUserIds(int requestId, int acceptedOfferId);
         Task RejectOtherOffers(int requestId, int acceptedOfferId);
+        Task RejectOfferAsync(int offerId);
     }
 }
