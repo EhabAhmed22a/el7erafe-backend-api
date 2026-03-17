@@ -36,6 +36,43 @@ namespace Persistance.Repositories
                 .ToListAsync();
         }
 
+        public async Task<Reservation?> GetByIdWithDetailsAsync(int reservationId)
+        {
+            return await dbcontext.Reservations
+                .Include(r => r.Offer)
+                    .ThenInclude(o => o.ServiceRequest)
+                        .ThenInclude(sr => sr.Client)
+                .FirstOrDefaultAsync(r => r.Id == reservationId);
+        }
+
+        public async Task<bool> HasEarlierUnfinishedReservations(int technicianId, Reservation currentReservation)
+        {
+            return await dbcontext.Reservations
+                .Where(r =>
+                    r.Id != currentReservation.Id &&
+                    r.Offer.TechnicianId == technicianId &&
+                    r.Offer.ServiceRequest.ServiceDate == currentReservation.Offer.ServiceRequest.ServiceDate && // same day only
+                    r.Offer.WorkFrom < currentReservation.Offer.WorkFrom && // earlier time
+                    r.Status == ReservationStatus.Confirmed // NOT started yet
+                )
+                .AnyAsync();
+        }
+
+        public async Task<bool> HasActiveInProgressJob(int technicianId)
+        {
+            return await dbcontext.Reservations
+                .AnyAsync(r =>
+                    r.Offer.TechnicianId == technicianId &&
+                    r.Status == ReservationStatus.InProgress || 
+                    r.Status == ReservationStatus.InPayment
+                );
+        }
+
+        public async Task<int> UpdateReservation(Reservation reservation)
+        {
+            dbcontext.Reservations.Update(reservation);
+            return await dbcontext.SaveChangesAsync();
+        }
         public async Task SaveChangesAsync()
         {
             await dbcontext.SaveChangesAsync();

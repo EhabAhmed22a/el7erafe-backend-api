@@ -497,6 +497,41 @@ namespace Service
             return (await Task.WhenAll(tasks)).ToList();
         }
 
+        public async Task<string> StartJob(string userId, int reservationId)
+        {
+            var user = await CheckUser(userId);
+
+            var reservation = await reservationRepository.GetByIdWithDetailsAsync(reservationId);
+
+            if (reservation == null)
+                throw new KeyNotFoundException("الحجز غير موجود");
+
+            if (reservation.Offer.TechnicianId != user.Id)
+                throw new UnauthorizedAccessException("غير مسموح لك ببدء هذا الطلب");
+
+            if (reservation.Status != ReservationStatus.Confirmed)
+                throw new InvalidOperationException("لا يمكن بدء الطلب لأنه ليس في حالة مؤكدة");
+
+            // ✅ Rule 1: No active job
+            var hasActiveJob = await reservationRepository.HasActiveInProgressJob(user.Id);
+
+            if (hasActiveJob)
+                throw new InvalidOperationException("لا يمكنك بدء طلب جديد قبل إنهاء الطلب الحالي");
+
+            // ✅ Rule 2: Respect order
+            var hasEarlierNotStarted = await reservationRepository.HasEarlierUnfinishedReservations(user.Id, reservation);
+
+            if (hasEarlierNotStarted)
+                throw new InvalidOperationException("يجب بدء الطلبات السابقة أولاً");
+
+            // ✅ Update
+            reservation.Status = ReservationStatus.InProgress;
+
+            await reservationRepository.UpdateReservation(reservation);
+
+            return reservation.Offer.ServiceRequest.Client.UserId;
+        }
+
         public async Task<Technician?> GetTechnicianByIdAsync(int techId)
         {
             try
