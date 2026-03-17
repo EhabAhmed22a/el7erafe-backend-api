@@ -87,7 +87,7 @@ namespace Persistance.Repositories
             return await dbContext.Offers
                 .Where(o => o.ServiceRequestId == requestId
                             && o.Id != acceptedOfferId
-                            && o.Status == OfferStatus.Rejected)
+                            && o.Status == OfferStatus.Pending)
                 .Select(o => o.Technician.UserId)
                 .Distinct()
                 .ToListAsync();
@@ -99,6 +99,17 @@ namespace Persistance.Repositories
                 .Where(o => o.ServiceRequestId == requestId && o.Id != acceptedOfferId)
                 .ExecuteUpdateAsync(setters => setters
                     .SetProperty(o => o.Status, OfferStatus.Rejected));
+        }
+
+        public async Task RejectOfferAsync(int offerId)
+        {
+            var affected = await dbContext.Offers
+                .Where(o => o.Id == offerId && o.Status == OfferStatus.Pending)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(o => o.Status, OfferStatus.Rejected));
+
+            if (affected == 0)
+                throw new Exception("Offer not found or not pending");
         }
     }
 }
