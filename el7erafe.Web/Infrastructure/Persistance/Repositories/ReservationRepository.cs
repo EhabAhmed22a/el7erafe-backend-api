@@ -41,6 +41,7 @@ namespace Persistance.Repositories
             return await dbcontext.Reservations
                 .Include(r => r.Offer)
                     .ThenInclude(o => o.ServiceRequest)
+                        .ThenInclude(sr => sr.Client)
                 .FirstOrDefaultAsync(r => r.Id == reservationId);
         }
 
@@ -48,18 +49,23 @@ namespace Persistance.Repositories
         {
             return await dbcontext.Reservations
                 .Where(r =>
+                    r.Id != currentReservation.Id &&
                     r.Offer.TechnicianId == technicianId &&
-                    r.Status != ReservationStatus.Done &&
-                    r.Status != ReservationStatus.CancelledByClient &&
-                    r.Status != ReservationStatus.CancelledByTech &&
-
-                    // same day
-                    r.Offer.ServiceRequest.ServiceDate == currentReservation.Offer.ServiceRequest.ServiceDate &&
-
-                    // earlier time
-                    r.Offer.WorkFrom < currentReservation.Offer.WorkFrom
+                    r.Offer.ServiceRequest.ServiceDate == currentReservation.Offer.ServiceRequest.ServiceDate && // same day only
+                    r.Offer.WorkFrom < currentReservation.Offer.WorkFrom && // earlier time
+                    r.Status == ReservationStatus.Confirmed // NOT started yet
                 )
                 .AnyAsync();
+        }
+
+        public async Task<bool> HasActiveInProgressJob(int technicianId)
+        {
+            return await dbcontext.Reservations
+                .AnyAsync(r =>
+                    r.Offer.TechnicianId == technicianId &&
+                    r.Status == ReservationStatus.InProgress || 
+                    r.Status == ReservationStatus.InPayment
+                );
         }
 
         public async Task<int> UpdateReservation(Reservation reservation)
@@ -71,6 +77,5 @@ namespace Persistance.Repositories
         {
             await dbcontext.SaveChangesAsync();
         }
-
     }
 }

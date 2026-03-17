@@ -503,34 +503,32 @@ namespace Service
 
             var reservation = await reservationRepository.GetByIdWithDetailsAsync(reservationId);
 
-            // ✅ 1. Not found
             if (reservation == null)
                 throw new KeyNotFoundException("الحجز غير موجود");
 
-            // ✅ 2. Ownership check
             if (reservation.Offer.TechnicianId != user.Id)
                 throw new UnauthorizedAccessException("غير مسموح لك ببدء هذا الطلب");
 
-            // ✅ 3. Status check
             if (reservation.Status != ReservationStatus.Confirmed)
                 throw new InvalidOperationException("لا يمكن بدء الطلب لأنه ليس في حالة مؤكدة");
 
-            // ✅ 4. Date validation
-            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            // ✅ Rule 1: No active job
+            var hasActiveJob = await reservationRepository.HasActiveInProgressJob(user.Id);
 
-            if (reservation.Offer.ServiceRequest.ServiceDate != today)
-                throw new InvalidOperationException("يمكنك فقط بدء الطلبات المجدولة لليوم");
+            if (hasActiveJob)
+                throw new InvalidOperationException("لا يمكنك بدء طلب جديد قبل إنهاء الطلب الحالي");
 
-            // ✅ 5. Sequential validation
-            var hasEarlierUnfinished = await reservationRepository.HasEarlierUnfinishedReservations(user.Id, reservation);
+            // ✅ Rule 2: Respect order
+            var hasEarlierNotStarted = await reservationRepository.HasEarlierUnfinishedReservations(user.Id, reservation);
 
-            if (hasEarlierUnfinished)
-                throw new InvalidOperationException("يجب إنهاء الطلبات السابقة أولاً");
+            if (hasEarlierNotStarted)
+                throw new InvalidOperationException("يجب بدء الطلبات السابقة أولاً");
 
-            // ✅ 6. Update status
+            // ✅ Update
             reservation.Status = ReservationStatus.InProgress;
 
             await reservationRepository.UpdateReservation(reservation);
+
             return reservation.Offer.ServiceRequest.Client.UserId;
         }
 
