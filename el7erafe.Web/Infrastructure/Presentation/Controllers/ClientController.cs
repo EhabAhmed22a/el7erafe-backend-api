@@ -271,5 +271,24 @@ namespace Presentation.Controllers
 
             return Ok(new { message = "تم قبول العرض بنجاح" });
         }
+
+        [HttpPost("cf/offers/decline")]
+        public async Task<IActionResult> DeclineOffer([FromBody] OfferIdDto dto)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            var result = await _clientService.DeclineOffer(dto.offerId);
+
+            await technicianHub.Clients.User(result.TechnicianUserId)
+                .SendAsync("OfferRejected", new
+                {
+                    requestId = result.RequestId,
+                    offerId = result.OfferId
+                });
+
+            return Ok(new { message = "تم رفض العرض بنجاح" });
+        }
     }
 }
