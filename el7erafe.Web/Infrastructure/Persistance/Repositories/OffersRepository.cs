@@ -1,5 +1,4 @@
-﻿
-using DomainLayer.Contracts;
+﻿using DomainLayer.Contracts;
 using DomainLayer.Models;
 using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -70,6 +69,36 @@ namespace Persistance.Repositories
                     o.TechnicianId == technicianId &&
                     o.ServiceRequest.Status == ServiceReqStatus.Pending)
                 .ToListAsync();
+        }
+
+        public async Task<Offer?> GetByIdAsync(int offerId)
+        {
+            return await dbContext.Offers
+                .Include(o => o.Technician)
+                .Include(o => o.ServiceRequest)
+                    .ThenInclude(sr => sr.Client)
+                .Include(o => o.ServiceRequest)
+                    .ThenInclude(sr => sr.Service)
+                .FirstOrDefaultAsync(o => o.Id == offerId);
+        }
+
+        public async Task<List<string>> GetRejectedTechnicianUserIds(int requestId, int acceptedOfferId)
+        {
+            return await dbContext.Offers
+                .Where(o => o.ServiceRequestId == requestId
+                            && o.Id != acceptedOfferId
+                            && o.Status == OfferStatus.Rejected)
+                .Select(o => o.Technician.UserId)
+                .Distinct()
+                .ToListAsync();
+        }
+
+        public async Task RejectOtherOffers(int requestId, int acceptedOfferId)
+        {
+            await dbContext.Offers
+                .Where(o => o.ServiceRequestId == requestId && o.Id != acceptedOfferId)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(o => o.Status, OfferStatus.Rejected));
         }
     }
 }

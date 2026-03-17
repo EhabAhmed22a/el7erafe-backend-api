@@ -6,6 +6,7 @@ using Presentation.Hubs;
 using ServiceAbstraction;
 using ServiceAbstraction.Chat;
 using Shared.DataTransferObject.ClientDTOs;
+using Shared.DataTransferObject.OffersDTOs;
 using Shared.DataTransferObject.OtpDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
 using Shared.DataTransferObject.UpdateDTOs;
@@ -77,7 +78,7 @@ namespace Presentation.Controllers
 
             if (requestRegDTO.TechnicianId.HasValue)
             {
-                var technician = await technicianService.GetTechnicianByIdAsync((int) requestRegDTO.TechnicianId);
+                var technician = await technicianService.GetTechnicianByIdAsync((int)requestRegDTO.TechnicianId);
                 await technicianHub.Clients.User(technician?.User.Id!).SendAsync("ReceiveNewDirectRequest", newData);
             }
             return Ok(new { message = "تم إرسال طلب الخدمة للفني المحدد. في انتظار قبوله" });
@@ -240,6 +241,35 @@ namespace Presentation.Controllers
                 return Unauthorized();
 
             return Ok(await _clientService.GetOffersAsync(userId, reqIdDTO.requestId, false));
+        }
+
+        [HttpPost("cf/offers/accept")]
+        public async Task<IActionResult> AcceptOffer([FromBody] OfferIdDto offerId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            var result = await _clientService.AcceptOffer(offerId.offerId);
+
+            await technicianHub.Clients.User(result.AcceptedTechnicianUserId).SendAsync("OfferAccepted",
+                new {
+                    requestId = result.RequestId,
+                    acceptedOfferId = result.AcceptedOfferId
+                });
+
+            if (result.RejectedTechnicianUserIds.Any())
+            {
+                await technicianHub.Clients
+                    .Users(result.RejectedTechnicianUserIds)
+                    .SendAsync("OfferRejected", new
+                    {
+                        requestId = result.RequestId,
+                        acceptedOfferId = result.AcceptedOfferId
+                    });
+            }
+
+            return Ok(new { message = "تم قبول العرض بنجاح" });
         }
     }
 }
