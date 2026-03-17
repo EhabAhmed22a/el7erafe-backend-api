@@ -4,6 +4,7 @@ using DomainLayer.Models;
 using Service.Helpers;
 using ServiceAbstraction;
 using Shared.DataTransferObject.OffersDTOs;
+using DomainLayer.Models.IdentityModule.Enums;
 
 namespace Service
 {
@@ -51,7 +52,8 @@ namespace Service
                 TechnicianId = technician.Id,
                 WorkFrom = dto.FromTime,
                 WorkTo = dto.ToTime,
-                NumberOfDays = dto.NumberOfDays
+                NumberOfDays = dto.NumberOfDays,
+                Status = OfferStatus.Pending
             };
 
             await offersRepository.AddOfferAsync(offer);

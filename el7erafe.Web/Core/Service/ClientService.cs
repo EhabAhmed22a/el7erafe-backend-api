@@ -27,7 +27,8 @@ namespace Service
             ICityRepository cityRepository,
             OtpHelper otpHelper,
             IUnitOfWork unitOfWork,
-            IOffersRepository offersRepository) : IClientService
+            IOffersRepository offersRepository,
+            IReservationRepository reservationRepository) : IClientService
     {
         public async Task<ServiceListDto> GetClientServicesAsync()
         {
@@ -578,6 +579,54 @@ namespace Service
         public async Task<Client?> GetClientByIdAsync(int clientId)
         {
             return await clientRepository.GetByIdAsync(clientId);
+        }
+
+        public async Task<AcceptOfferResultDto> AcceptOffer(int offerId)
+        {
+            var existing = await reservationRepository.GetByOfferIdAsync(offerId);
+
+            if (existing != null)
+                throw new Exception("Offer already accepted");
+
+            var offer = await offersRepository.GetByIdAsync(offerId);
+
+            if (offer == null)
+                throw new Exception("Offer not found");
+
+            var request = await serviceRequestRepository.GetServiceById(offer.ServiceRequestId);
+
+            if (request == null)
+                throw new Exception("Service request not found");
+
+            if (request.Status != ServiceReqStatus.Pending)
+                throw new Exception("Service request already reserved");
+
+            // Update service request status
+            request.Status = ServiceReqStatus.Reserved;
+            offer.Status = OfferStatus.Accepted;
+
+            await offersRepository.RejectOtherOffers(offer.ServiceRequestId, offer.Id);
+
+            // Create reservation
+            var reservation = new Reservation
+            {
+                OfferId = offer.Id,
+                Status = ReservationStatus.Confirmed
+            };
+
+            await reservationRepository.AddAsync(reservation);
+            await reservationRepository.SaveChangesAsync();
+
+            var acceptedTechUserId = offer.Technician.UserId;
+            var rejectedTechIds = await offersRepository.GetRejectedTechnicianUserIds(request.Id, offer.Id);
+
+            return new AcceptOfferResultDto
+            {
+                RequestId = offer.ServiceRequestId,
+                AcceptedOfferId = offer.Id,
+                AcceptedTechnicianUserId = acceptedTechUserId,
+                RejectedTechnicianUserIds = rejectedTechIds
+            };
         }
 
         private async Task<Client> CheckUser(string userId)

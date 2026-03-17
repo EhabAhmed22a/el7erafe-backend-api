@@ -24,6 +24,7 @@ namespace Persistance.Databases
         public DbSet<UserConnection> UserConnections { get; set; }
         public DbSet<IgnoredServiceRequest> IgnoredServiceRequests { get; set; }
         public DbSet<Offer> Offers { get; set; }
+        public DbSet<Reservation> Reservations { get; set; }
         public DbSet<Chat> Chats { get; set; }
         public DbSet<Message> Messages { get; set; }
 
