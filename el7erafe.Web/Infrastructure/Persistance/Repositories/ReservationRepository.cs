@@ -36,6 +36,32 @@ namespace Persistance.Repositories
                 .ToListAsync();
         }
 
+        public async Task<Reservation?> GetByIdWithDetailsAsync(int reservationId)
+        {
+            return await dbcontext.Reservations
+                .Include(r => r.Offer)
+                    .ThenInclude(o => o.ServiceRequest)
+                .FirstOrDefaultAsync(r => r.Id == reservationId);
+        }
+
+        public async Task<bool> HasEarlierUnfinishedReservations(int technicianId, Reservation currentReservation)
+        {
+            return await dbcontext.Reservations
+                .Where(r =>
+                    r.Offer.TechnicianId == technicianId &&
+                    r.Status != ReservationStatus.Done &&
+                    r.Status != ReservationStatus.CancelledByClient &&
+                    r.Status != ReservationStatus.CancelledByTech &&
+
+                    // same day
+                    r.Offer.ServiceRequest.ServiceDate == currentReservation.Offer.ServiceRequest.ServiceDate &&
+
+                    // earlier time
+                    r.Offer.WorkFrom < currentReservation.Offer.WorkFrom
+                )
+                .AnyAsync();
+        }
+
         public async Task SaveChangesAsync()
         {
             await dbcontext.SaveChangesAsync();
