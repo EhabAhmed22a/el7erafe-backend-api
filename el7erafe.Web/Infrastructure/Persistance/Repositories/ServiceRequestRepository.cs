@@ -146,11 +146,10 @@ namespace Persistance.Repositories
         {
             return await dbContext
                 .Set<ServiceRequest>()
-                .Where(sr => sr.ClientId == clientId)
+                .Where(sr => sr.ClientId == clientId && sr.Status == ServiceReqStatus.Pending)
                 .Include(s => s.Offers.Where(o => o.Status == OfferStatus.Pending))
                 .Include(s => s.Service)
                 .Include(s => s.Technician)
-                .Where(s => s.Status == ServiceReqStatus.Pending)
                 .ToListAsync();
         }
 
