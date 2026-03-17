@@ -497,6 +497,42 @@ namespace Service
             return (await Task.WhenAll(tasks)).ToList();
         }
 
+        public async Task StartJob(string userId, int reservationId)
+        {
+            var user = await CheckUser(userId);
+
+            var reservation = await reservationRepository.GetByIdWithDetailsAsync(reservationId);
+
+            // ✅ 1. Not found
+            if (reservation == null)
+                throw new KeyNotFoundException("الحجز غير موجود");
+
+            // ✅ 2. Ownership check
+            if (reservation.Offer.TechnicianId != user.Id)
+                throw new UnauthorizedAccessException("غير مسموح لك ببدء هذا الطلب");
+
+            // ✅ 3. Status check
+            if (reservation.Status != ReservationStatus.Confirmed)
+                throw new InvalidOperationException("لا يمكن بدء الطلب لأنه ليس في حالة مؤكدة");
+
+            // ✅ 4. Date validation
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+            if (reservation.Offer.ServiceRequest.ServiceDate != today)
+                throw new InvalidOperationException("يمكنك فقط بدء الطلبات المجدولة لليوم");
+
+            // ✅ 5. Sequential validation
+            var hasEarlierUnfinished = await reservationRepository.HasEarlierUnfinishedReservations(user.Id, reservation);
+
+            if (hasEarlierUnfinished)
+                throw new InvalidOperationException("يجب إنهاء الطلبات السابقة أولاً");
+
+            // ✅ 6. Update status
+            reservation.Status = ReservationStatus.InProgress;
+
+            await reservationRepository.UpdateReservation(reservation);
+        }
+
         public async Task<Technician?> GetTechnicianByIdAsync(int techId)
         {
             try

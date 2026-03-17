@@ -62,9 +62,15 @@ namespace Persistance.Repositories
                 .AnyAsync();
         }
 
+        public async Task<int> UpdateReservation(Reservation reservation)
+        {
+            dbcontext.Reservations.Update(reservation);
+            return await dbcontext.SaveChangesAsync();
+        }
         public async Task SaveChangesAsync()
         {
             await dbcontext.SaveChangesAsync();
         }
+
     }
 }
