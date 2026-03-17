@@ -617,13 +617,15 @@ namespace Service
             await reservationRepository.AddAsync(reservation);
             await reservationRepository.SaveChangesAsync();
 
-            var techIds = await offersRepository.GetTechniciansUserIdByRequestId(offer.ServiceRequestId);
+            var acceptedTechUserId = offer.Technician.UserId;
+            var rejectedTechIds = await offersRepository.GetRejectedTechnicianUserIds(request.Id, offer.Id);
 
             return new AcceptOfferResultDto
             {
                 RequestId = offer.ServiceRequestId,
                 AcceptedOfferId = offer.Id,
-                TechnicianUserIds = techIds
+                AcceptedTechnicianUserId = acceptedTechUserId,
+                RejectedTechnicianUserIds = rejectedTechIds
             };
         }
 

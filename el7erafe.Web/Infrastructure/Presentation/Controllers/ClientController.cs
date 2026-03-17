@@ -252,11 +252,22 @@ namespace Presentation.Controllers
 
             var result = await _clientService.AcceptOffer(offerId.offerId);
 
-            await technicianHub.Clients.Users(result.TechnicianUserIds).SendAsync("OfferAccepted",
+            await technicianHub.Clients.User(result.AcceptedTechnicianUserId).SendAsync("OfferAccepted",
                 new {
                     requestId = result.RequestId,
                     acceptedOfferId = result.AcceptedOfferId
                 });
+
+            if (result.RejectedTechnicianUserIds.Any())
+            {
+                await technicianHub.Clients
+                    .Users(result.RejectedTechnicianUserIds)
+                    .SendAsync("OfferRejected", new
+                    {
+                        requestId = result.RequestId,
+                        acceptedOfferId = result.AcceptedOfferId
+                    });
+            }
 
             return Ok(new { message = "تم قبول العرض بنجاح" });
         }

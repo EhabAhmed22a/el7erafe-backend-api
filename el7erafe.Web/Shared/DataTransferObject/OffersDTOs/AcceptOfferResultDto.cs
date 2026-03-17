@@ -7,6 +7,8 @@ namespace Shared.DataTransferObject.OffersDTOs
 
         public int AcceptedOfferId { get; set; }
 
-        public List<string> TechnicianUserIds { get; set; } = new();
+        public string AcceptedTechnicianUserId { get; set; } = default!;
+
+        public List<string> RejectedTechnicianUserIds { get; set; } = new();
     }
 }

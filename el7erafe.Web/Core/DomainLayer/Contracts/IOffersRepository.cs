@@ -10,7 +10,7 @@ namespace DomainLayer.Contracts
         Task<IEnumerable<Offer>> GetValidOffersForClientAsync(int serReqId, int clientId, bool isQuick);
         Task<bool> HasTimeConflict(int technicianId, TimeOnly fromTime, TimeOnly toTime, DateOnly serviceDate, int? numberOfDays);
         Task<List<Offer>> GetPendingOffersForTechAsync(int technicianId);
-        Task<List<string>> GetTechniciansUserIdByRequestId(int requestId);
+        Task<List<string>> GetRejectedTechnicianUserIds(int requestId, int acceptedOfferId);
         Task RejectOtherOffers(int requestId, int acceptedOfferId);
     }
 }

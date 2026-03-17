@@ -82,10 +82,12 @@ namespace Persistance.Repositories
                 .FirstOrDefaultAsync(o => o.Id == offerId);
         }
 
-        public async Task<List<string>> GetTechniciansUserIdByRequestId(int requestId)
+        public async Task<List<string>> GetRejectedTechnicianUserIds(int requestId, int acceptedOfferId)
         {
             return await dbContext.Offers
-                .Where(o => o.ServiceRequestId == requestId)
+                .Where(o => o.ServiceRequestId == requestId
+                            && o.Id != acceptedOfferId
+                            && o.Status == OfferStatus.Rejected)
                 .Select(o => o.Technician.UserId)
                 .Distinct()
                 .ToListAsync();
