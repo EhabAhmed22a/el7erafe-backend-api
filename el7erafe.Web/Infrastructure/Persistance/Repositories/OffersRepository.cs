@@ -1,5 +1,4 @@
-﻿
-using DomainLayer.Contracts;
+﻿using DomainLayer.Contracts;
 using DomainLayer.Models;
 using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -90,6 +89,14 @@ namespace Persistance.Repositories
                 .Select(o => o.Technician.UserId)
                 .Distinct()
                 .ToListAsync();
+        }
+
+        public async Task RejectOtherOffers(int requestId, int acceptedOfferId)
+        {
+            await dbContext.Offers
+                .Where(o => o.ServiceRequestId == requestId && o.Id != acceptedOfferId)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(o => o.Status, OfferStatus.Rejected));
         }
     }
 }

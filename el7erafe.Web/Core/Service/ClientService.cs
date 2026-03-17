@@ -603,6 +603,9 @@ namespace Service
 
             // Update service request status
             request.Status = ServiceReqStatus.Reserved;
+            offer.Status = OfferStatus.Accepted;
+
+            await offersRepository.RejectOtherOffers(offer.ServiceRequestId, offer.Id);
 
             // Create reservation
             var reservation = new Reservation
