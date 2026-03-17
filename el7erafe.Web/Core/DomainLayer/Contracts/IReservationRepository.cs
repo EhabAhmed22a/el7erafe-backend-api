@@ -7,6 +7,7 @@ namespace DomainLayer.Contracts
     {
         Task AddAsync(Reservation reservation);
         Task<Reservation?> GetByOfferIdAsync(int offerId);
+        Task<List<Reservation>> GetCurrentReservationsAsync(int technicianId, DateTime date);
         Task SaveChangesAsync();
     }
 }

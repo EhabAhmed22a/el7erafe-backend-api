@@ -1,4 +1,5 @@
 ﻿using DomainLayer.Models.IdentityModule;
+using Shared.DataTransferObject.Calendar;
 using Shared.DataTransferObject.OffersDTOs;
 using Shared.DataTransferObject.OtpDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
@@ -19,6 +20,7 @@ namespace ServiceAbstraction
         Task<List<PendingOfferDto>> GetPendingOffersAsync(string technicianUserId);
         Task UpdateEmailAsync(string userId, OtpCodeDTO otpCode);
         Task<OtpResponseDTO> ResendOtpForPendingEmail(string userId);
+        Task<List<TechnicianCalendarDto>> GetCalendar(string userId, DateTime? date);
         Task DeleteAccount(string userId);
     }
 }
