@@ -633,13 +633,16 @@ namespace Service
             var offer = await offersRepository.GetByIdAsync(offerId);
 
             if (offer == null)
-                throw new Exception("لم يتم العثور على العرض");
+                throw new KeyNotFoundException("لم يتم العثور على العرض");
 
             if (offer.Status != OfferStatus.Pending)
-                throw new Exception("لا يمكن تنفيذ العملية، العرض لم يعد قيد الانتظار");
+                throw new InvalidOperationException("لا يمكن تنفيذ العملية، العرض لم يعد قيد الانتظار");
 
             await offersRepository.RejectOfferAsync(offerId);
 
+            if (offer.ServiceRequest.TechnicianId != null)
+                await serviceRequestRepository.UpdateStatusAsync(offer.ServiceRequestId,ServiceReqStatus.Canceled);
+            
             return new DeclineOfferResultDto
             {
                 RequestId = offer.ServiceRequestId,
