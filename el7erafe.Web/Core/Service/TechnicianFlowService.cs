@@ -574,6 +574,32 @@ namespace Service
             return (await Task.WhenAll(tasks)).ToList();
         }
 
+        public async Task<string> CompleteJob(string userId, int reservationId)
+        {
+            var user = await CheckUser(userId);
+
+            var reservation = await reservationRepository.GetByIdWithDetailsAsync(reservationId);
+
+            if (reservation == null)
+                throw new KeyNotFoundException("الحجز غير موجود");
+
+            if (reservation.Offer.TechnicianId != user.Id)
+                throw new UnauthorizedAccessException("غير مسموح لك بإنهاء هذا الطلب");
+
+            if (reservation.Status == ReservationStatus.Done)
+                throw new InvalidOperationException("تم إنهاء هذا الطلب بالفعل");
+
+            if (reservation.Status != ReservationStatus.InPayment)
+                throw new InvalidOperationException("لا يمكن إنهاء الطلب إلا بعد الدفع");
+
+            reservation.Status = ReservationStatus.Done;
+            reservation.FinishedAt = HelperClass.GetEgyptNow();
+
+            await reservationRepository.UpdateReservation(reservation);
+
+            return reservation.Offer.ServiceRequest.Client.UserId;
+        }
+
         public async Task<Technician?> GetTechnicianByIdAsync(int techId)
         {
             try
