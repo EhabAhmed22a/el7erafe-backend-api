@@ -589,10 +589,10 @@ namespace Service
             if (reservation.Status == ReservationStatus.Done)
                 throw new InvalidOperationException("تم إنهاء هذا الطلب بالفعل");
 
-            if (reservation.Status != ReservationStatus.InPayment)
-                throw new InvalidOperationException("لا يمكن إنهاء الطلب إلا بعد الدفع");
+            if (reservation.Status != ReservationStatus.InProgress)
+                throw new InvalidOperationException("لا يمكن إنهاء الطلب لأنه ليس قيد التنفيذ حالياً");
 
-            reservation.Status = ReservationStatus.Done;
+            reservation.Status = ReservationStatus.InPayment;
             reservation.FinishedAt = HelperClass.GetEgyptNow();
 
             await reservationRepository.UpdateReservation(reservation);
