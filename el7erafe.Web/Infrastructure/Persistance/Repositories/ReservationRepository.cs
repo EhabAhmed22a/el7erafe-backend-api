@@ -45,6 +45,20 @@ namespace Persistance.Repositories
                 .FirstOrDefaultAsync(r => r.Id == reservationId);
         }
 
+        public async Task<List<Reservation>> GetInProgressReservationsAsync(int technicianId)
+        {
+            return await dbcontext.Reservations
+                .Where(r =>
+                    r.Offer.TechnicianId == technicianId &&
+                    r.Status == ReservationStatus.InProgress
+                )
+                .Include(r => r.Offer)
+                    .ThenInclude(o => o.ServiceRequest)
+                        .ThenInclude(sr => sr.Client)
+                .Include(r => r.Offer.ServiceRequest.Service)
+                .ToListAsync();
+        }
+
         public async Task<bool> HasEarlierUnfinishedReservations(int technicianId, Reservation currentReservation)
         {
             return await dbcontext.Reservations
