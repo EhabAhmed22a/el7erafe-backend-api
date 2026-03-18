@@ -366,7 +366,7 @@ namespace Service
             {
                 try
                 {
-                    service.Status = ServiceReqStatus.Canceled;
+                    service.Status = ServiceReqStatus.Rejected;
 
                     if (!await serviceRequestRepository.UpdateAsync(service))
                         throw new TechnicalException();
