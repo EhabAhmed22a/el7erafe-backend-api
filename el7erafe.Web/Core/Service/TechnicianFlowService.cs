@@ -586,10 +586,14 @@ namespace Service
             if (reservation.Offer.TechnicianId != user.Id)
                 throw new UnauthorizedAccessException("غير مسموح لك بإنهاء هذا الطلب");
 
+            if (reservation.Status == ReservationStatus.Done)
+                throw new InvalidOperationException("تم إنهاء هذا الطلب بالفعل");
+
             if (reservation.Status != ReservationStatus.InPayment)
                 throw new InvalidOperationException("لا يمكن إنهاء الطلب إلا بعد الدفع");
 
             reservation.Status = ReservationStatus.Done;
+            reservation.FinishedAt = HelperClass.GetEgyptNow();
 
             await reservationRepository.UpdateReservation(reservation);
 

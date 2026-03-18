@@ -18,5 +18,12 @@ namespace Service.Helpers
                 .Replace("6", "٦").Replace("7", "٧").Replace("8", "٨")
                 .Replace("9", "٩");
         }
+        public static DateTime GetEgyptNow()
+        {
+            return TimeZoneInfo.ConvertTimeBySystemTimeZoneId(
+                DateTime.UtcNow,
+                "Egypt Standard Time"
+            );
+        }
     }
 }
