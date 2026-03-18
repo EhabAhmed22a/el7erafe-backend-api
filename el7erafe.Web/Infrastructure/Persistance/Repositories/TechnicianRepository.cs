@@ -179,12 +179,17 @@ namespace Persistance.Repositories
         {
             var query = context.Set<Technician>()
                                .Include(t => t.User)
-                               .Include(t => t.Rejection)
                                .Include(t => t.City)
                                    .ThenInclude(c => c.Governorate)
                                .Include(t => t.Service)
                                .Include(t => t.Availability)
-                               .Where(t => t.ServiceId == serviceId 
+                               .Include(t => t.Offers.Where(o => o.Reservation != null))
+                                   .ThenInclude(o => o.Reservation)
+
+                               .Include(t => t.Offers.Where(o => o.Reservation != null))
+                                   .ThenInclude(o => o.ServiceRequest)
+
+                               .Where(t => t.ServiceId == serviceId
                                 && t.Status == TechnicianStatus.Accepted
                                 && t.City.GovernorateId == governorateId);
             if (sorted)
