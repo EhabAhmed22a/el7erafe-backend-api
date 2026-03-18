@@ -272,27 +272,21 @@ namespace Service
             if (technicians is null || !technicians.Any())
                 return new List<AvailableTechnicianDto>();
 
-            // FILTER BY AVAILABILITY
-            //technicians = technicians
-            //    .Where(t => t.Availability.Any(a =>
-            //        (a.DayOfWeek == null || (int)a.DayOfWeek == requestRegDTO.DayOfWeek) &&
-            //        a.FromTime <= requestRegDTO.FromTime &&
-            //        a.ToTime >= requestRegDTO.ToTime))
-            //    .ToList();
+            technicians = technicians
+                .Where(t => IsTechnicianAvailable(t, requestRegDTO))
+                .ToList();
 
             if (!technicians.Any())
                 return new List<AvailableTechnicianDto>();
 
             var sasUrls = await GenerateProfilePictureSasUrlsAsync(technicians);
 
-            var technicianDtos = new List<AvailableTechnicianDto>();
-
-            foreach (var t in technicians)
+            var tasks = technicians.Select(async t =>
             {
                 var portfolioImages = await blobStorageRepository
                     .GetBlobUrlsWithPrefixAsync("technician-documents", $"portifolioImages_{t.Id}_");
 
-                technicianDtos.Add(new AvailableTechnicianDto
+                return new AvailableTechnicianDto
                 {
                     Id = t.Id,
                     Name = t.Name,
@@ -303,9 +297,11 @@ namespace Service
                     ProfilePicture = sasUrls.ContainsKey(t.ProfilePictureURL)
                         ? sasUrls[t.ProfilePictureURL]
                         : string.Empty,
-                    PortfolioImages = portfolioImages
-                });
-            }
+                    PortfolioImages = portfolioImages ?? new List<string>()
+                };
+            });
+
+            var technicianDtos = (await Task.WhenAll(tasks)).ToList();
 
             return technicianDtos;
         }
@@ -641,8 +637,8 @@ namespace Service
             await offersRepository.RejectOfferAsync(offerId);
 
             if (offer.ServiceRequest.TechnicianId != null)
-                await serviceRequestRepository.UpdateStatusAsync(offer.ServiceRequestId,ServiceReqStatus.Canceled);
-            
+                await serviceRequestRepository.UpdateStatusAsync(offer.ServiceRequestId, ServiceReqStatus.Canceled);
+
             return new DeclineOfferResultDto
             {
                 RequestId = offer.ServiceRequestId,
@@ -688,7 +684,7 @@ namespace Service
 
             if (!string.IsNullOrWhiteSpace(offer.Technician?.ProfilePictureURL))
             {
-                techImageUrl = await blobStorageRepository.GetBlobUrlWithSasTokenAsync("technician-documents",offer.Technician.ProfilePictureURL);
+                techImageUrl = await blobStorageRepository.GetBlobUrlWithSasTokenAsync("technician-documents", offer.Technician.ProfilePictureURL);
             }
 
             return new OfferResultDto
@@ -710,6 +706,78 @@ namespace Service
 
                 ClientId = offer.ServiceRequest.ClientId
             };
+        }
+        private bool IsTechnicianAvailable(Technician t, GetAvailableTechniciansRequest request)
+        {
+            // 1. Get valid schedules for that day
+            var schedules = t.Availability
+                .Where(a =>
+                    a.DayOfWeek == null ||
+                    (int)a.DayOfWeek == (int)request.Day.DayOfWeek)
+                .ToList();
+
+            if (!schedules.Any())
+                return false;
+
+            var reservations = t.Offers
+                    .Where(o =>
+                        o.Reservation != null &&
+                        (o.Reservation.Status == ReservationStatus.Confirmed ||
+                         o.Reservation.Status == ReservationStatus.InProgress ||
+                         o.Reservation.Status == ReservationStatus.InPayment) &&
+                        o.ServiceRequest != null &&
+                        o.ServiceRequest.ServiceDate == request.Day)
+                    .Select(o => o.Reservation)
+                    .OrderBy(r => r.Offer.WorkFrom)
+                    .ToList();
+
+            foreach (var schedule in schedules)
+            {
+                var workStart = schedule.FromTime;
+                var workEnd = schedule.ToTime;
+
+                // 2. Intersect request with working hours
+                var start = workStart > request.FromTime ? workStart : request.FromTime;
+                var end = workEnd < request.ToTime ? workEnd : request.ToTime;
+
+                if ((end - start) < TimeSpan.FromHours(1))
+                    continue;
+
+                // 4. Check free slot
+                if (HasFreeSlot(start, end, reservations))
+                    return true;
+            }
+
+            return false;
+        }
+        private bool HasFreeSlot(TimeOnly start, TimeOnly end, List<Reservation> reservations)
+        {
+            var current = start;
+
+            foreach (var r in reservations)
+            {
+                if (r.Offer.WorkFrom == null || r.Offer.WorkTo == null)
+                    continue;
+
+                var resStart = r.Offer.WorkFrom.Value < start ? start : r.Offer.WorkFrom.Value;
+                var resEnd = r.Offer.WorkTo.Value > end ? end : r.Offer.WorkTo.Value;
+
+                if (resStart > current)
+                {
+                    var gap = resStart - current;
+                    if (gap >= TimeSpan.FromHours(1))
+                        return true;
+                }
+
+                if (resEnd > current)
+                    current = resEnd;
+            }
+
+            var finalGap = end - current;
+            if (finalGap >= TimeSpan.FromHours(1))
+                return true;
+
+            return false;
         }
 
     }
