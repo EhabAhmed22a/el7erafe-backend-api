@@ -9,6 +9,7 @@ using ServiceAbstraction;
 using Shared.DataTransferObject.Calendar;
 using Shared.DataTransferObject.OffersDTOs;
 using Shared.DataTransferObject.OtpDTOs;
+using Shared.DataTransferObject.ReservationDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
 using Shared.DataTransferObject.UpdateDTOs;
@@ -539,6 +540,38 @@ namespace Service
             await reservationRepository.UpdateReservation(reservation);
 
             return reservation.Offer.ServiceRequest.Client.UserId;
+        }
+
+        public async Task<List<InProgressReservationDto>> GetInProgressReservations(string userId)
+        {
+            var user = await CheckUser(userId);
+
+            var reservations = await reservationRepository.GetInProgressReservationsAsync(user.Id);
+
+            var tasks = reservations.Select(async r =>
+            {
+                var imageName = r.Offer.ServiceRequest.Client?.ImageURL;
+
+                var clientImage = string.IsNullOrEmpty(imageName)
+                    ? null
+                    : await blobStorageRepository.GetBlobUrlWithSasTokenAsync(
+                        "client-profilepics",
+                        imageName);
+
+                return new InProgressReservationDto
+                {
+                    ReservationId = r.Id,
+
+                    ClientName = r.Offer.ServiceRequest.Client?.Name,
+                    ClientImage = clientImage,
+                    Day = r.Offer.ServiceRequest.ServiceDate,
+                    TechTimeInterval = HelperClass.FormatArabicTimeInterval(r.Offer.WorkFrom,r.Offer.WorkTo),
+                    Description = r.Offer.ServiceRequest.Description,
+                    Fees = r.Offer.Fees
+                };
+            });
+
+            return (await Task.WhenAll(tasks)).ToList();
         }
 
         public async Task<Technician?> GetTechnicianByIdAsync(int techId)

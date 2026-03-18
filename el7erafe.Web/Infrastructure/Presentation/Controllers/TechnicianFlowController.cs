@@ -256,5 +256,18 @@ namespace Presentation.Controllers
 
             return Ok(new {message = "تم بدء العمل" });
         }
+
+        [HttpGet("in-progress")]
+        public async Task<IActionResult> GetInProgress()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            var result = await technicianService.GetInProgressReservations(userId);
+
+            return Ok(result);
+        }
     }
 }

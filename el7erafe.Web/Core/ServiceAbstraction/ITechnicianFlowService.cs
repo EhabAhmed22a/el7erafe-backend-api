@@ -2,6 +2,7 @@
 using Shared.DataTransferObject.Calendar;
 using Shared.DataTransferObject.OffersDTOs;
 using Shared.DataTransferObject.OtpDTOs;
+using Shared.DataTransferObject.ReservationDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
 using Shared.DataTransferObject.UpdateDTOs;
@@ -22,6 +23,7 @@ namespace ServiceAbstraction
         Task<OtpResponseDTO> ResendOtpForPendingEmail(string userId);
         Task<List<TechnicianCalendarDto>> GetCalendar(string userId, DateTime? date);
         Task<string> StartJob(string userId, int reservationId);
+        Task<List<InProgressReservationDto>> GetInProgressReservations(string userId);
         Task DeleteAccount(string userId);
     }
 }
