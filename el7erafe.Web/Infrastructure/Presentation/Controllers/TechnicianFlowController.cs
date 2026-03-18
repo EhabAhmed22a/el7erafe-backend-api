@@ -269,5 +269,20 @@ namespace Presentation.Controllers
 
             return Ok(result);
         }
+
+        [HttpPost("complete-job")]
+        public async Task<IActionResult> CompleteJob([FromBody] ReservationIdDto dto)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            var clientUserId = await technicianService.CompleteJob(userId, dto.ReservationId);
+
+            await clientHub.Clients.User(clientUserId).SendAsync("JobCompleted", new { dto.ReservationId });
+
+            return Ok(new { message = "تم إنهاء العمل بنجاح" });
+        }
     }
 }

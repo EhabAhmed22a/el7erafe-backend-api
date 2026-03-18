@@ -24,6 +24,7 @@ namespace ServiceAbstraction
         Task<List<TechnicianCalendarDto>> GetCalendar(string userId, DateTime? date);
         Task<string> StartJob(string userId, int reservationId);
         Task<List<InProgressReservationDto>> GetInProgressReservations(string userId);
+        Task<string> CompleteJob(string userId, int reservationId);
         Task DeleteAccount(string userId);
     }
 }
