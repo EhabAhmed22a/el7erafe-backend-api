@@ -46,15 +46,21 @@ namespace Persistance.Repositories
                 ? serviceDate.AddDays(numberOfDays.Value)
                 : serviceDate;
 
-            return await dbContext.ServiceRequests
+            return await dbContext.Reservations
                 .Where(r =>
-                    r.TechnicianId == technicianId &&
-                    r.Status == ServiceReqStatus.Reserved &&
-                    r.ServiceDate >= serviceDate &&
-                    r.ServiceDate <= endDate)
+                    r.Offer.TechnicianId == technicianId &&
+
+                    (r.Status == ReservationStatus.Confirmed ||
+                     r.Status == ReservationStatus.InProgress ||
+                     r.Status == ReservationStatus.InPayment) &&
+
+                    r.Offer.ServiceRequest.ServiceDate >= serviceDate &&
+                    r.Offer.ServiceRequest.ServiceDate <= endDate
+                )
                 .AnyAsync(r =>
-                    fromTime < r.AvailableTo &&
-                    toTime > r.AvailableFrom);
+                    fromTime < r.Offer.WorkTo &&
+                    toTime > r.Offer.WorkFrom
+                );
         }
 
         public async Task<List<Offer>> GetPendingOffersForTechAsync(int technicianId)

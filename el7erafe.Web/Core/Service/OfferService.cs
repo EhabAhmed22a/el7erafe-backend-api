@@ -29,6 +29,12 @@ namespace Service
             if (request == null)
                 throw new KeyNotFoundException("طلب الخدمة غير موجود.");
 
+            if (request.Status != ServiceReqStatus.Pending)
+                throw new InvalidOperationException("لا يمكن تقديم عرض على طلب غير متاح.");
+
+            if (request.TechnicianId != null && request.TechnicianId != technician.Id)
+                throw new UnauthorizedAccessException("هذا الطلب موجه لفني آخر.");
+
             var alreadyOffered = await offersRepository.HasTechnicianAlreadyOffered(technician.Id, dto.RequestId);
 
             if (alreadyOffered)
