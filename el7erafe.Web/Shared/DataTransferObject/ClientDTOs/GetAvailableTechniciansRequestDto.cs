@@ -12,10 +12,11 @@ namespace Shared.DataTransferObject.ClientDTOs
         public string CityName { get; set; } = default!;
         [Required]
         public DateOnly Day { get; set; }
-        [Required]
-        public TimeOnly FromTime { get; set; }
-        [Required]
-        public TimeOnly ToTime { get; set; }
+        public bool AllDayAvailable { get; set; }
+
+        public TimeOnly? FromTime { get; set; }
+
+        public TimeOnly? ToTime { get; set; }
         [Required]
         public bool Sorted { get; set; }
     }
