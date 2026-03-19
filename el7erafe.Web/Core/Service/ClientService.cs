@@ -269,6 +269,17 @@ namespace Service
             var technicians = await technicianRepository
                 .GetTechniciansByServiceAndLocationAsync(service.Id, governorate.Id, city.Id, requestRegDTO.Sorted);
 
+            if (requestRegDTO.AllDayAvailable)
+            {
+                if (requestRegDTO.FromTime != null || requestRegDTO.ToTime != null)
+                    throw new ArgumentException("لا يمكن تحديد وقت مع اختيار متاح طوال اليوم");
+            }
+            else
+            {
+                if (requestRegDTO.FromTime == null || requestRegDTO.ToTime == null)
+                    throw new ArgumentException("يجب إدخال وقت البداية والنهاية");
+            }
+
             if (technicians is null || !technicians.Any())
                 return new List<AvailableTechnicianDto>();
 
@@ -709,7 +720,6 @@ namespace Service
         }
         private bool IsTechnicianAvailable(Technician t, GetAvailableTechniciansRequest request)
         {
-            // 1. Get valid schedules for that day
             var schedules = t.Availability
                 .Where(a =>
                     a.DayOfWeek == null ||
@@ -720,33 +730,42 @@ namespace Service
                 return false;
 
             var reservations = t.Offers
-                    .Where(o =>
-                        o.Reservation != null &&
-                        (o.Reservation.Status == ReservationStatus.Confirmed ||
-                         o.Reservation.Status == ReservationStatus.InProgress ||
-                         o.Reservation.Status == ReservationStatus.InPayment) &&
-                        o.ServiceRequest != null &&
-                        o.ServiceRequest.ServiceDate == request.Day)
-                    .Select(o => o.Reservation)
-                    .OrderBy(r => r.Offer.WorkFrom)
-                    .ToList();
+                .Where(o =>
+                    o.Reservation != null &&
+                    (o.Reservation.Status == ReservationStatus.Confirmed ||
+                     o.Reservation.Status == ReservationStatus.InProgress ||
+                     o.Reservation.Status == ReservationStatus.InPayment) &&
+                    o.ServiceRequest != null &&
+                    o.ServiceRequest.ServiceDate == request.Day)
+                .Select(o => o.Reservation)
+                .OrderBy(r => r.Offer.WorkFrom ?? TimeOnly.MinValue)
+                .ToList();
 
             foreach (var schedule in schedules)
             {
                 var workStart = schedule.FromTime;
                 var workEnd = schedule.ToTime;
 
-                // 2. Intersect request with working hours
-                var start = workStart > request.FromTime ? workStart : request.FromTime;
-                var end = workEnd < request.ToTime ? workEnd : request.ToTime;
+                TimeOnly start;
+                TimeOnly end;
 
-                if (start >= end)
-                    continue;
+                if (request.AllDayAvailable)
+                {
+                    start = workStart;
+                    end = workEnd;
+                }
+                else
+                {
+                    start = workStart > request.FromTime!.Value ? workStart : request.FromTime.Value;
+                    end = workEnd < request.ToTime!.Value ? workEnd : request.ToTime.Value;
 
-                if ((end - start) < TimeSpan.FromHours(1))
-                    continue;
+                    if (start >= end)
+                        continue;
 
-                // 4. Check free slot
+                    if ((end - start) < TimeSpan.FromHours(1))
+                        continue;
+                }
+
                 if (HasFreeSlot(start, end, reservations))
                     return true;
             }
