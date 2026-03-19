@@ -740,6 +740,9 @@ namespace Service
                 var start = workStart > request.FromTime ? workStart : request.FromTime;
                 var end = workEnd < request.ToTime ? workEnd : request.ToTime;
 
+                if (start >= end)
+                    continue;
+
                 if ((end - start) < TimeSpan.FromHours(1))
                     continue;
 
