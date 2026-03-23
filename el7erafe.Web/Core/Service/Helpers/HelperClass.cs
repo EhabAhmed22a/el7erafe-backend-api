@@ -4,7 +4,7 @@ namespace Service.Helpers
 {
     public static class HelperClass
     {
-        public static string FormatArabicTimeInterval(TimeOnly? from, TimeOnly? to)
+        public static string? FormatArabicTimeInterval(TimeOnly? from, TimeOnly? to)
         {
             if (from == null || to == null) return null;
 
@@ -24,6 +24,26 @@ namespace Service.Helpers
                 DateTime.UtcNow,
                 "Egypt Standard Time"
             );
+        }
+
+        public static DateTime ConvertUtcToEgyptTime(DateTime utcTime)
+        {
+            return TimeZoneInfo.ConvertTimeBySystemTimeZoneId(utcTime, "Egypt Standard Time");
+        }
+
+        public static TimeOnly? GetTimeInEgypt(TimeOnly? utcTime)
+        {
+            if (!utcTime.HasValue)
+                return null;
+
+            // 1. Attach today's date to the UTC time
+            DateTime combinedUtc = DateTime.UtcNow.Date.Add(utcTime.Value.ToTimeSpan());
+
+            // 2. Convert it to Egypt Time
+            DateTime egyptTime = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(combinedUtc, "Egypt Standard Time");
+
+            // 3. Return just the Time portion
+            return TimeOnly.FromDateTime(egyptTime);
         }
     }
 }

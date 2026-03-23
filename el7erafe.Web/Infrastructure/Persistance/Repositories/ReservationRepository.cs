@@ -87,6 +87,28 @@ namespace Persistance.Repositories
             dbcontext.Reservations.Update(reservation);
             return await dbcontext.SaveChangesAsync();
         }
+
+        public async Task<List<Reservation>> GetPreviousReservationsAsync(int clientId)
+        {
+            var historyStatuses = new[]
+            {
+                ReservationStatus.CancelledByClient,
+                ReservationStatus.CancelledByTech,
+                ReservationStatus.Done
+            };
+
+            return await dbcontext.Reservations
+                .AsNoTracking()
+                .Include(r => r.Offer)
+                    .ThenInclude(o => o.ServiceRequest)
+                        .ThenInclude(sr => sr.Service)
+                .Include(r => r.Offer)
+                    .ThenInclude(o => o.Technician)
+                .Where(r => r.Offer.ServiceRequest.ClientId == clientId && historyStatuses.Contains(r.Status))
+                .OrderByDescending(r => r.Id)
+                .ToListAsync();
+        }
+
         public async Task SaveChangesAsync()
         {
             await dbcontext.SaveChangesAsync();
