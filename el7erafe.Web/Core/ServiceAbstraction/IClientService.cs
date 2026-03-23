@@ -3,6 +3,7 @@ using Shared.DataTransferObject.ClientDTOs;
 using Shared.DataTransferObject.ClientIdentityDTOs;
 using Shared.DataTransferObject.OffersDTOs;
 using Shared.DataTransferObject.OtpDTOs;
+using Shared.DataTransferObject.ReservationDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
 using Shared.DataTransferObject.UpdateDTOs;
 
@@ -26,5 +27,6 @@ namespace ServiceAbstraction
         Task<Client?> GetClientByIdAsync(int clientId);
         Task<AcceptOfferResultDto> AcceptOffer(int offerId);
         Task<DeclineOfferResultDto> DeclineOffer(int offerId);
+        Task<List<PreviousReservationsDTO>> GetPreviousReservations(string userId);
     }
 }

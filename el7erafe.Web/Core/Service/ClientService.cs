@@ -12,6 +12,7 @@ using Shared.DataTransferObject.ClientDTOs;
 using Shared.DataTransferObject.ClientIdentityDTOs;
 using Shared.DataTransferObject.OffersDTOs;
 using Shared.DataTransferObject.OtpDTOs;
+using Shared.DataTransferObject.ReservationDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
 using Shared.DataTransferObject.UpdateDTOs;
 
@@ -656,6 +657,54 @@ namespace Service
                 OfferId = offer.Id,
                 TechnicianUserId = offer.Technician.UserId
             };
+        }
+
+        public async Task<List<PreviousReservationsDTO>> GetPreviousReservations(string userId)
+        {
+            var user = await CheckUser(userId);
+
+            try
+            {
+                var prevReservations = await reservationRepository.GetPreviousReservationsAsync(user.Id);
+
+                var mappingTasks = prevReservations.Select(async r =>
+                {
+                    var technician = r.Offer?.Technician;
+
+                    string? imageUrl = null;
+                    if (!string.IsNullOrWhiteSpace(technician?.ProfilePictureURL))
+                    {
+                        imageUrl = await blobStorageRepository.GetBlobUrlWithSasTokenAsync("technician-documents", technician.ProfilePictureURL);
+                    }
+
+                    bool isCancelled = r.Status == ReservationStatus.CancelledByClient ||
+                                       r.Status == ReservationStatus.CancelledByTech;
+
+                    return new PreviousReservationsDTO
+                    {
+                        techName = technician?.Name,
+                        techImage = imageUrl,
+
+                        serviceType = r.Offer?.ServiceRequest?.Service?.NameAr ?? "غير معروف",
+
+                        fees = r.Offer?.Fees,
+
+                        techTimeInterval = HelperClass.FormatArabicTimeInterval(
+                            HelperClass.GetTimeInEgypt(r.Offer?.WorkFrom),
+                            HelperClass.GetTimeInEgypt(r.Offer?.WorkTo)),
+
+                        day = r.Offer?.ServiceRequest?.ServiceDate ?? DateOnly.MinValue,
+
+                        IsCancelled = isCancelled
+                    };
+                });
+
+                return (await Task.WhenAll(mappingTasks)).ToList();
+            }
+            catch (Exception)
+            {
+                throw new TechnicalException();
+            }
         }
 
         private async Task<Client> CheckUser(string userId)
