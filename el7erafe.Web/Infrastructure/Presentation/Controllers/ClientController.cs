@@ -243,6 +243,17 @@ namespace Presentation.Controllers
             return Ok(await _clientService.GetOffersAsync(userId, reqIdDTO.requestId, false));
         }
 
+        [HttpGet("cf/getprevreservations")]
+        public async Task<IActionResult> GetPreviousReservations()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            return Ok(await _clientService.GetPreviousReservations(userId));
+        }
+
         [HttpPost("cf/offers/accept")]
         public async Task<IActionResult> AcceptOffer([FromBody] OfferIdDto offerId)
         {
