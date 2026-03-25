@@ -10,17 +10,14 @@ namespace Shared.DataTransferObject.ClientDTOs
 
         [Required(ErrorMessage = "اسم المدينة مطلوب")]
         public string CityName { get; set; } = default!;
+        [Required]
+        public DateOnly Day { get; set; }
+        public bool AllDayAvailable { get; set; }
 
-        //[Required(ErrorMessage = "يجب تحديد يوم الأسبوع")]
-        //[Range(1, 7, ErrorMessage = "يجب أن يكون رقم اليوم بين 1 و 7")]
-        //public int DayOfWeek { get; set; }
+        public TimeOnly? FromTime { get; set; }
 
-        //[Required(ErrorMessage = "وقت البداية مطلوب")]
-        //public TimeOnly FromTime { get; set; }
-
-        //[Required(ErrorMessage = "وقت النهاية مطلوب")]
-        //public TimeOnly ToTime { get; set; }
-
+        public TimeOnly? ToTime { get; set; }
+        [Required]
         public bool Sorted { get; set; }
     }
 

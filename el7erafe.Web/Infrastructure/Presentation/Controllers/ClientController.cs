@@ -6,6 +6,7 @@ using Presentation.Hubs;
 using ServiceAbstraction;
 using ServiceAbstraction.Chat;
 using Shared.DataTransferObject.ClientDTOs;
+using Shared.DataTransferObject.OffersDTOs;
 using Shared.DataTransferObject.OtpDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
 using Shared.DataTransferObject.UpdateDTOs;
@@ -77,7 +78,7 @@ namespace Presentation.Controllers
 
             if (requestRegDTO.TechnicianId.HasValue)
             {
-                var technician = await technicianService.GetTechnicianByIdAsync((int) requestRegDTO.TechnicianId);
+                var technician = await technicianService.GetTechnicianByIdAsync((int)requestRegDTO.TechnicianId);
                 await technicianHub.Clients.User(technician?.User.Id!).SendAsync("ReceiveNewDirectRequest", newData);
             }
             return Ok(new { message = "تم إرسال طلب الخدمة للفني المحدد. في انتظار قبوله" });
@@ -180,7 +181,7 @@ namespace Presentation.Controllers
         }
 
         [HttpPatch("cf/cancel-request")]
-        public async Task<IActionResult> CancelRequest(CancelReqDTO cancelReqDTO)
+        public async Task<IActionResult> CancelRequest(ReqIdDTO cancelReqDTO)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
@@ -218,6 +219,87 @@ namespace Presentation.Controllers
             var result = await chatService.GetInboxAsync(userId);
 
             return Ok(result);
+        }
+
+        [HttpGet("cf/offers/quick")]
+        public async Task<IActionResult> GetQuickOffers([FromQuery] ReqIdDTO reqIdDTO)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            return Ok(await _clientService.GetOffersAsync(userId, reqIdDTO.requestId, true));
+        }
+
+        [HttpGet("cf/offers/specific")]
+        public async Task<IActionResult> GetTechOffers([FromQuery] ReqIdDTO reqIdDTO)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            return Ok(await _clientService.GetOffersAsync(userId, reqIdDTO.requestId, false));
+        }
+
+        [HttpGet("cf/getprevreservations")]
+        public async Task<IActionResult> GetPreviousReservations()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            return Ok(await _clientService.GetPreviousReservations(userId));
+        }
+
+        [HttpPost("cf/offers/accept")]
+        public async Task<IActionResult> AcceptOffer([FromBody] OfferIdDto offerId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            var result = await _clientService.AcceptOffer(offerId.offerId);
+
+            await technicianHub.Clients.User(result.AcceptedTechnicianUserId).SendAsync("OfferAccepted",
+                new {
+                    requestId = result.RequestId,
+                    acceptedOfferId = result.AcceptedOfferId
+                });
+
+            if (result.RejectedTechnicianUserIds.Any())
+            {
+                await technicianHub.Clients
+                    .Users(result.RejectedTechnicianUserIds)
+                    .SendAsync("OfferRejected", new
+                    {
+                        requestId = result.RequestId,
+                        acceptedOfferId = result.AcceptedOfferId
+                    });
+            }
+
+            return Ok(new { message = "تم قبول العرض بنجاح" });
+        }
+
+        [HttpPost("cf/offers/decline")]
+        public async Task<IActionResult> DeclineOffer([FromBody] OfferIdDto dto)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            var result = await _clientService.DeclineOffer(dto.offerId);
+
+            await technicianHub.Clients.User(result.TechnicianUserId)
+                .SendAsync("OfferRejected", new
+                {
+                    requestId = result.RequestId,
+                    offerId = result.OfferId
+                });
+
+            return Ok(new { message = "تم رفض العرض بنجاح" });
         }
     }
 }

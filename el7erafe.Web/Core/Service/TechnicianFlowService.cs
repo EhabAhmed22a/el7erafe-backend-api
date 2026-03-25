@@ -1,19 +1,19 @@
-﻿
-using Azure;
-using DomainLayer.Contracts;
+﻿using DomainLayer.Contracts;
 using DomainLayer.Exceptions;
 using DomainLayer.Models;
 using DomainLayer.Models.IdentityModule;
 using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using Service.Helpers;
 using ServiceAbstraction;
-using Shared.DataTransferObject.ClientIdentityDTOs;
+using Shared.DataTransferObject.Calendar;
+using Shared.DataTransferObject.OffersDTOs;
 using Shared.DataTransferObject.OtpDTOs;
+using Shared.DataTransferObject.ReservationDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
 using Shared.DataTransferObject.UpdateDTOs;
+using System;
 
 namespace Service
 {
@@ -22,7 +22,9 @@ namespace Service
         IIgnoredServiceRequestsRepository ignoredServiceRequestsRepository,
         OtpHelper otpHelper,
         UserManager<ApplicationUser> userManager,
-        IServiceRequestRepository serviceRequestRepository) : ITechnicianFlowService
+        IServiceRequestRepository serviceRequestRepository,
+        IOffersRepository offersRepository,
+        IReservationRepository reservationRepository) : ITechnicianFlowService
     {
         public async Task<TechnicianProfileDTO> GetProfile(string userId)
         {
@@ -351,7 +353,7 @@ namespace Service
             return (await Task.WhenAll(mappingTasks)).ToList();
         }
 
-        public async Task<string?> DeclineRequestAsync(string userId, CancelReqDTO cancelReqDTO)
+        public async Task<string?> DeclineRequestAsync(string userId, ReqIdDTO cancelReqDTO)
         {
             var user = await CheckUser(userId);
 
@@ -366,8 +368,10 @@ namespace Service
                 try
                 {
                     service.Status = ServiceReqStatus.Rejected;
+
                     if (!await serviceRequestRepository.UpdateAsync(service))
                         throw new TechnicalException();
+
                     return clientUserId;
                 }
                 catch
@@ -382,12 +386,20 @@ namespace Service
                     var tech = await technicianRepository.GetByUserIdAsync(userId);
                     if (tech is null)
                         throw new TechnicalException();
+
                     if (await ignoredServiceRequestsRepository.IsAlreadyIgnoredAsync(tech.Id, service.Id))
                         throw new RequestAlreadyDeclinedException();
-                    await ignoredServiceRequestsRepository.CreateAsync(new IgnoredServiceRequest { TechnicianId = tech.Id, ServiceRequestId = service.Id });
+
+                    await ignoredServiceRequestsRepository.CreateAsync(
+                        new IgnoredServiceRequest
+                        {
+                            TechnicianId = tech.Id,
+                            ServiceRequestId = service.Id
+                        });
+
                     return string.Empty;
                 }
-                catch(RequestAlreadyDeclinedException)
+                catch (RequestAlreadyDeclinedException)
                 {
                     throw;
                 }
@@ -396,7 +408,196 @@ namespace Service
                     throw new TechnicalException();
                 }
             }
-            
+        }
+
+        public async Task<List<PendingOfferDto>> GetPendingOffersAsync(string technicianUserId)
+        {
+            var technician = await technicianRepository.GetByUserIdAsync(technicianUserId);
+
+            if (technician == null)
+                throw new TechNotFoundException(technicianUserId);
+
+            var offers = await offersRepository.GetPendingOffersForTechAsync(technician.Id);
+
+            var result = new List<PendingOfferDto>();
+
+            foreach (var offer in offers)
+            {
+                List<string> serviceURLs = await blobStorageRepository.GetBlobUrlsWithPrefixAsync("service-requests-images", $"{offer.Id}_");
+                result.Add(new PendingOfferDto
+                {
+                    OfferId = offer.Id,
+                    Description = offer.ServiceRequest.Description,
+                    ClientName = offer.ServiceRequest.Client.Name,
+                    ClientImage = await blobStorageRepository.GetBlobUrlWithSasTokenAsync(
+                        "client-profilepics",
+                        offer.ServiceRequest.Client.ImageURL),
+
+                    Fees = offer.Fees,
+                    ServiceType = offer.ServiceRequest.Service.NameAr,
+
+                    TechTimeInterval = HelperClass.FormatArabicTimeInterval(offer.WorkFrom, offer.WorkTo),
+
+                    Day = offer.ServiceRequest.ServiceDate,
+
+                    EndDay = offer.NumberOfDays != null
+                        ? offer.ServiceRequest.ServiceDate.AddDays(offer.NumberOfDays.Value - 1)
+                        : null,
+
+                    Governorate = offer.ServiceRequest.City.Governorate.NameAr,
+                    City = offer.ServiceRequest.City.NameAr,
+                    Street = offer.ServiceRequest.Street,
+                    ServiceImages = serviceURLs,
+                    SpecialSign = offer.ServiceRequest.SpecialSign
+                });
+            }
+
+            return result;
+        }
+
+        public async Task<List<TechnicianCalendarDto>> GetCalendar(string userId, DateTime? date)
+        {
+            var user = await CheckUser(userId);
+
+            var targetDate = date ?? DateTime.UtcNow;
+
+            var reservations = await reservationRepository.GetCurrentReservationsAsync(user.Id, targetDate);
+
+            reservations = reservations
+                .OrderBy(r => r.Offer.WorkFrom)
+                .ToList();
+
+            var tasks = reservations.Select(async reservation =>
+            {
+                var serviceURLsTask = blobStorageRepository
+                    .GetBlobUrlsWithPrefixAsync("service-requests-images", $"{reservation.Offer.Id}_");
+
+                var clientImageTask = blobStorageRepository
+                    .GetBlobUrlWithSasTokenAsync(
+                        "client-profilepics",
+                        reservation.Offer.ServiceRequest.Client?.ImageURL);
+
+                await Task.WhenAll(serviceURLsTask, clientImageTask);
+
+                return new TechnicianCalendarDto
+                {
+                    ReservationId = reservation.Id,
+
+                    Description = reservation.Offer.ServiceRequest.Description,
+
+                    ClientName = reservation.Offer.ServiceRequest.Client?.Name,
+                    ClientImage = clientImageTask.Result,
+
+                    TechTimeInterval = HelperClass.FormatArabicTimeInterval(
+                        reservation.Offer.WorkFrom,
+                        reservation.Offer.WorkTo),
+
+                    Day = reservation.Offer.ServiceRequest.ServiceDate,
+
+                    Governorate = reservation.Offer.ServiceRequest.City?.Governorate?.NameAr,
+                    City = reservation.Offer.ServiceRequest.City?.NameAr,
+                    Street = reservation.Offer.ServiceRequest.Street,
+
+                    ServiceImages = serviceURLsTask.Result,
+
+                    SpecialSign = reservation.Offer.ServiceRequest.SpecialSign
+                };
+            });
+
+            return (await Task.WhenAll(tasks)).ToList();
+        }
+
+        public async Task<string> StartJob(string userId, int reservationId)
+        {
+            var user = await CheckUser(userId);
+
+            var reservation = await reservationRepository.GetByIdWithDetailsAsync(reservationId);
+
+            if (reservation == null)
+                throw new KeyNotFoundException("الحجز غير موجود");
+
+            if (reservation.Offer.TechnicianId != user.Id)
+                throw new UnauthorizedAccessException("غير مسموح لك ببدء هذا الطلب");
+
+            if (reservation.Status != ReservationStatus.Confirmed)
+                throw new InvalidOperationException("لا يمكن بدء الطلب لأنه ليس في حالة مؤكدة");
+
+            // ✅ Rule 1: No active job
+            var hasActiveJob = await reservationRepository.HasActiveInProgressJob(user.Id);
+
+            if (hasActiveJob)
+                throw new InvalidOperationException("لا يمكنك بدء طلب جديد قبل إنهاء الطلب الحالي");
+
+            // ✅ Rule 2: Respect order
+            var hasEarlierNotStarted = await reservationRepository.HasEarlierUnfinishedReservations(user.Id, reservation);
+
+            if (hasEarlierNotStarted)
+                throw new InvalidOperationException("يجب بدء الطلبات السابقة أولاً");
+
+            // ✅ Update
+            reservation.Status = ReservationStatus.InProgress;
+
+            await reservationRepository.UpdateReservation(reservation);
+
+            return reservation.Offer.ServiceRequest.Client.UserId;
+        }
+
+        public async Task<List<InProgressReservationDto>> GetInProgressReservations(string userId)
+        {
+            var user = await CheckUser(userId);
+
+            var reservations = await reservationRepository.GetInProgressReservationsAsync(user.Id);
+
+            var tasks = reservations.Select(async r =>
+            {
+                var imageName = r.Offer.ServiceRequest.Client?.ImageURL;
+
+                var clientImage = string.IsNullOrEmpty(imageName)
+                    ? null
+                    : await blobStorageRepository.GetBlobUrlWithSasTokenAsync(
+                        "client-profilepics",
+                        imageName);
+
+                return new InProgressReservationDto
+                {
+                    ReservationId = r.Id,
+
+                    ClientName = r.Offer.ServiceRequest.Client?.Name,
+                    ClientImage = clientImage,
+                    Day = r.Offer.ServiceRequest.ServiceDate,
+                    TechTimeInterval = HelperClass.FormatArabicTimeInterval(r.Offer.WorkFrom,r.Offer.WorkTo),
+                    Description = r.Offer.ServiceRequest.Description,
+                    Fees = r.Offer.Fees
+                };
+            });
+
+            return (await Task.WhenAll(tasks)).ToList();
+        }
+
+        public async Task<string> CompleteJob(string userId, int reservationId)
+        {
+            var user = await CheckUser(userId);
+
+            var reservation = await reservationRepository.GetByIdWithDetailsAsync(reservationId);
+
+            if (reservation == null)
+                throw new KeyNotFoundException("الحجز غير موجود");
+
+            if (reservation.Offer.TechnicianId != user.Id)
+                throw new UnauthorizedAccessException("غير مسموح لك بإنهاء هذا الطلب");
+
+            if (reservation.Status == ReservationStatus.Done)
+                throw new InvalidOperationException("تم إنهاء هذا الطلب بالفعل");
+
+            if (reservation.Status != ReservationStatus.InProgress)
+                throw new InvalidOperationException("لا يمكن إنهاء الطلب لأنه ليس قيد التنفيذ حالياً");
+
+            reservation.Status = ReservationStatus.InPayment;
+            reservation.FinishedAt = HelperClass.GetEgyptNow();
+
+            await reservationRepository.UpdateReservation(reservation);
+
+            return reservation.Offer.ServiceRequest.Client.UserId;
         }
 
         public async Task<Technician?> GetTechnicianByIdAsync(int techId)

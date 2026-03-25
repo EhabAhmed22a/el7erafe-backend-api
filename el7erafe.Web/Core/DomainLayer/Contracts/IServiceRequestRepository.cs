@@ -1,5 +1,6 @@
 ﻿
 using DomainLayer.Models;
+using DomainLayer.Models.IdentityModule.Enums;
 
 namespace DomainLayer.Contracts
 {
@@ -18,5 +19,6 @@ namespace DomainLayer.Contracts
         Task<IEnumerable<ServiceRequest>> GetServiceRequestsByClientAsync(int clientId);
         Task<IEnumerable<ServiceRequest>> GetPendingServiceRequestsByClientAsync(int clientId);
         Task<IEnumerable<ServiceRequest>> GetAvailableServiceRequestsByTechnicianAsync(int techId, int serId, int govId);
+        Task UpdateStatusAsync(int requestId, ServiceReqStatus status);
     }
 }

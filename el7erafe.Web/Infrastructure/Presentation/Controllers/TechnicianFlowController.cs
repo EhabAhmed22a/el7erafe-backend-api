@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.SignalR;
 using Presentation.Hubs;
 using ServiceAbstraction;
 using ServiceAbstraction.Chat;
+using Shared.DataTransferObject.Calendar;
+using Shared.DataTransferObject.OffersDTOs;
 using Shared.DataTransferObject.OtpDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
@@ -23,7 +25,10 @@ namespace Presentation.Controllers
         ITechnicianFlowService technicianService,
         IChatService chatService,
         IHubContext<ClientHub> clientHub,
-        ITechnicianAvailabilityService technicianAvailabilityService) : ControllerBase
+        IHubContext<TechnicianHub> technicianHub,
+        ITechnicianAvailabilityService technicianAvailabilityService,
+        IOfferService offerService,
+        IClientService clientService) : ControllerBase
     {
         [HttpGet("profile")]
         public async Task<IActionResult> GetProfile()
@@ -185,17 +190,99 @@ namespace Presentation.Controllers
         }
 
         [HttpPatch("decline-request")]
-        public async Task<IActionResult> DeclineRequest(CancelReqDTO cancelReqDTO)
+        public async Task<IActionResult> DeclineRequest(ReqIdDTO cancelReqDTO)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("المستخدم غير موجود");
 
             var clientUserId = await technicianService.DeclineRequestAsync(userId, cancelReqDTO);
-            if(!string.IsNullOrEmpty(clientUserId))
+            if (!string.IsNullOrEmpty(clientUserId))
                 await clientHub.Clients.User(clientUserId)
                                        .SendAsync("RequestRejected", cancelReqDTO.requestId);
             return Ok(new { message = "تم رفض الطلب" });
+        }
+
+        [HttpPost("make-offer")]
+        public async Task<IActionResult> MakeOffer(MakeOfferDto dto)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            var result = await offerService.MakeOfferAsync(dto, userId);
+
+            await clientHub.Clients.User(result.ClientUserId).SendAsync("ReceiveNewOffer", result.ClientOffer);
+
+            await technicianHub.Clients.User(userId).SendAsync("ReceivePendingOffer", result.TechnicianOffer);
+
+            return Ok(new { message = "تم تقديم العرض بنجاح" });
+        }
+
+        [HttpGet("pending-offers")]
+        public async Task<IActionResult> GetPendingOffers()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var result = await technicianService.GetPendingOffersAsync(userId);
+
+            return Ok(result);
+        }
+
+        [HttpGet("calendar")]
+        public async Task<IActionResult> GetCalendar(DateTime? date)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+            var result = await technicianService.GetCalendar(userId, date ?? DateTime.Now);
+            return Ok(result);
+        }
+
+        [HttpPost("start-job")]
+        public async Task<IActionResult> StartJob([FromBody] ReservationIdDto reservationId)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            var clientUserId = await technicianService.StartJob(userId, reservationId.ReservationId);
+
+            await clientHub.Clients.User(clientUserId).SendAsync("JobStarted", new { reservationId });
+
+            return Ok(new {message = "تم بدء العمل" });
+        }
+
+        [HttpGet("in-progress")]
+        public async Task<IActionResult> GetInProgress()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            var result = await technicianService.GetInProgressReservations(userId);
+
+            return Ok(result);
+        }
+
+        [HttpPost("complete-job")]
+        public async Task<IActionResult> CompleteJob([FromBody] ReservationIdDto dto)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            var clientUserId = await technicianService.CompleteJob(userId, dto.ReservationId);
+
+            await clientHub.Clients.User(clientUserId).SendAsync("JobCompleted", new { dto.ReservationId });
+
+            return Ok(new { message = "تم إنهاء العمل بنجاح" });
         }
     }
 }

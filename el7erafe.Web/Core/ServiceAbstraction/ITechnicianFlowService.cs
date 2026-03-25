@@ -1,6 +1,8 @@
-﻿
-using DomainLayer.Models.IdentityModule;
+﻿using DomainLayer.Models.IdentityModule;
+using Shared.DataTransferObject.Calendar;
+using Shared.DataTransferObject.OffersDTOs;
 using Shared.DataTransferObject.OtpDTOs;
+using Shared.DataTransferObject.ReservationDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
 using Shared.DataTransferObject.UpdateDTOs;
@@ -14,10 +16,15 @@ namespace ServiceAbstraction
         Task UpdatePhoneNumber (string userId, UpdatePhoneDTO updatePhoneDTO);
         Task<OtpResponseDTO> UpdatePendingEmail(string userId, UpdateEmailDTO updateEmailDTO);
         Task<Technician?> GetTechnicianByIdAsync(int techId);
-        Task<string?> DeclineRequestAsync(string userId, CancelReqDTO cancelReqDTO);
+        Task<string?> DeclineRequestAsync(string userId, ReqIdDTO cancelReqDTO);
         Task<List<BroadCastServiceRequestDTO>> GetAvailableRequests(string userId);
+        Task<List<PendingOfferDto>> GetPendingOffersAsync(string technicianUserId);
         Task UpdateEmailAsync(string userId, OtpCodeDTO otpCode);
         Task<OtpResponseDTO> ResendOtpForPendingEmail(string userId);
+        Task<List<TechnicianCalendarDto>> GetCalendar(string userId, DateTime? date);
+        Task<string> StartJob(string userId, int reservationId);
+        Task<List<InProgressReservationDto>> GetInProgressReservations(string userId);
+        Task<string> CompleteJob(string userId, int reservationId);
         Task DeleteAccount(string userId);
     }
 }

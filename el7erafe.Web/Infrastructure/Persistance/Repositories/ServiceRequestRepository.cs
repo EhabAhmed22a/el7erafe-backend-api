@@ -105,7 +105,6 @@ namespace Persistance.Repositories
 
             var potentialRequests = await dbContext.Set<ServiceRequest>()
                 .Include(sr => sr.Technician)
-                .Include(s => s.Offers)
                 .Include(s => s.Service)
                 .Include(s => s.Client)
                 .Include(s => s.City)
@@ -117,6 +116,9 @@ namespace Persistance.Repositories
                         ||
                         (sr.TechnicianId == null && sr.ServiceId == serviceId && sr.City.GovernorateId == govId)
                     )
+                    && !dbContext.Set<Offer>().Any(o =>
+                            o.TechnicianId == techId &&
+                            o.ServiceRequestId == sr.Id)
                     && !dbContext.Set<IgnoredServiceRequest>().Any(ignored =>
                             ignored.TechnicianId == techId &&
                             ignored.ServiceRequestId == sr.Id)
@@ -144,11 +146,10 @@ namespace Persistance.Repositories
         {
             return await dbContext
                 .Set<ServiceRequest>()
-                .Where(sr => sr.ClientId == clientId)
-                .Include(s => s.Offers)
+                .Where(sr => sr.ClientId == clientId && sr.Status == ServiceReqStatus.Pending)
+                .Include(s => s.Offers.Where(o => o.Status == OfferStatus.Pending))
                 .Include(s => s.Service)
                 .Include(s => s.Technician)
-                .Where(s => s.Status == ServiceReqStatus.Pending)
                 .ToListAsync();
         }
 
@@ -161,6 +162,13 @@ namespace Persistance.Repositories
             return deletedRows > 0;
         }
 
+        public async Task UpdateStatusAsync(int requestId, ServiceReqStatus status)
+        {
+            await dbContext.ServiceRequests
+                   .Where(sr => sr.Id == requestId)
+                   .ExecuteUpdateAsync(setters => setters
+                       .SetProperty(sr => sr.Status, status));
+        }
     }
 
     public static class TimeOnlyExtensions

@@ -1,0 +1,122 @@
+﻿using DomainLayer.Contracts;
+using DomainLayer.Models;
+using DomainLayer.Models.IdentityModule.Enums;
+using Microsoft.EntityFrameworkCore;
+using Persistance.Databases;
+
+namespace Persistance.Repositories
+{
+    public class OffersRepository(ApplicationDbContext dbContext) : IOffersRepository
+    {
+        public async Task<Offer> AddOfferAsync(Offer offer)
+        {
+            await dbContext.Offers.AddAsync(offer);
+            await dbContext.SaveChangesAsync();
+            return offer;
+        }
+
+        public async Task<bool> HasTechnicianAlreadyOffered(int technicianId, int requestId)
+        {
+            return await dbContext.Offers
+                .AnyAsync(o =>
+                    o.TechnicianId == technicianId &&
+                    o.ServiceRequestId == requestId);
+        }
+
+        public async Task<IEnumerable<Offer>> GetValidOffersForClientAsync(int serReqId, int clientId, bool isQuick)
+        {
+            return await dbContext.Set<Offer>()
+                .Include(o => o.Technician)
+                .Include(o => o.ServiceRequest)
+                    .ThenInclude(sr => sr.Service)
+                .Where(o =>
+                    o.ServiceRequestId == serReqId &&
+                    o.ServiceRequest.ClientId == clientId &&
+                    o.Status == OfferStatus.Pending &&
+                    o.ServiceRequest.Status == ServiceReqStatus.Pending &&
+                    (isQuick
+                        ? o.ServiceRequest.TechnicianId == null
+                        : o.ServiceRequest.TechnicianId != null))
+                .ToListAsync();
+        }
+
+        public async Task<bool> HasTimeConflict(int technicianId, TimeOnly fromTime, TimeOnly toTime, DateOnly serviceDate, int? numberOfDays)
+        {
+            var endDate = numberOfDays.HasValue
+                ? serviceDate.AddDays(numberOfDays.Value)
+                : serviceDate;
+
+            return await dbContext.Reservations
+                .Where(r =>
+                    r.Offer.TechnicianId == technicianId &&
+
+                    (r.Status == ReservationStatus.Confirmed ||
+                     r.Status == ReservationStatus.InProgress ||
+                     r.Status == ReservationStatus.InPayment) &&
+
+                    r.Offer.ServiceRequest.ServiceDate >= serviceDate &&
+                    r.Offer.ServiceRequest.ServiceDate <= endDate
+                )
+                .AnyAsync(r =>
+                    fromTime < r.Offer.WorkTo &&
+                    toTime > r.Offer.WorkFrom
+                );
+        }
+
+        public async Task<List<Offer>> GetPendingOffersForTechAsync(int technicianId)
+        {
+            return await dbContext.Set<Offer>()
+                .Include(o => o.ServiceRequest)
+                    .ThenInclude(sr => sr.Client)
+                .Include(o => o.ServiceRequest)
+                    .ThenInclude(sr => sr.Service)
+                .Include(o => o.ServiceRequest)
+                    .ThenInclude(sr => sr.City)
+                .Where(o =>
+                    o.TechnicianId == technicianId &&
+                    o.Status == OfferStatus.Pending) 
+                .ToListAsync();
+        }
+
+        public async Task<Offer?> GetByIdAsync(int offerId)
+        {
+            return await dbContext.Offers
+                .Include(o => o.Technician)
+                .Include(o => o.ServiceRequest)
+                    .ThenInclude(sr => sr.Client)
+                .Include(o => o.ServiceRequest)
+                    .ThenInclude(sr => sr.Service)
+                .FirstOrDefaultAsync(o => o.Id == offerId);
+        }
+
+        public async Task<List<string>> GetRejectedTechnicianUserIds(int requestId, int acceptedOfferId)
+        {
+            return await dbContext.Offers
+                .Where(o => o.ServiceRequestId == requestId
+                            && o.Id != acceptedOfferId
+                            && o.Status == OfferStatus.Pending)
+                .Select(o => o.Technician.UserId)
+                .Distinct()
+                .ToListAsync();
+        }
+
+        public async Task RejectOtherOffers(int requestId, int acceptedOfferId)
+        {
+            await dbContext.Offers
+                .Where(o => o.ServiceRequestId == requestId && o.Id != acceptedOfferId)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(o => o.Status, OfferStatus.Rejected));
+        }
+
+        public async Task RejectOfferAsync(int offerId)
+        {
+            var affected = await dbContext.Offers
+                .Where(o => o.Id == offerId && o.Status == OfferStatus.Pending)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(o => o.Status, OfferStatus.Rejected));
+
+            if (affected == 0)
+                throw new Exception("Offer not found or not pending");
+        }
+    }
+}

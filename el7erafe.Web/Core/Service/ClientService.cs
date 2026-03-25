@@ -1,14 +1,18 @@
-﻿using DomainLayer.Contracts;
+﻿using System.Collections.Generic;
+using DomainLayer.Contracts;
 using DomainLayer.Exceptions;
 using DomainLayer.Models;
 using DomainLayer.Models.IdentityModule;
 using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Service.Helpers;
 using ServiceAbstraction;
 using Shared.DataTransferObject.ClientDTOs;
 using Shared.DataTransferObject.ClientIdentityDTOs;
+using Shared.DataTransferObject.OffersDTOs;
 using Shared.DataTransferObject.OtpDTOs;
+using Shared.DataTransferObject.ReservationDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
 using Shared.DataTransferObject.UpdateDTOs;
 
@@ -23,7 +27,9 @@ namespace Service
             ITechnicianRepository technicianRepository,
             ICityRepository cityRepository,
             OtpHelper otpHelper,
-            IUnitOfWork unitOfWork) : IClientService
+            IUnitOfWork unitOfWork,
+            IOffersRepository offersRepository,
+            IReservationRepository reservationRepository) : IClientService
     {
         public async Task<ServiceListDto> GetClientServicesAsync()
         {
@@ -264,30 +270,35 @@ namespace Service
             var technicians = await technicianRepository
                 .GetTechniciansByServiceAndLocationAsync(service.Id, governorate.Id, city.Id, requestRegDTO.Sorted);
 
+            if (requestRegDTO.AllDayAvailable)
+            {
+                if (requestRegDTO.FromTime != null || requestRegDTO.ToTime != null)
+                    throw new ArgumentException("لا يمكن تحديد وقت مع اختيار متاح طوال اليوم");
+            }
+            else
+            {
+                if (requestRegDTO.FromTime == null || requestRegDTO.ToTime == null)
+                    throw new ArgumentException("يجب إدخال وقت البداية والنهاية");
+            }
+
             if (technicians is null || !technicians.Any())
                 return new List<AvailableTechnicianDto>();
 
-            // FILTER BY AVAILABILITY
-            //technicians = technicians
-            //    .Where(t => t.Availability.Any(a =>
-            //        (a.DayOfWeek == null || (int)a.DayOfWeek == requestRegDTO.DayOfWeek) &&
-            //        a.FromTime <= requestRegDTO.FromTime &&
-            //        a.ToTime >= requestRegDTO.ToTime))
-            //    .ToList();
+            technicians = technicians
+                .Where(t => IsTechnicianAvailable(t, requestRegDTO))
+                .ToList();
 
             if (!technicians.Any())
                 return new List<AvailableTechnicianDto>();
 
             var sasUrls = await GenerateProfilePictureSasUrlsAsync(technicians);
 
-            var technicianDtos = new List<AvailableTechnicianDto>();
-
-            foreach (var t in technicians)
+            var tasks = technicians.Select(async t =>
             {
                 var portfolioImages = await blobStorageRepository
                     .GetBlobUrlsWithPrefixAsync("technician-documents", $"portifolioImages_{t.Id}_");
 
-                technicianDtos.Add(new AvailableTechnicianDto
+                return new AvailableTechnicianDto
                 {
                     Id = t.Id,
                     Name = t.Name,
@@ -298,9 +309,11 @@ namespace Service
                     ProfilePicture = sasUrls.ContainsKey(t.ProfilePictureURL)
                         ? sasUrls[t.ProfilePictureURL]
                         : string.Empty,
-                    PortfolioImages = portfolioImages
-                });
-            }
+                    PortfolioImages = portfolioImages ?? new List<string>()
+                };
+            });
+
+            var technicianDtos = (await Task.WhenAll(tasks)).ToList();
 
             return technicianDtos;
         }
@@ -476,33 +489,42 @@ namespace Service
 
                 var mappingTasks = notReservedRequests.Select(async sr =>
                 {
+                    // 1. Determine the request type
+                    bool isQuick = sr.TechnicianId is null;
+
+                    // 2. Resolve the targeted Technician's image (Only exists for Direct Requests)
                     string? imageUrl = null;
                     if (!string.IsNullOrWhiteSpace(sr.Technician?.ProfilePictureURL))
                     {
                         imageUrl = await blobStorageRepository.GetBlobUrlWithSasTokenAsync("technician-documents", sr.Technician.ProfilePictureURL);
                     }
+
+                    // 3. The Logic Check: ONLY grab the single offer details if it's a Direct Request
+                    var directOffer = isQuick ? null : sr.Offers?.FirstOrDefault();
+
                     return new ServiceRequestDTO
                     {
                         requestId = sr.Id,
-                        isQuickReserve = sr.TechnicianId is null,
+                        isQuickReserve = isQuick,
                         day = sr.ServiceDate,
                         serviceType = sr.Service?.NameAr ?? "غير معروف",
-
-                        numberOfOffers = sr.Offers.Count,
                         clientTimeInterval = HelperClass.FormatArabicTimeInterval(sr.AvailableFrom, sr.AvailableTo),
 
+                        // Tell the mobile app exactly how many offers exist
+                        numberOfOffers = sr.Offers?.Count ?? null,
+
+                        // The specific Technician info (Null for Quick Reserves)
                         techName = sr.Technician?.Name,
                         techImage = imageUrl,
 
-                        offerId = sr.Offers?.FirstOrDefault()?.Id,
-                        fees = sr.Offers?.FirstOrDefault()?.Fees,
-
+                        // Offer Specifics (Null for Quick Reserves, Populated for Direct Requests)
+                        offerId = directOffer?.Id,
+                        fees = directOffer?.Fees,
                         techTimeInterval = HelperClass.FormatArabicTimeInterval(
-                            sr.Offers?.FirstOrDefault()?.WorkFrom,
-                            sr.Offers?.FirstOrDefault()?.WorkTo
+                            directOffer?.WorkFrom,
+                            directOffer?.WorkTo
                         ),
-
-                        numberOfDays = sr.Offers?.FirstOrDefault()?.NumberOfDays ?? 1
+                        numberOfDays = directOffer?.NumberOfDays ?? 1
                     };
                 });
 
@@ -514,7 +536,26 @@ namespace Service
             }
         }
 
-        public async Task<string?> CancelRequestAsync(string userId, CancelReqDTO reqDTO)
+        public async Task<List<OfferResultDto>> GetOffersAsync(string userId, int requestId, bool isQuick)
+        {
+            var client = await CheckUser(userId);
+
+            try
+            {
+                var validOffers = await offersRepository.GetValidOffersForClientAsync(requestId, client.Id, isQuick);
+
+                if (!validOffers.Any())
+                    return new List<OfferResultDto>();
+
+                return (await Task.WhenAll(validOffers.Select(MapOffer))).ToList();
+            }
+            catch
+            {
+                throw new TechnicalException();
+            }
+        }
+
+        public async Task<string?> CancelRequestAsync(string userId, ReqIdDTO reqDTO)
         {
             var user = await CheckUser(userId);
 
@@ -541,6 +582,129 @@ namespace Service
                 throw new TechnicalException();
             }
             return techUserId;
+        }
+
+        public async Task<Client?> GetClientByIdAsync(int clientId)
+        {
+            return await clientRepository.GetByIdAsync(clientId);
+        }
+
+        public async Task<AcceptOfferResultDto> AcceptOffer(int offerId)
+        {
+            var existing = await reservationRepository.GetByOfferIdAsync(offerId);
+
+            if (existing != null)
+                throw new Exception("تم قبول هذا العرض بالفعل");
+
+            var offer = await offersRepository.GetByIdAsync(offerId);
+
+            if (offer == null)
+                throw new Exception("لم يتم العثور على العرض");
+
+            var request = await serviceRequestRepository.GetServiceById(offer.ServiceRequestId);
+
+            if (request == null)
+                throw new Exception("لم يتم العثور على طلب الخدمة");
+
+            if (request.Status != ServiceReqStatus.Pending)
+                throw new Exception("تم حجز طلب الخدمة بالفعل");
+
+            request.Status = ServiceReqStatus.Reserved;
+            offer.Status = OfferStatus.Accepted;
+
+            var rejectedTechIds = await offersRepository.GetRejectedTechnicianUserIds(request.Id, offer.Id);
+
+            await offersRepository.RejectOtherOffers(offer.ServiceRequestId, offer.Id);
+
+            var reservation = new Reservation
+            {
+                OfferId = offer.Id,
+                Status = ReservationStatus.Confirmed
+            };
+
+            await reservationRepository.AddAsync(reservation);
+            await reservationRepository.SaveChangesAsync();
+
+            var acceptedTechUserId = offer.Technician.UserId;
+
+            return new AcceptOfferResultDto
+            {
+                RequestId = offer.ServiceRequestId,
+                AcceptedOfferId = offer.Id,
+                AcceptedTechnicianUserId = acceptedTechUserId,
+                RejectedTechnicianUserIds = rejectedTechIds
+            };
+        }
+
+        public async Task<DeclineOfferResultDto> DeclineOffer(int offerId)
+        {
+            var offer = await offersRepository.GetByIdAsync(offerId);
+
+            if (offer == null)
+                throw new KeyNotFoundException("لم يتم العثور على العرض");
+
+            if (offer.Status != OfferStatus.Pending)
+                throw new InvalidOperationException("لا يمكن تنفيذ العملية، العرض لم يعد قيد الانتظار");
+
+            await offersRepository.RejectOfferAsync(offerId);
+
+            if (offer.ServiceRequest.TechnicianId != null)
+                await serviceRequestRepository.UpdateStatusAsync(offer.ServiceRequestId, ServiceReqStatus.Canceled);
+
+            return new DeclineOfferResultDto
+            {
+                RequestId = offer.ServiceRequestId,
+                OfferId = offer.Id,
+                TechnicianUserId = offer.Technician.UserId
+            };
+        }
+
+        public async Task<List<PreviousReservationsDTO>> GetPreviousReservations(string userId)
+        {
+            var user = await CheckUser(userId);
+
+            try
+            {
+                var prevReservations = await reservationRepository.GetPreviousReservationsAsync(user.Id);
+
+                var mappingTasks = prevReservations.Select(async r =>
+                {
+                    var technician = r.Offer?.Technician;
+
+                    string? imageUrl = null;
+                    if (!string.IsNullOrWhiteSpace(technician?.ProfilePictureURL))
+                    {
+                        imageUrl = await blobStorageRepository.GetBlobUrlWithSasTokenAsync("technician-documents", technician.ProfilePictureURL);
+                    }
+
+                    bool isCancelled = r.Status == ReservationStatus.CancelledByClient ||
+                                       r.Status == ReservationStatus.CancelledByTech;
+
+                    return new PreviousReservationsDTO
+                    {
+                        techName = technician?.Name,
+                        techImage = imageUrl,
+
+                        serviceType = r.Offer?.ServiceRequest?.Service?.NameAr ?? "غير معروف",
+
+                        fees = r.Offer?.Fees,
+
+                        techTimeInterval = HelperClass.FormatArabicTimeInterval(
+                            HelperClass.GetTimeInEgypt(r.Offer?.WorkFrom),
+                            HelperClass.GetTimeInEgypt(r.Offer?.WorkTo)),
+
+                        day = r.Offer?.ServiceRequest?.ServiceDate ?? DateOnly.MinValue,
+
+                        IsCancelled = isCancelled
+                    };
+                });
+
+                return (await Task.WhenAll(mappingTasks)).ToList();
+            }
+            catch (Exception)
+            {
+                throw new TechnicalException();
+            }
         }
 
         private async Task<Client> CheckUser(string userId)
@@ -574,5 +738,118 @@ namespace Service
                 return new Dictionary<string, string>();
             }
         }
+        private async Task<OfferResultDto> MapOffer(Offer offer)
+        {
+            string techImageUrl = string.Empty;
+
+            if (!string.IsNullOrWhiteSpace(offer.Technician?.ProfilePictureURL))
+            {
+                techImageUrl = await blobStorageRepository.GetBlobUrlWithSasTokenAsync("technician-documents", offer.Technician.ProfilePictureURL);
+            }
+
+            return new OfferResultDto
+            {
+                OfferId = offer.Id,
+                RequestId = offer.ServiceRequestId,
+
+                TechName = offer.Technician?.Name ?? "فني",
+                TechImage = techImageUrl,
+                NumberOfSuccessJobs = 0,
+                Rate = offer.Technician?.Rating ?? 0,
+
+                ServiceType = offer.ServiceRequest?.Service?.NameAr ?? "غير معروف",
+                Fees = offer.Fees,
+                TechTimeInterval = HelperClass.FormatArabicTimeInterval(offer.WorkFrom, offer.WorkTo),
+                Day = offer.ServiceRequest.ServiceDate,
+                NumberOfDays = offer.NumberOfDays,
+                Comments = null,
+
+                ClientId = offer.ServiceRequest.ClientId
+            };
+        }
+        private bool IsTechnicianAvailable(Technician t, GetAvailableTechniciansRequest request)
+        {
+            var schedules = t.Availability
+                .Where(a =>
+                    a.DayOfWeek == null ||
+                    (int)a.DayOfWeek == (int)request.Day.DayOfWeek)
+                .ToList();
+
+            if (!schedules.Any())
+                return false;
+
+            var reservations = t.Offers
+                .Where(o =>
+                    o.Reservation != null &&
+                    (o.Reservation.Status == ReservationStatus.Confirmed ||
+                     o.Reservation.Status == ReservationStatus.InProgress ||
+                     o.Reservation.Status == ReservationStatus.InPayment) &&
+                    o.ServiceRequest != null &&
+                    o.ServiceRequest.ServiceDate == request.Day)
+                .Select(o => o.Reservation)
+                .OrderBy(r => r.Offer.WorkFrom ?? TimeOnly.MinValue)
+                .ToList();
+
+            foreach (var schedule in schedules)
+            {
+                var workStart = schedule.FromTime;
+                var workEnd = schedule.ToTime;
+
+                TimeOnly start;
+                TimeOnly end;
+
+                if (request.AllDayAvailable)
+                {
+                    start = workStart;
+                    end = workEnd;
+                }
+                else
+                {
+                    start = workStart > request.FromTime!.Value ? workStart : request.FromTime.Value;
+                    end = workEnd < request.ToTime!.Value ? workEnd : request.ToTime.Value;
+
+                    if (start >= end)
+                        continue;
+
+                    if ((end - start) < TimeSpan.FromHours(1))
+                        continue;
+                }
+
+                if (HasFreeSlot(start, end, reservations))
+                    return true;
+            }
+
+            return false;
+        }
+        private bool HasFreeSlot(TimeOnly start, TimeOnly end, List<Reservation> reservations)
+        {
+            var current = start;
+
+            foreach (var r in reservations)
+            {
+                if (r.Offer.WorkFrom == null || r.Offer.WorkTo == null)
+                    continue;
+
+                var resStart = r.Offer.WorkFrom.Value < start ? start : r.Offer.WorkFrom.Value;
+                var resEnd = r.Offer.WorkTo.Value > end ? end : r.Offer.WorkTo.Value;
+
+                if (resStart > current)
+                {
+                    var gap = resStart - current;
+                    if (gap >= TimeSpan.FromHours(1))
+                        return true;
+                }
+
+                if (resEnd > current)
+                    current = resEnd;
+            }
+
+            var finalGap = end - current;
+            if (finalGap >= TimeSpan.FromHours(1))
+                return true;
+
+            return false;
+        }
+
     }
 }
