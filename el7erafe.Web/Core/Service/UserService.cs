@@ -37,6 +37,9 @@ namespace Service
             if (user == null)
                 throw new Exception("User not found");
 
+            if (user.NotificationsEnabled == enabled)
+                return;
+
             user.NotificationsEnabled = enabled;
 
             await userManager.UpdateAsync(user);
