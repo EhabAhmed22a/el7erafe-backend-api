@@ -15,6 +15,7 @@ namespace DomainLayer.Models.IdentityModule
         public BlockedUser? BlockedUser { get; set; }
         public string? PendingEmail{ get; set; }
         public string? FcmToken { get; set; }
+        public bool NotificationsEnabled { get; set; } = true;
 
         public ICollection<UserConnection> UserConnections { get; set; } = new List<UserConnection>();
         public ICollection<Chat> ClientChats { get; set; } = new List<Chat>();
