@@ -14,6 +14,7 @@ namespace DomainLayer.Models.IdentityModule
         public virtual UserToken? UserToken { get; set; }
         public BlockedUser? BlockedUser { get; set; }
         public string? PendingEmail{ get; set; }
+        public string? FcmToken { get; set; }
 
         public ICollection<UserConnection> UserConnections { get; set; } = new List<UserConnection>();
         public ICollection<Chat> ClientChats { get; set; } = new List<Chat>();
