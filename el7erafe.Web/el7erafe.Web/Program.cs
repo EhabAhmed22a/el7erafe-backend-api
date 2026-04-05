@@ -11,6 +11,8 @@ using Service;
 using Service.Email;
 using Service.Hubs;
 using ServiceAbstraction;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 
 namespace el7erafe.Web
 {
@@ -19,7 +21,17 @@ namespace el7erafe.Web
         public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
+            
+            var firebasePath = builder.Configuration["Firebase:CredentialsPath"];
+            if (FirebaseApp.DefaultInstance == null)
+            {
+                var credential = CredentialFactory.FromFile<ServiceAccountCredential>(firebasePath);
+                FirebaseApp.Create(new AppOptions()
+                {
+                    Credential = credential.ToGoogleCredential()
+                });
+            }
+            
             builder.Services.AddControllers(options =>
             {
                 options.Filters.Add<CustomValidationFilter>();
