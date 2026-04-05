@@ -39,13 +39,13 @@ namespace Presentation.Controllers
         }
 
         [HttpPost("set-notifications")]
-        public async Task<IActionResult> SetNotifications([FromBody] bool enabled)
+        public async Task<IActionResult> SetNotifications([FromBody] SetNotificationDto status)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("المستخدم غير موجود");
 
-            await userService.SetNotificationStatus(userId, enabled);
+            await userService.SetNotificationStatus(userId, status.enabled);
 
             return Ok(new { message = "Notification preference updated" });
         }
