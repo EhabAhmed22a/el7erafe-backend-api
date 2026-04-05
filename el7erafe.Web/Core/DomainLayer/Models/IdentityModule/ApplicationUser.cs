@@ -22,5 +22,6 @@ namespace DomainLayer.Models.IdentityModule
         public ICollection<Chat> TechnicianChats { get; set; } = new List<Chat>();
         public ICollection<Message> SentMessages { get; set; } = new List<Message>();
         public ICollection<Message> ReceivedMessages { get; set; } = new List<Message>();
+        public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
     }
 }

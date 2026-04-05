@@ -7,8 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Databases\Configurations\**" />
     <Compile Remove="TableConfigurations\**" />
+    <EmbeddedResource Remove="Databases\Configurations\**" />
     <EmbeddedResource Remove="TableConfigurations\**" />
+    <None Remove="Databases\Configurations\**" />
     <None Remove="TableConfigurations\**" />
   </ItemGroup>
 
@@ -19,10 +22,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Service\Service.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Databases\Configurations\" />
   </ItemGroup>
 
 </Project>
