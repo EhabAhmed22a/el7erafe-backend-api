@@ -30,6 +30,7 @@ namespace Service
             services.AddScoped<ITechnicianRealTimeService, TechnicianRealTimeService>();
             services.AddScoped<IOfferService, OfferService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<INotificationService, NotificationService>();
             services.AddSignalR();
             return services;
         }

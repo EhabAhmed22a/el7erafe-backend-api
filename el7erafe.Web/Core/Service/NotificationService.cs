@@ -18,11 +18,9 @@ namespace Service
             if (user == null)
                 throw new Exception("User not found");
 
-            // 🔥 check settings
             if (!user.NotificationsEnabled || string.IsNullOrEmpty(user.FcmToken))
                 return;
 
-            // 1️⃣ Save to DB via repo
             var notification = new DomainLayer.Models.Notification()
             {
                 UserId = userId,
@@ -36,8 +34,14 @@ namespace Service
 
             await notificationRepository.AddAsync(notification);
 
-            // 2️⃣ Send FCM
             await SendPush(user.FcmToken, dto);
+        }
+
+        public async Task SendAsync(List<string> userIds, NotificationDto dto)
+        {
+            var tasks = userIds.Select(userId => SendAsync(userId, dto));
+
+            await Task.WhenAll(tasks);
         }
 
         private async Task SendPush(string token, NotificationDto dto)
