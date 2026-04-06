@@ -10,6 +10,7 @@ namespace Persistance.Repositories
         public async Task AddAsync(Notification notification)
         {
             await dbContext.Notifications.AddAsync(notification);
+            await dbContext.SaveChangesAsync();
         }
 
         public async Task<List<Notification>> GetUserNotificationsAsync(string userId)
