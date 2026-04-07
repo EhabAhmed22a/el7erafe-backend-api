@@ -22,30 +22,33 @@ namespace el7erafe.Web
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            #region FireBase Initialization
+            #region Firebase Initialization
+
             var env = builder.Environment;
+
             if (!env.IsDevelopment())
             {
-                // 1. Read the Base64 string from your Azure App Settings (or local appsettings.json/secrets)
                 var base64Credentials = builder.Configuration["FIREBASE_CREDENTIALS_BASE64"];
 
-                if (string.IsNullOrEmpty(base64Credentials))
+                if (!string.IsNullOrEmpty(base64Credentials) && FirebaseApp.DefaultInstance == null)
                 {
-                    throw new InvalidOperationException("Missing FIREBASE_CREDENTIALS_BASE64 in configuration.");
-                }
-
-                // 2. Check to prevent double-initialization (good practice!)
-                if (FirebaseApp.DefaultInstance == null)
-                {
-                    // 3. Decode the Base64 string back into the raw JSON string
-                    byte[] decodedBytes = Convert.FromBase64String(base64Credentials);
-                    string decodedJson = System.Text.Encoding.UTF8.GetString(decodedBytes);
-
-                    // 4. Initialize Firebase using the JSON string directly
-                    FirebaseApp.Create(new AppOptions()
+                    try
                     {
-                        Credential = GoogleCredential.FromJson(decodedJson)
-                    });
+                        byte[] decodedBytes = Convert.FromBase64String(base64Credentials);
+
+                        using var stream = new MemoryStream(decodedBytes);
+
+                        var credential = CredentialFactory.FromStream<ServiceAccountCredential>(stream);
+
+                        FirebaseApp.Create(new AppOptions()
+                        {
+                            Credential = credential.ToGoogleCredential()
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Firebase init failed: {ex.Message}");
+                    }
                 }
             }
             #endregion
