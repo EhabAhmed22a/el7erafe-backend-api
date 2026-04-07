@@ -10,6 +10,7 @@ namespace DomainLayer.Contracts
         Task<int> UpdateReservation(Reservation reservation);
         Task<List<Reservation>> GetCurrentReservationsAsync(int technicianId, DateTime date);
         Task<Reservation?> GetByIdWithDetailsAsync(int reservationId);
+        Task<List<Reservation>> GetCurrentReservationsAsync(int clientId);
         Task<List<Reservation>> GetPreviousReservationsAsync(int clientId);
         Task<List<Reservation>> GetInProgressReservationsAsync(int technicianId);
         Task<bool> HasEarlierUnfinishedReservations(int technicianId, Reservation currentReservation);

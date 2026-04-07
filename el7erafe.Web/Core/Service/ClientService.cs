@@ -536,6 +536,67 @@ namespace Service
             }
         }
 
+        public async Task<List<CurrentReservationsDTO>> GetCurrentReservationsAsync(string userId)
+        {
+            var user = await CheckUser(userId);
+
+            try
+            {
+                // 1. Fetch the active reservations from the DB (Already sorted soonest-first via the Repo)
+                var currentReservations = await reservationRepository.GetCurrentReservationsAsync(user.Id);
+
+                // 2. Map and resolve Azure Blob SAS tokens in parallel
+                var mappingTasks = currentReservations.Select(async r =>
+                {
+                    var technician = r.Offer?.Technician;
+
+                    // Resolve the Technician's image
+                    string? imageUrl = null;
+                    if (!string.IsNullOrWhiteSpace(technician?.ProfilePictureURL))
+                    {
+                        imageUrl = await blobStorageRepository.GetBlobUrlWithSasTokenAsync("technician-documents", technician.ProfilePictureURL);
+                    }
+
+                    // Map the current status to a friendly Arabic string for the mobile UI
+                    // Inside your GetCurrentReservationsAsync mapping:
+                    string statusType = r.Status switch
+                    {
+                        ReservationStatus.Confirmed => "تم التأكيد",
+                        ReservationStatus.InPayment => "انتظار الدفع",
+                        ReservationStatus.InProgress => "قيد التنفيذ",
+                        _ => "غير معروف" // Unknown fallback
+                    };
+
+                    return new CurrentReservationsDTO
+                    {
+                        reservationId = r.Id,
+                        type = statusType, // Passed the translated status here
+
+                        techName = technician?.Name,
+                        techImage = imageUrl,
+
+                        serviceType = r.Offer?.ServiceRequest?.Service?.NameAr ?? "غير معروف",
+
+                        fees = r.Offer?.Fees,
+
+                        // Standardizing the timezones exactly like you did in the history method
+                        techTimeInterval = HelperClass.FormatArabicTimeInterval(
+                            HelperClass.GetTimeInEgypt(r.Offer?.WorkFrom),
+                            HelperClass.GetTimeInEgypt(r.Offer?.WorkTo)),
+
+                        day = r.Offer?.ServiceRequest?.ServiceDate
+                    };
+                });
+
+                // 3. Await all the parallel image generation tasks and return the list
+                return (await Task.WhenAll(mappingTasks)).ToList();
+            }
+            catch (Exception)
+            {
+                throw new TechnicalException();
+            }
+        }
+
         public async Task<List<OfferResultDto>> GetOffersAsync(string userId, int requestId, bool isQuick)
         {
             var client = await CheckUser(userId);
