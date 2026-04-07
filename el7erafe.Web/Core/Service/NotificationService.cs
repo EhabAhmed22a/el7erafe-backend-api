@@ -18,7 +18,7 @@ namespace Service
             if (user == null)
                 throw new Exception("User not found");
 
-            if (!user.NotificationsEnabled || string.IsNullOrEmpty(user.FcmToken))
+            if (string.IsNullOrEmpty(user.FcmToken))
                 return;
 
             var notification = new DomainLayer.Models.Notification()

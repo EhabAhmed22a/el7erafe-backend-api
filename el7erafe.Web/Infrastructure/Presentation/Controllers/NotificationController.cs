@@ -11,8 +11,7 @@ namespace Presentation.Controllers
     [Route("api/notify")]
     [Authorize(AuthenticationSchemes = "Bearer", Roles = "Technician, Client")]
     public class NotificationController(
-        IUserService userService,
-        ILogger<NotificationController> _logger) : ControllerBase
+        IUserService userService) : ControllerBase
     {
         [HttpPost("save-fcm-token")]
         public async Task<IActionResult> SaveFcmToken([FromBody] SaveFcmTokenDto request)
@@ -36,18 +35,6 @@ namespace Presentation.Controllers
             await userService.DeleteFcmTokenAsync(userId);
 
             return Ok(new { message = "FCM token removed successfully" });
-        }
-
-        [HttpPost("set-notifications")]
-        public async Task<IActionResult> SetNotifications([FromBody] SetNotificationDto status)
-        {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized("المستخدم غير موجود");
-
-            await userService.SetNotificationStatus(userId, status.enabled);
-
-            return Ok(new { message = "Notification preference updated" });
         }
     }
 }

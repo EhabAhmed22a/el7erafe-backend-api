@@ -30,19 +30,5 @@ namespace Service
             await userManager.UpdateAsync(user);
         }
 
-        public async Task SetNotificationStatus(string userId, bool enabled)
-        {
-            var user = await userManager.FindByIdAsync(userId);
-
-            if (user == null)
-                throw new Exception("User not found");
-
-            if (user.NotificationsEnabled == enabled)
-                return;
-
-            user.NotificationsEnabled = enabled;
-
-            await userManager.UpdateAsync(user);
-        }
     }
 }
