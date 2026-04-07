@@ -3,6 +3,7 @@ using DomainLayer.Models;
 using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.EntityFrameworkCore;
 using Persistance.Databases;
+using Service.Helpers;
 
 namespace Persistance.Repositories
 {
@@ -81,7 +82,7 @@ namespace Persistance.Repositories
                     ReservationStatus.InProgress
                 };
             return await dbcontext.Reservations
-                    .AsNoTracking() 
+                    .AsNoTracking()
                     .Include(r => r.Offer)
                         .ThenInclude(o => o.ServiceRequest)
                             .ThenInclude(sr => sr.Service)
@@ -155,6 +156,56 @@ namespace Persistance.Repositories
             return await dbcontext.ServiceRequests
                 .AnyAsync(s => s.ClientId == clientId && s.ServiceId == serviceId && s.Status == ServiceReqStatus.Reserved &&
                 s.Offers.Any(o => o.Reservation != null && o.Reservation.Status == ReservationStatus.InProgress));
+        }
+
+        public async Task<bool> IsReservationCancelled(int reservationId)
+        {
+            var statuses = new[]
+            {
+                ReservationStatus.CancelledByClient,
+                ReservationStatus.CancelledByTech
+            };
+            return await dbcontext.Reservations.AnyAsync(r => r.Id == reservationId && statuses.Contains(r.Status));
+        }
+
+        public async Task<bool> CanCancelReservation(int reservationId)
+        {
+            var info = await dbcontext.Reservations
+                .Where(r => r.Id == reservationId)
+                .Select(r => new
+                {
+                    r.Status,
+                    Date = r.Offer.ServiceRequest.ServiceDate,
+                    StartTime = r.Offer.WorkFrom
+                })
+                .FirstOrDefaultAsync();
+
+            if (info == null || info.Status != ReservationStatus.Confirmed)
+                return false;
+
+            if (info.StartTime == null)
+                return false;
+
+            DateTime appointmentTime = info.Date.ToDateTime(info.StartTime.Value);
+
+            DateTime currentEgyptTime = HelperClass.ConvertUtcToEgyptTime(DateTime.UtcNow);
+
+            TimeSpan timeRemaining = appointmentTime - currentEgyptTime;
+            return timeRemaining.TotalHours >= 1;
+        }
+
+        public async Task<bool> IsReservationFound(int reservationId)
+        {
+            return await dbcontext.Reservations.AnyAsync(r => r.Id == reservationId);
+        }
+
+        public async Task<Reservation> CancelReservation(int reservationId, bool isClient)
+        {
+            var reservation = await dbcontext.Reservations.Include(r => r.Offer).ThenInclude(o => o.ServiceRequest).FirstOrDefaultAsync(r => r.Id == reservationId);
+
+            reservation!.Status = isClient ? ReservationStatus.CancelledByClient : ReservationStatus.CancelledByTech;
+            await dbcontext.SaveChangesAsync();
+            return reservation;
         }
     }
 }
