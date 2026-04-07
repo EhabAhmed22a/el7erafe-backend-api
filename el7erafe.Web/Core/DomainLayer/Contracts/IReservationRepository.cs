@@ -9,6 +9,9 @@ namespace DomainLayer.Contracts
         Task<Reservation?> GetByOfferIdAsync(int offerId);
         Task<int> UpdateReservation(Reservation reservation);
         Task<List<Reservation>> GetCurrentReservationsAsync(int technicianId, DateTime date);
+        Task<bool> IsReservationConfirmed(int clientId, int serviceId);
+        Task<bool> IsReservationInPayment(int clientId);
+        Task<bool> IsReservationInProgress(int clientId, int serviceId);
         Task<Reservation?> GetByIdWithDetailsAsync(int reservationId);
         Task<List<Reservation>> GetCurrentReservationsAsync(int clientId);
         Task<List<Reservation>> GetPreviousReservationsAsync(int clientId);
