@@ -8,6 +8,7 @@ using Presentation.Hubs;
 using ServiceAbstraction;
 using ServiceAbstraction.Chat;
 using Shared.DataTransferObject.Calendar;
+using Shared.DataTransferObject.NotificationDTOs;
 using Shared.DataTransferObject.OffersDTOs;
 using Shared.DataTransferObject.OtpDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
@@ -28,7 +29,8 @@ namespace Presentation.Controllers
         IHubContext<TechnicianHub> technicianHub,
         ITechnicianAvailabilityService technicianAvailabilityService,
         IOfferService offerService,
-        IClientService clientService) : ControllerBase
+        IClientService clientService,
+        INotificationService notificationService) : ControllerBase
     {
         [HttpGet("profile")]
         public async Task<IActionResult> GetProfile()
@@ -214,6 +216,18 @@ namespace Presentation.Controllers
 
             await clientHub.Clients.User(result.ClientUserId).SendAsync("ReceiveNewOffer", result.ClientOffer);
 
+            await notificationService.SendAsync(result.ClientUserId, new NotificationDto
+            {
+                Title = "عرض جديد",
+                Body = "قام فني بإرسال عرض على طلبك",
+                Action = "CLIENT_NEW_OFFER",
+                ExtraPayload = new
+                {
+                    requestId = result.ClientOffer.RequestId,
+                    offerId = result.ClientOffer.OfferId
+                }
+            });
+
             await technicianHub.Clients.User(userId).SendAsync("ReceivePendingOffer", result.TechnicianOffer);
 
             return Ok(new { message = "تم تقديم العرض بنجاح" });
@@ -254,6 +268,17 @@ namespace Presentation.Controllers
 
             await clientHub.Clients.User(clientUserId).SendAsync("JobStarted", new { reservationId });
 
+            await notificationService.SendAsync(clientUserId, new NotificationDto
+            {
+                Title = "تم بدء العمل",
+                Body = "بدأ الفني العمل على طلبك",
+                Action = "CLIENT_STATUS_CHANGED",
+                ExtraPayload = new
+                {
+                    reservationId = reservationId.ReservationId
+                }
+            });
+
             return Ok(new {message = "تم بدء العمل" });
         }
 
@@ -281,6 +306,17 @@ namespace Presentation.Controllers
             var clientUserId = await technicianService.CompleteJob(userId, dto.ReservationId);
 
             await clientHub.Clients.User(clientUserId).SendAsync("JobCompleted", new { dto.ReservationId });
+
+            await notificationService.SendAsync(clientUserId, new NotificationDto
+            {
+                Title = "تم إنهاء العمل",
+                Body = "تم الانتهاء من طلبك بنجاح",
+                Action = "CLIENT_STATUS_CHANGED",
+                ExtraPayload = new
+                {
+                    reservationId = dto.ReservationId
+                }
+            });
 
             return Ok(new { message = "تم إنهاء العمل بنجاح" });
         }
