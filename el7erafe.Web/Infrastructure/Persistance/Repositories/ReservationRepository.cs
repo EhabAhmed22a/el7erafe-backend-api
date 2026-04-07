@@ -72,12 +72,34 @@ namespace Persistance.Repositories
                 .AnyAsync();
         }
 
+        public async Task<List<Reservation>> GetCurrentReservationsAsync(int clientId)
+        {
+            var activeStatuses = new[]
+                {
+                    ReservationStatus.InPayment,
+                    ReservationStatus.Confirmed,
+                    ReservationStatus.InProgress
+                };
+            return await dbcontext.Reservations
+                    .AsNoTracking() 
+                    .Include(r => r.Offer)
+                        .ThenInclude(o => o.ServiceRequest)
+                            .ThenInclude(sr => sr.Service)
+                    .Include(r => r.Offer)
+                        .ThenInclude(o => o.Technician)
+                    .Where(r =>
+                        r.Offer.ServiceRequest.ClientId == clientId &&
+                        activeStatuses.Contains(r.Status))
+                    .OrderBy(r => r.Offer.ServiceRequest.ServiceDate)
+                    .ToListAsync();
+        }
+
         public async Task<bool> HasActiveInProgressJob(int technicianId)
         {
             return await dbcontext.Reservations
                 .AnyAsync(r =>
                     r.Offer.TechnicianId == technicianId &&
-                    r.Status == ReservationStatus.InProgress || 
+                    r.Status == ReservationStatus.InProgress ||
                     r.Status == ReservationStatus.InPayment
                 );
         }

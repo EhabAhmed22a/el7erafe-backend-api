@@ -17,6 +17,7 @@ namespace ServiceAbstraction
         Task DeleteAccount(string userId);
         Task<ClientProfileDTO> GetProfileAsync(string userId);
         Task<List<OfferResultDto>> GetOffersAsync(string userId, int requestId, bool isQuick);
+        Task<List<CurrentReservationsDTO>> GetCurrentReservationsAsync(string userId);
         Task<List<AvailableTechnicianDto>> GetAvailableTechniciansAsync(GetAvailableTechniciansRequest requestRegDTO);
         Task UpdateNameAndImage(string userId, UpdateNameImageDTO dTO);
         Task UpdatePhoneNumber(string userId, UpdatePhoneDTO dTO);
