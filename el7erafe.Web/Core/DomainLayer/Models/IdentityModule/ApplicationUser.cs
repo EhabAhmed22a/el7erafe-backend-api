@@ -14,11 +14,13 @@ namespace DomainLayer.Models.IdentityModule
         public virtual UserToken? UserToken { get; set; }
         public BlockedUser? BlockedUser { get; set; }
         public string? PendingEmail{ get; set; }
+        public string? FcmToken { get; set; }
 
         public ICollection<UserConnection> UserConnections { get; set; } = new List<UserConnection>();
         public ICollection<Chat> ClientChats { get; set; } = new List<Chat>();
         public ICollection<Chat> TechnicianChats { get; set; } = new List<Chat>();
         public ICollection<Message> SentMessages { get; set; } = new List<Message>();
         public ICollection<Message> ReceivedMessages { get; set; } = new List<Message>();
+        public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
     }
 }

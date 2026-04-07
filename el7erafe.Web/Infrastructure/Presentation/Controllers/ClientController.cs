@@ -6,6 +6,7 @@ using Presentation.Hubs;
 using ServiceAbstraction;
 using ServiceAbstraction.Chat;
 using Shared.DataTransferObject.ClientDTOs;
+using Shared.DataTransferObject.NotificationDTOs;
 using Shared.DataTransferObject.OffersDTOs;
 using Shared.DataTransferObject.OtpDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
@@ -23,7 +24,8 @@ namespace Presentation.Controllers
         IChatService chatService,
         IHubContext<ClientHub> clientHub,
         IHubContext<TechnicianHub> technicianHub,
-        ITechnicianAvailabilityService technicianAvailabilityService) : ControllerBase
+        ITechnicianAvailabilityService technicianAvailabilityService,
+        INotificationService notificationService) : ControllerBase
     {
         [HttpGet("/cf/services")]
         public async Task<ActionResult<string>> GetServicesAsync()
@@ -49,6 +51,17 @@ namespace Presentation.Controllers
             if (targetTechs.Any())
             {
                 await technicianHub.Clients.Users(targetTechs).SendAsync("ReceiveNewQuickRequest", newData);
+                await notificationService.SendAsync(targetTechs, new NotificationDto
+                {
+                    Title = "طلب خدمة جديد",
+                    Body = "يوجد طلب خدمة جديد قريب منك",
+                    Action = "TECH_NEW_REQUEST",
+                    ExtraPayload = new
+                    {
+                        requestId = newData.requestId,
+                        serviceId = newData.ServiceId
+                    }
+                });
             }
 
             return Ok(new { message = "تم إرسال طلب الخدمة بنجاح. سيتم تعيين فني قريباً" });
@@ -80,6 +93,17 @@ namespace Presentation.Controllers
             {
                 var technician = await technicianService.GetTechnicianByIdAsync((int)requestRegDTO.TechnicianId);
                 await technicianHub.Clients.User(technician?.User.Id!).SendAsync("ReceiveNewDirectRequest", newData);
+                await notificationService.SendAsync(technician?.User.Id!, new NotificationDto
+                {
+                    Title = "طلب خدمة جديد",
+                    Body = "تم إرسال طلب خدمة لك من قبل عميل",
+                    Action = "TECH_NEW_REQUEST",
+                    ExtraPayload = new
+                    {
+                        requestId = newData.requestId,
+                        serviceId = newData.ServiceId
+                    }
+                });
             }
             return Ok(new { message = "تم إرسال طلب الخدمة للفني المحدد. في انتظار قبوله" });
         }
@@ -275,10 +299,23 @@ namespace Presentation.Controllers
             var result = await _clientService.AcceptOffer(offerId.offerId);
 
             await technicianHub.Clients.User(result.AcceptedTechnicianUserId).SendAsync("OfferAccepted",
-                new {
+                new
+                {
                     requestId = result.RequestId,
                     acceptedOfferId = result.AcceptedOfferId
                 });
+
+            await notificationService.SendAsync(result.AcceptedTechnicianUserId, new NotificationDto
+            {
+                Title = "تم قبول العرض",
+                Body = "تم قبول عرضك من العميل",
+                Action = "TECH_OFFER_ACCEPTED",
+                ExtraPayload = new
+                {
+                    requestId = result.RequestId,
+                    offerId = result.AcceptedOfferId
+                }
+            });
 
             if (result.RejectedTechnicianUserIds.Any())
             {
@@ -289,6 +326,18 @@ namespace Presentation.Controllers
                         requestId = result.RequestId,
                         acceptedOfferId = result.AcceptedOfferId
                     });
+
+                await notificationService.SendAsync(result.RejectedTechnicianUserIds, new NotificationDto
+                {
+                    Title = "تم رفض العرض",
+                    Body = "تم اختيار عرض آخر لهذا الطلب",
+                    Action = "TECH_OFFER_DECLINED",
+                    ExtraPayload = new
+                    {
+                        requestId = result.RequestId,
+                        acceptedOfferId = result.AcceptedOfferId
+                    }
+                });
             }
 
             return Ok(new { message = "تم قبول العرض بنجاح" });
@@ -309,6 +358,18 @@ namespace Presentation.Controllers
                     requestId = result.RequestId,
                     offerId = result.OfferId
                 });
+
+            await notificationService.SendAsync(result.TechnicianUserId, new NotificationDto
+            {
+                Title = "تم رفض العرض",
+                Body = "تم رفض عرضك من العميل",
+                Action = "TECH_OFFER_DECLINED",
+                ExtraPayload = new
+                {
+                    requestId = result.RequestId,
+                    offerId = result.OfferId
+                }
+            });
 
             return Ok(new { message = "تم رفض العرض بنجاح" });
         }
