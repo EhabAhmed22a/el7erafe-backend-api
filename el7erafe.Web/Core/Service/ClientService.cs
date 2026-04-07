@@ -110,9 +110,16 @@ namespace Service
 
             int clientId = client.Id;
             if (await serviceRequestRepository.IsServicePending(clientId, regDTO.ServiceId))
-                throw new ServiceAlreadyRequestedException();
+                throw new PendingServiceAlreadyRequestedException();
 
-            //******Still some Logic to be added after Implementing Reservations in the application******//
+            if (await reservationRepository.IsReservationConfirmed(clientId, regDTO.ServiceId))
+                throw new ReservationAlreadyConfirmedException();
+            
+            if(await reservationRepository.IsReservationInProgress(clientId, regDTO.ServiceId))
+                    throw new ReservationInProgressException();
+
+            if (await reservationRepository.IsReservationInPayment(clientId))
+                throw new ReservationPendingPaymentException();
 
             var serviceReq = new ServiceRequest()
             {
