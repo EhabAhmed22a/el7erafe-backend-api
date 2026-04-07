@@ -15,7 +15,7 @@ namespace DomainLayer.Contracts
         Task<bool> IsReservationFound(int reservationId);
         Task<bool> IsReservationCancelled(int reservationId);
         Task<bool> CanCancelReservation(int reservationId);
-        Task CancelReservation(int reservationId,bool isClient);
+        Task<Reservation> CancelReservation(int reservationId,bool isClient);
         Task<Reservation?> GetByIdWithDetailsAsync(int reservationId);
         Task<List<Reservation>> GetCurrentReservationsAsync(int clientId);
         Task<List<Reservation>> GetPreviousReservationsAsync(int clientId);

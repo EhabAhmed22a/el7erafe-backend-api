@@ -158,7 +158,7 @@ namespace Persistance.Repositories
                 s.Offers.Any(o => o.Reservation != null && o.Reservation.Status == ReservationStatus.InProgress));
         }
 
-        public async Task<bool> IsReservationAlreadyCancelled(int reservationId)
+        public async Task<bool> IsReservationCancelled(int reservationId)
         {
             var statuses = new[]
             {
@@ -199,12 +199,13 @@ namespace Persistance.Repositories
             return await dbcontext.Reservations.AnyAsync(r => r.Id == reservationId);
         }
 
-        public async Task CancelReservation(int reservationId, bool isClient)
+        public async Task<Reservation> CancelReservation(int reservationId, bool isClient)
         {
-            var reservation = await dbcontext.Reservations.FirstOrDefaultAsync(r => r.Id == reservationId);
+            var reservation = await dbcontext.Reservations.Include(r => r.Offer).ThenInclude(o => o.ServiceRequest).FirstOrDefaultAsync(r => r.Id == reservationId);
 
             reservation!.Status = isClient ? ReservationStatus.CancelledByClient : ReservationStatus.CancelledByTech;
             await dbcontext.SaveChangesAsync();
+            return reservation;
         }
     }
 }

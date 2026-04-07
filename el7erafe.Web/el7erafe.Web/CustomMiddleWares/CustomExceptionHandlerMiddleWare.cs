@@ -59,7 +59,7 @@ namespace el7erafe.Web.CustomMiddleWares
                 or ServiceAlreadyRegisteredException or PendingServiceAlreadyRequestedException or ReservationAlreadyConfirmedException or ReservationInProgressException
                 or ReservationPendingPaymentException
                 or ServiceRequestTimeConflictException or RequestAlreadyDeclinedException or RequestAlreadyCanceledException => StatusCodes.Status409Conflict,
-                { } when ex is InvalidOtpException or UpdateException => StatusCodes.Status400BadRequest,
+                { } when ex is InvalidOtpException or UpdateException or ReservationAlreadyCancelledException or TooLateToCancelReservationException => StatusCodes.Status400BadRequest,
                 { } when ex is ForgotPasswordDisallowed or ResetTokenExpiredException or ForbiddenAccessException => StatusCodes.Status403Forbidden,
                 UnprocessableEntityException => StatusCodes.Status422UnprocessableEntity,
                 UnverifiedException unverifiedLogin => GetEmail(unverifiedLogin, Response),
