@@ -100,8 +100,8 @@ namespace Persistance.Repositories
             return await dbcontext.Reservations
                 .AnyAsync(r =>
                     r.Offer.TechnicianId == technicianId &&
-                    r.Status == ReservationStatus.InProgress ||
-                    r.Status == ReservationStatus.InPayment
+                    (r.Status == ReservationStatus.InProgress ||
+                    r.Status == ReservationStatus.InPayment)
                 );
         }
 
