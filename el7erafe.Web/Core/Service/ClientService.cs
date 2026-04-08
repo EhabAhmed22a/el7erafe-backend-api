@@ -579,7 +579,7 @@ namespace Service
                     return new CurrentReservationsDTO
                     {
                         reservationId = r.Id,
-                        type = statusType, // Passed the translated status here
+                        type = statusType,
 
                         techName = technician?.Name,
                         techImage = imageUrl,
@@ -588,16 +588,12 @@ namespace Service
 
                         fees = r.Offer?.Fees,
 
-                        // Standardizing the timezones exactly like you did in the history method
-                        techTimeInterval = HelperClass.FormatArabicTimeInterval(
-                            HelperClass.GetTimeInEgypt(r.Offer?.WorkFrom),
-                            HelperClass.GetTimeInEgypt(r.Offer?.WorkTo)),
+                        techTimeInterval = HelperClass.FormatArabicTimeInterval(r.Offer?.WorkFrom, r.Offer?.WorkTo),
 
                         day = r.Offer?.ServiceRequest?.ServiceDate
                     };
                 });
 
-                // 3. Await all the parallel image generation tasks and return the list
                 return (await Task.WhenAll(mappingTasks)).ToList();
             }
             catch (Exception)
@@ -759,9 +755,7 @@ namespace Service
 
                         fees = r.Offer?.Fees,
 
-                        techTimeInterval = HelperClass.FormatArabicTimeInterval(
-                            HelperClass.GetTimeInEgypt(r.Offer?.WorkFrom),
-                            HelperClass.GetTimeInEgypt(r.Offer?.WorkTo)),
+                        techTimeInterval = HelperClass.FormatArabicTimeInterval(r.Offer?.WorkFrom,r.Offer?.WorkTo),
 
                         day = r.Offer?.ServiceRequest?.ServiceDate ?? DateOnly.MinValue,
 

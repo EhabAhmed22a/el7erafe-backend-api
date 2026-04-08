@@ -30,20 +30,5 @@ namespace Service.Helpers
         {
             return TimeZoneInfo.ConvertTimeBySystemTimeZoneId(utcTime, "Egypt Standard Time");
         }
-
-        public static TimeOnly? GetTimeInEgypt(TimeOnly? utcTime)
-        {
-            if (!utcTime.HasValue)
-                return null;
-
-            // 1. Attach today's date to the UTC time
-            DateTime combinedUtc = DateTime.UtcNow.Date.Add(utcTime.Value.ToTimeSpan());
-
-            // 2. Convert it to Egypt Time
-            DateTime egyptTime = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(combinedUtc, "Egypt Standard Time");
-
-            // 3. Return just the Time portion
-            return TimeOnly.FromDateTime(egyptTime);
-        }
     }
 }
