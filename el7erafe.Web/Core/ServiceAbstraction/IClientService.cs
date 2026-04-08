@@ -17,12 +17,15 @@ namespace ServiceAbstraction
         Task DeleteAccount(string userId);
         Task<ClientProfileDTO> GetProfileAsync(string userId);
         Task<List<OfferResultDto>> GetOffersAsync(string userId, int requestId, bool isQuick);
+        Task<List<CurrentReservationsDTO>> GetCurrentReservationsAsync(string userId);
+        Task<string> PayNow(int reservationId);
         Task<List<AvailableTechnicianDto>> GetAvailableTechniciansAsync(GetAvailableTechniciansRequest requestRegDTO);
         Task UpdateNameAndImage(string userId, UpdateNameImageDTO dTO);
         Task UpdatePhoneNumber(string userId, UpdatePhoneDTO dTO);
         Task<OtpResponseDTO> UpdatePendingEmail(string userId, UpdateEmailDTO updateEmailDTO);
         Task UpdateEmailAsync(string userId, OtpCodeDTO otpCode);
         Task<string?> CancelRequestAsync(string userId, ReqIdDTO reqDTO);
+        Task SubmitRatingAsync(int reservationId, int ratingValue, string clientId);
         Task<OtpResponseDTO> ResendOtpForPendingEmail(string userId);
         Task<Client?> GetClientByIdAsync(int clientId);
         Task<AcceptOfferResultDto> AcceptOffer(int offerId);

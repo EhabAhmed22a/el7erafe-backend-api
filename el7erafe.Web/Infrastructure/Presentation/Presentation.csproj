@@ -16,6 +16,10 @@
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <PackageReference Include="FirebaseAdmin" Version="3.5.0" />
+	</ItemGroup>
+
 	<!-- <Target Name="CopyXmlToWeb" AfterTargets="Build">
 		<Copy SourceFiles="$(OutputPath)Presentation.xml"
 			  DestinationFiles="$(SolutionDir)el7erafe.Web\el7erafe.Web\bin\Debug\net9.0\Presentation.xml"

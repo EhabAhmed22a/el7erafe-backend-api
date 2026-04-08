@@ -1,0 +1,4 @@
+fastapi
+uvicorn
+fasttext-wheel
+numpy<2.0.0

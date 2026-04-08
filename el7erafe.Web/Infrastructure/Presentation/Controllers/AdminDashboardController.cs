@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
 using Shared.DataTransferObject.AdminDTOs.Dashboard;
+using Shared.DataTransferObject.NotificationDTOs;
 using System.ComponentModel.DataAnnotations;
 
 namespace Presentation.Controllers
@@ -13,7 +14,10 @@ namespace Presentation.Controllers
     [ApiController]
     [Route("api")]
     [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
-    public class AdminDashboardController(IAdminDashboardService adminDashboardService, ILogger<AdminDashboardController> logger) : ControllerBase
+    public class AdminDashboardController(
+        IAdminDashboardService adminDashboardService,
+        ILogger<AdminDashboardController> logger,
+        INotificationService notificationService) : ControllerBase
     {
         /// <summary>
         /// Retrieves a list of clients with optional pagination support.
@@ -186,6 +190,31 @@ namespace Presentation.Controllers
         {
             await adminDashboardService.BlockUnblockClientAsync(blockUnblockDTO, clientId.ToString());
 
+            if (blockUnblockDTO.IsBlocked)
+            {
+                await notificationService.SendAsync(clientId.ToString(), new NotificationDto
+                {
+                    Title = "تم حظر حسابك",
+                    Body = blockUnblockDTO.SuspendTo.HasValue
+                        ? "تم حظر حسابك مؤقتًا"
+                        : "تم حظر حسابك بشكل دائم",
+                    Action = "CLIENT_BLOCKED",
+                    ExtraPayload = new
+                    {
+                        suspendTo = blockUnblockDTO.SuspendTo
+                    }
+                });
+            }
+            else
+            {
+                await notificationService.SendAsync(clientId.ToString(), new NotificationDto
+                {
+                    Title = "تم فك الحظر",
+                    Body = "تم إلغاء حظر حسابك ويمكنك استخدام التطبيق",
+                    Action = "CLIENT_UNBLOCKED"
+                });
+            }
+
             string message = blockUnblockDTO.IsBlocked ?
                 (blockUnblockDTO.SuspendTo.HasValue
                                     ? "تم حظر المستخدم مؤقتًا بنجاح"
@@ -239,6 +268,13 @@ namespace Presentation.Controllers
             logger.LogInformation("[API] ApproveTechnician endpoint called for UserId: {UserId}", userId);
             logger.LogInformation("[API] Calling adminDashboardService.ApproveTechnicianAsync for UserId: {UserId}", userId);
             await adminDashboardService.ApproveTechnicianAsync(userId);
+
+            await notificationService.SendAsync(userId, new NotificationDto
+            {
+                Title = "تم قبولك كفني",
+                Body = "تمت الموافقة على حسابك ويمكنك الآن استقبال الطلبات",
+                Action = "TECH_APPROVED"
+            });
             logger.LogInformation("[API] Technician successfully approved. UserId: {UserId}", userId);
             return Ok(new { status = "success", message = "تمت الموافقة على الفني بنجاح." });
         }
@@ -249,6 +285,13 @@ namespace Presentation.Controllers
             logger.LogInformation("[API] RejectTechnician endpoint called for UserId: {UserId}", rejectTechDTO.id);
             logger.LogInformation("[API] Calling adminDashboardService.RejectTechnicianAsync for UserId: {UserId}", rejectTechDTO.id);
             await adminDashboardService.RejectTechnicianAsync(rejectTechDTO);
+
+            await notificationService.SendAsync(rejectTechDTO.id, new NotificationDto
+            {
+                Title = "تم رفض طلبك",
+                Body = "نأسف، لم يتم قبولك كفني",
+                Action = "TECH_REJECTED"
+            });
             logger.LogInformation("[API] Technician successfully rejected. UserId: {UserId}", rejectTechDTO.id);
             return Ok(new { status = "success", message = "تم رفض الفني بنجاح." });
         }
@@ -257,6 +300,32 @@ namespace Presentation.Controllers
         public async Task<ActionResult> BlockUnblockTechnicianAsync(BlockUnblockDTO blockUnblockDTO, Guid technicianId)
         {
             await adminDashboardService.BlockUnblockTechnicianAsync(blockUnblockDTO, technicianId.ToString());
+
+            if (blockUnblockDTO.IsBlocked)
+            {
+                await notificationService.SendAsync(technicianId.ToString(), new NotificationDto
+                {
+                    Title = "تم حظر حسابك",
+                    Body = blockUnblockDTO.SuspendTo.HasValue
+                        ? "تم حظر حسابك مؤقتًا"
+                        : "تم حظر حسابك بشكل دائم",
+                    Action = "TECH_BLOCKED",
+                    ExtraPayload = new
+                    {
+                        suspendTo = blockUnblockDTO.SuspendTo
+                    }
+                });
+            }
+            else
+            {
+                await notificationService.SendAsync(technicianId.ToString(), new NotificationDto
+                {
+                    Title = "تم فك الحظر",
+                    Body = "تم إلغاء حظر حسابك ويمكنك استخدام التطبيق",
+                    Action = "TECH_UNBLOCKED"
+                });
+            }
+
 
             string message = blockUnblockDTO.IsBlocked ?
                 (blockUnblockDTO.SuspendTo.HasValue

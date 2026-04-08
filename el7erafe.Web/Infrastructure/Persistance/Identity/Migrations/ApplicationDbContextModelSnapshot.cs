@@ -194,6 +194,9 @@ namespace Persistance.Identity.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("FcmToken")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
@@ -571,6 +574,43 @@ namespace Persistance.Identity.Migrations
                     b.ToTable("IgnoredServiceRequests", (string)null);
                 });
 
+            modelBuilder.Entity("DomainLayer.Models.Notification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ExtraPayload")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Notifications");
+                });
+
             modelBuilder.Entity("DomainLayer.Models.Offer", b =>
                 {
                     b.Property<int>("Id")
@@ -610,6 +650,30 @@ namespace Persistance.Identity.Migrations
                     b.HasIndex("TechnicianId");
 
                     b.ToTable("Offers", (string)null);
+                });
+
+            modelBuilder.Entity("DomainLayer.Models.Rating", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ReservationId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Value")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReservationId");
+
+                    b.ToTable("Ratings", (string)null);
                 });
 
             modelBuilder.Entity("DomainLayer.Models.Reservation", b =>
@@ -918,6 +982,17 @@ namespace Persistance.Identity.Migrations
                     b.Navigation("Technician");
                 });
 
+            modelBuilder.Entity("DomainLayer.Models.Notification", b =>
+                {
+                    b.HasOne("DomainLayer.Models.IdentityModule.ApplicationUser", "User")
+                        .WithMany("Notifications")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("DomainLayer.Models.Offer", b =>
                 {
                     b.HasOne("DomainLayer.Models.ServiceRequest", "ServiceRequest")
@@ -935,6 +1010,17 @@ namespace Persistance.Identity.Migrations
                     b.Navigation("ServiceRequest");
 
                     b.Navigation("Technician");
+                });
+
+            modelBuilder.Entity("DomainLayer.Models.Rating", b =>
+                {
+                    b.HasOne("DomainLayer.Models.Reservation", "Reservation")
+                        .WithMany()
+                        .HasForeignKey("ReservationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Reservation");
                 });
 
             modelBuilder.Entity("DomainLayer.Models.Reservation", b =>
@@ -1010,6 +1096,8 @@ namespace Persistance.Identity.Migrations
                     b.Navigation("Client");
 
                     b.Navigation("ClientChats");
+
+                    b.Navigation("Notifications");
 
                     b.Navigation("ReceivedMessages");
 

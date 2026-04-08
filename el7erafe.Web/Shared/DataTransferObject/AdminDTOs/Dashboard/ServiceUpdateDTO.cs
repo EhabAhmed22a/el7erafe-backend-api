@@ -7,7 +7,7 @@ namespace Shared.DataTransferObject.AdminDTOs.Dashboard
     public class ServiceUpdateDTO
     {
         public string? service_name { get; set; }
-        [ValidateFile(1 * 1024 * 1024, new[] { ".png", ".jpg", ".jpeg" })]
+        [ValidateFile(1 * 1024 * 1024, new[] { ".png", ".jpg", ".jpeg",".svg" })]
         public IFormFile? service_image { get; set; }
     }
 }

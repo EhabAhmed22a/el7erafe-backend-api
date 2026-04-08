@@ -11,6 +11,8 @@ using Service;
 using Service.Email;
 using Service.Hubs;
 using ServiceAbstraction;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 
 namespace el7erafe.Web
 {
@@ -19,6 +21,37 @@ namespace el7erafe.Web
         public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            #region Firebase Initialization
+
+            var env = builder.Environment;
+
+            if (!env.IsDevelopment())
+            {
+                var base64Credentials = builder.Configuration["FIREBASE_CREDENTIALS_BASE64"];
+
+                if (!string.IsNullOrEmpty(base64Credentials) && FirebaseApp.DefaultInstance == null)
+                {
+                    try
+                    {
+                        byte[] decodedBytes = Convert.FromBase64String(base64Credentials);
+
+                        using var stream = new MemoryStream(decodedBytes);
+
+                        var credential = CredentialFactory.FromStream<ServiceAccountCredential>(stream);
+
+                        FirebaseApp.Create(new AppOptions()
+                        {
+                            Credential = credential.ToGoogleCredential()
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Firebase init failed: {ex.Message}");
+                    }
+                }
+            }
+            #endregion
 
             builder.Services.AddControllers(options =>
             {

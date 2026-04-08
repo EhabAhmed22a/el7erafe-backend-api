@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using DomainLayer.Contracts;
 using DomainLayer.Exceptions;
 using DomainLayer.Models;
@@ -29,7 +30,8 @@ namespace Service
             OtpHelper otpHelper,
             IUnitOfWork unitOfWork,
             IOffersRepository offersRepository,
-            IReservationRepository reservationRepository) : IClientService
+            IReservationRepository reservationRepository,
+            IRatingRepository ratingRepository) : IClientService
     {
         public async Task<ServiceListDto> GetClientServicesAsync()
         {
@@ -110,9 +112,16 @@ namespace Service
 
             int clientId = client.Id;
             if (await serviceRequestRepository.IsServicePending(clientId, regDTO.ServiceId))
-                throw new ServiceAlreadyRequestedException();
+                throw new PendingServiceAlreadyRequestedException();
 
-            //******Still some Logic to be added after Implementing Reservations in the application******//
+            if (await serviceRequestRepository.IsReservationConfirmed(clientId, regDTO.ServiceId))
+                throw new ReservationAlreadyConfirmedException();
+
+            if (await serviceRequestRepository.IsReservationInProgress(clientId, regDTO.ServiceId))
+                throw new ReservationInProgressException();
+
+            if (await serviceRequestRepository.IsReservationInPayment(clientId))
+                throw new ReservationPendingPaymentException();
 
             var serviceReq = new ServiceRequest()
             {
@@ -536,6 +545,67 @@ namespace Service
             }
         }
 
+        public async Task<List<CurrentReservationsDTO>> GetCurrentReservationsAsync(string userId)
+        {
+            var user = await CheckUser(userId);
+
+            try
+            {
+                // 1. Fetch the active reservations from the DB (Already sorted soonest-first via the Repo)
+                var currentReservations = await reservationRepository.GetCurrentReservationsAsync(user.Id);
+
+                // 2. Map and resolve Azure Blob SAS tokens in parallel
+                var mappingTasks = currentReservations.Select(async r =>
+                {
+                    var technician = r.Offer?.Technician;
+
+                    // Resolve the Technician's image
+                    string? imageUrl = null;
+                    if (!string.IsNullOrWhiteSpace(technician?.ProfilePictureURL))
+                    {
+                        imageUrl = await blobStorageRepository.GetBlobUrlWithSasTokenAsync("technician-documents", technician.ProfilePictureURL);
+                    }
+
+                    // Map the current status to a friendly Arabic string for the mobile UI
+                    // Inside your GetCurrentReservationsAsync mapping:
+                    string statusType = r.Status switch
+                    {
+                        ReservationStatus.Confirmed => "تم التأكيد",
+                        ReservationStatus.InPayment => "انتظار الدفع",
+                        ReservationStatus.InProgress => "قيد التنفيذ",
+                        _ => "غير معروف" // Unknown fallback
+                    };
+
+                    return new CurrentReservationsDTO
+                    {
+                        reservationId = r.Id,
+                        type = statusType, // Passed the translated status here
+
+                        techName = technician?.Name,
+                        techImage = imageUrl,
+
+                        serviceType = r.Offer?.ServiceRequest?.Service?.NameAr ?? "غير معروف",
+
+                        fees = r.Offer?.Fees,
+
+                        // Standardizing the timezones exactly like you did in the history method
+                        techTimeInterval = HelperClass.FormatArabicTimeInterval(
+                            HelperClass.GetTimeInEgypt(r.Offer?.WorkFrom),
+                            HelperClass.GetTimeInEgypt(r.Offer?.WorkTo)),
+
+                        day = r.Offer?.ServiceRequest?.ServiceDate
+                    };
+                });
+
+                // 3. Await all the parallel image generation tasks and return the list
+                return (await Task.WhenAll(mappingTasks)).ToList();
+            }
+            catch (Exception)
+            {
+                throw new TechnicalException();
+            }
+        }
+
         public async Task<List<OfferResultDto>> GetOffersAsync(string userId, int requestId, bool isQuick)
         {
             var client = await CheckUser(userId);
@@ -851,5 +921,68 @@ namespace Service
             return false;
         }
 
+        public async Task<string> PayNow(int reservationId)
+        {
+            if (!await reservationRepository.IsReservationFound(reservationId))
+                throw new TechnicalException();
+
+            if (await reservationRepository.IsReservationDone(reservationId)) // we will need to also add logic here to check whether a transaction referral number is actually related to this reservation id but this will be done later after finding a third party payment api
+                throw new ReservationAlreadyPaidException();
+
+            if (await reservationRepository.IsReservationCancelled(reservationId))
+                throw new ReservationAlreadyCancelledException();
+
+            if (!await reservationRepository.IsReservationInPayment(reservationId))
+                throw new ReservationNotInPaymentException();
+
+            try
+            {
+                var reservation = await reservationRepository.MarkReservationAsDone(reservationId);
+                if (reservation is null)
+                    throw new TechnicalException();
+                return reservation.Offer.Technician.UserId;
+            }
+            catch
+            {
+                throw new TechnicalException();
+            }
+        }
+
+        public async Task SubmitRatingAsync(int reservationId, int ratingValue, string userId)
+        {
+            var client = await CheckUser(userId);
+
+            if (ratingValue < 1 || ratingValue > 5)
+                throw new InvalidRatingValueException();
+
+            var reservation = await reservationRepository.GetByIdWithDetailsAsync(reservationId);
+
+            if (reservation == null || reservation.Offer.ServiceRequest.ClientId != client.Id)
+                throw new TechnicalException();
+
+            if (! await reservationRepository.IsReservationDone(reservationId))
+                throw new ReservationNotCompletedException();
+
+            if (await ratingRepository.HasRatingAlreadyAsync(reservationId))
+                throw new RatingAlreadySubmittedException();
+
+            try
+            {
+                var newRating = new Rating
+                {
+                    ReservationId = reservationId,
+                    Value = ratingValue
+                };
+                int technicianId = reservation.Offer.TechnicianId;
+
+                decimal newAverage = await ratingRepository.AddRatingAndCalculateAverageAsync(newRating, technicianId);
+
+                await technicianRepository.UpdateTechnicianRatingAsync(technicianId, newAverage);
+            }
+            catch (Exception)
+            {
+                throw new TechnicalException();
+            }
+        }
     }
 }

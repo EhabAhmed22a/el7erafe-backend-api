@@ -52,6 +52,7 @@ appsettings.Development.json
 appsettings.Local.json
 appsettings.private.json
 *secrets.json
+el7erafe-firebase-adminsdk-fbsvc-5bb50fcac6.json
 
 # Output
 /publish/
@@ -74,3 +75,5 @@ Migrations/*.Designer.cs
 # OS files
 .DS_Store
 *~
+venv
+*.bin
