@@ -352,6 +352,16 @@ namespace Presentation.Controllers
 
             var techUserId = await _clientService.PayNow(reservationId);
             await technicianHub.Clients.User(techUserId).SendAsync("PaymentCompleted", reservationId);
+            await notificationService.SendAsync(techUserId, new NotificationDto
+            {
+                Title = "تم استلام الدفع",
+                Body = "قام العميل بالدفع بنجاح",
+                Action = "TECH_PAYMENT_DONE",
+                ExtraPayload = new
+                {
+                    reservationId = reservationId
+                }
+            });
 
             return Ok(new { message = "تمت عملية الدفع بنجاح" });
         }
