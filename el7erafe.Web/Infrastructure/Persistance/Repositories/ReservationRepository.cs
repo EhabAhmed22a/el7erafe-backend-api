@@ -128,7 +128,7 @@ namespace Persistance.Repositories
                 .Include(r => r.Offer)
                     .ThenInclude(o => o.Technician)
                 .Where(r => r.Offer.ServiceRequest.ClientId == clientId && historyStatuses.Contains(r.Status))
-                .OrderByDescending(r => r.Id)
+                .OrderByDescending(r => r.Offer.ServiceRequest.ServiceDate)
                 .ToListAsync();
         }
 
@@ -210,6 +210,23 @@ namespace Persistance.Repositories
         {
             return await dbcontext.Reservations
                 .AnyAsync(r => r.Id == reservationId && r.Status == ReservationStatus.Confirmed);
+        }
+
+        public async Task<List<Reservation>> GetPreviousJobsForTechnicianAsync(int technicianId)
+        {
+            return await dbcontext.Reservations
+                .Include(r => r.Offer)
+                    .ThenInclude(o => o.ServiceRequest)
+                        .ThenInclude(sr => sr.Client)
+                .Include(r => r.Offer)
+                    .ThenInclude(o => o.ServiceRequest)
+                        .ThenInclude(sr => sr.Service)
+                .Where(r => r.Offer.TechnicianId == technicianId &&
+                           (r.Status == ReservationStatus.Done ||
+                            r.Status == ReservationStatus.CancelledByClient ||
+                            r.Status == ReservationStatus.CancelledByTech))
+                .OrderByDescending(r => r.Offer.ServiceRequest.ServiceDate)
+                .ToListAsync();
         }
     }
 }
