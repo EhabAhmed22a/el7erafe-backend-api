@@ -192,12 +192,13 @@ namespace Persistance.Repositories
             return reservation;
         }
 
-        public async Task MarkReservationAsDone(int reservationId)
+        public async Task<Reservation?> MarkReservationAsDone(int reservationId)
         {
-            var reservation = await dbcontext.Reservations.FirstOrDefaultAsync(r => r.Id == reservationId);
-            if (reservation is null) return;
+            var reservation = await dbcontext.Reservations.Include(r => r.Offer).ThenInclude(o => o.Technician).FirstOrDefaultAsync(r => r.Id == reservationId);
+            if (reservation is null) return null;
             reservation.Status = ReservationStatus.Done;
             await dbcontext.SaveChangesAsync();
+            return reservation;
         }
 
         public async Task<bool> IsReservationDone(int reservationId)

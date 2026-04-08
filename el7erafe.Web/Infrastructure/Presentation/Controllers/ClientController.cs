@@ -348,9 +348,11 @@ namespace Presentation.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
-                return Unauthorized("المستخدم غير موجود");
+                return Unauthorized(new { message = "المستخدم غير موجود" });
 
-            await _clientService.PayNow(reservationId);
+            var techUserId = await _clientService.PayNow(reservationId);
+            await technicianHub.Clients.User(techUserId).SendAsync("PaymentCompleted", reservationId);
+
             return Ok(new { message = "تمت عملية الدفع بنجاح" });
         }
 

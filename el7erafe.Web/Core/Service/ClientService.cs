@@ -921,7 +921,7 @@ namespace Service
             return false;
         }
 
-        public async Task PayNow(int reservationId)
+        public async Task<string> PayNow(int reservationId)
         {
             if (!await reservationRepository.IsReservationFound(reservationId))
                 throw new TechnicalException();
@@ -937,7 +937,10 @@ namespace Service
 
             try
             {
-                await reservationRepository.MarkReservationAsDone(reservationId);
+                var reservation = await reservationRepository.MarkReservationAsDone(reservationId);
+                if (reservation is null)
+                    throw new TechnicalException();
+                return reservation.Offer.Technician.UserId;
             }
             catch
             {
