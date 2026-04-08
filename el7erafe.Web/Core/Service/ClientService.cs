@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using DomainLayer.Contracts;
 using DomainLayer.Exceptions;
 using DomainLayer.Models;
@@ -112,13 +113,13 @@ namespace Service
             if (await serviceRequestRepository.IsServicePending(clientId, regDTO.ServiceId))
                 throw new PendingServiceAlreadyRequestedException();
 
-            if (await reservationRepository.IsReservationConfirmed(clientId, regDTO.ServiceId))
+            if (await serviceRequestRepository.IsReservationConfirmed(clientId, regDTO.ServiceId))
                 throw new ReservationAlreadyConfirmedException();
-            
-            if(await reservationRepository.IsReservationInProgress(clientId, regDTO.ServiceId))
-                    throw new ReservationInProgressException();
 
-            if (await reservationRepository.IsReservationInPayment(clientId))
+            if (await serviceRequestRepository.IsReservationInProgress(clientId, regDTO.ServiceId))
+                throw new ReservationInProgressException();
+
+            if (await serviceRequestRepository.IsReservationInPayment(clientId))
                 throw new ReservationPendingPaymentException();
 
             var serviceReq = new ServiceRequest()
@@ -919,5 +920,28 @@ namespace Service
             return false;
         }
 
+        public async Task PayNow(int reservationId)
+        {
+            if (!await reservationRepository.IsReservationFound(reservationId))
+                throw new TechnicalException();
+
+            if (await reservationRepository.IsReservationDone(reservationId)) // we will need to also add logic here to check whether a transaction referral number is actually related to this reservation id but this will be done later after finding a third party payment api
+                throw new ReservationAlreadyPaidException();
+
+            if (await reservationRepository.IsReservationCancelled(reservationId))
+                throw new ReservationAlreadyCancelledException();
+
+            if (!await reservationRepository.IsReservationInPayment(reservationId))
+                throw new ReservationNotInPaymentException();
+
+            try
+            {
+                await reservationRepository.MarkReservationAsDone(reservationId);
+            }
+            catch
+            {
+                throw new TechnicalException();
+            }
+        }
     }
 }

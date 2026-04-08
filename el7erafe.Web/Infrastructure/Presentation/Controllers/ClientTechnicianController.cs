@@ -15,7 +15,7 @@ namespace Presentation.Controllers
         IHubContext<ClientHub> clientHub,
         IHubContext<TechnicianHub> technicianHub) : ControllerBase
     {
-        [HttpPut("cancelreservation/{reservationId}")]
+        [HttpPut("cancelreservation/{reservationId:int}")]
         public async Task<IActionResult> CancelReservation(int reservationId)
         {
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

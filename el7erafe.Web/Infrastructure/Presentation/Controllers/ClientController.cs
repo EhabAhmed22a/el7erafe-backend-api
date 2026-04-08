@@ -343,6 +343,17 @@ namespace Presentation.Controllers
             return Ok(new { message = "تم قبول العرض بنجاح" });
         }
 
+        [HttpPost("cf/paynow/{reservationId:int}")]
+        public async Task<IActionResult> PayNow(int reservationId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("المستخدم غير موجود");
+
+            await _clientService.PayNow(reservationId);
+            return Ok(new { message = "تمت عملية الدفع بنجاح" });
+        }
+
         [HttpPost("cf/offers/decline")]
         public async Task<IActionResult> DeclineOffer([FromBody] OfferIdDto dto)
         {
