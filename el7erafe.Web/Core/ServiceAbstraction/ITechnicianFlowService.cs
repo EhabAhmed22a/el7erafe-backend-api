@@ -4,6 +4,7 @@ using Shared.DataTransferObject.OffersDTOs;
 using Shared.DataTransferObject.OtpDTOs;
 using Shared.DataTransferObject.ReservationDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
+using Shared.DataTransferObject.TechnicianDTOs;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
 using Shared.DataTransferObject.UpdateDTOs;
 
@@ -25,6 +26,7 @@ namespace ServiceAbstraction
         Task<string> StartJob(string userId, int reservationId);
         Task<List<InProgressReservationDto>> GetInProgressReservations(string userId);
         Task<string> CompleteJob(string userId, int reservationId);
+        Task<List<PreviousJobDTO>> GetPreviousJobsAsync(string userId);
         Task DeleteAccount(string userId);
     }
 }

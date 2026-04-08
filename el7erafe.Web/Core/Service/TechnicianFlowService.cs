@@ -1,4 +1,5 @@
-﻿using DomainLayer.Contracts;
+﻿using System;
+using DomainLayer.Contracts;
 using DomainLayer.Exceptions;
 using DomainLayer.Models;
 using DomainLayer.Models.IdentityModule;
@@ -11,9 +12,9 @@ using Shared.DataTransferObject.OffersDTOs;
 using Shared.DataTransferObject.OtpDTOs;
 using Shared.DataTransferObject.ReservationDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
+using Shared.DataTransferObject.TechnicianDTOs;
 using Shared.DataTransferObject.TechnicianIdentityDTOs;
 using Shared.DataTransferObject.UpdateDTOs;
-using System;
 
 namespace Service
 {
@@ -626,6 +627,51 @@ namespace Service
                    dTO.ProfileImage == null &&
                    (dTO.NewPortifolioImages == null || dTO.NewPortifolioImages.Count == 0) &&
                    (dTO.DeletedPortifolioImages == null || dTO.DeletedPortifolioImages.Count == 0);
+        }
+
+        public async Task<List<PreviousJobDTO>> GetPreviousJobsAsync(string userId)
+        {
+            var technician = await technicianRepository.GetByUserIdAsync(userId);
+            if (technician is null)
+                throw new UserNotFoundException("الفني غير موجود");
+
+            try
+            {
+                var previousJobs = await reservationRepository.GetPreviousJobsForTechnicianAsync(technician.Id);
+
+                var mappingTasks = previousJobs.Select(async r =>
+                {
+                    var client = r.Offer?.ServiceRequest?.Client;
+
+                    string? imageUrl = null;
+                    if (!string.IsNullOrWhiteSpace(client?.ImageURL))
+                    {
+                        imageUrl = await blobStorageRepository.GetBlobUrlWithSasTokenAsync("client-profilepics", client.ImageURL);
+                    }
+
+                    bool isJobCancelled = r.Status == ReservationStatus.CancelledByClient ||
+                                          r.Status == ReservationStatus.CancelledByTech;
+
+                    return new PreviousJobDTO
+                    {
+                        isCancelled = isJobCancelled,
+                        clientName = client?.Name,
+                        clientImage = imageUrl,
+                        serviceType = r.Offer?.ServiceRequest?.Service?.NameAr ?? "غير معروف",
+                        fees = r.Offer?.Fees,
+
+                        techTimeInterval = HelperClass.FormatArabicTimeInterval(r.Offer?.WorkFrom,r.Offer?.WorkTo),
+
+                        day = r.Offer?.ServiceRequest?.ServiceDate
+                    };
+                });
+
+                return (await Task.WhenAll(mappingTasks)).ToList();
+            }
+            catch (Exception)
+            {
+                throw new TechnicalException();
+            }
         }
     }
 }

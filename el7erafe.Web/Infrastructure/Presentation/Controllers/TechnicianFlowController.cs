@@ -295,6 +295,18 @@ namespace Presentation.Controllers
             return Ok(result);
         }
 
+        [HttpGet("previous-jobs")]
+        public async Task<IActionResult> GetPreviousJobs()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(new { message = "المستخدم غير موجود" });
+            }
+
+            return Ok(await technicianService.GetPreviousJobsAsync(userId));
+        }
+
         [HttpPost("complete-job")]
         public async Task<IActionResult> CompleteJob([FromBody] ReservationIdDto dto)
         {
