@@ -384,5 +384,18 @@ namespace Presentation.Controllers
 
             return Ok(new { message = "تم رفض العرض بنجاح" });
         }
+
+        [HttpPost("cf/rate/{reservationId:int}/")]
+        public async Task<IActionResult> RateTechnician(int reservationId, [FromQuery] int ratingValue)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(new { message = "المستخدم غير موجود" });
+            }
+
+            await _clientService.SubmitRatingAsync(reservationId, ratingValue, userId);
+            return Ok(new { message = "تم تقييم الفني بنجاح، شكراً لك!" });
+        }
     }
 }

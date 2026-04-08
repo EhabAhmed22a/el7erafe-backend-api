@@ -12,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Persistance.Databases;
 using Persistance.Repositories;
 using Persistance.Repositories.ChatModule;
+using Repository;
 
 namespace Persistance
 {
@@ -48,6 +49,7 @@ namespace Persistance
             services.AddScoped<IRejectionCommentsRepository, RejectionCommentsRepository>();
             services.AddScoped<IRejectionRepository, RejectionRepository>();
             services.AddScoped<IServiceRequestRepository, ServiceRequestRepository>();
+            services.AddScoped<IRatingRepository, RatingRepository>();
             services.AddScoped<ICityRepository, CityRepository>();
             services.AddScoped<IChatRepository, ChatRepository>();
             services.AddScoped<IUserConnectionRepository, UserConnectionRepository>();

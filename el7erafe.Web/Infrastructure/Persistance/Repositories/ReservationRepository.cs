@@ -204,5 +204,11 @@ namespace Persistance.Repositories
         {
             return await dbcontext.Reservations.AnyAsync(r => r.Status == ReservationStatus.Done);
         }
+
+        public async Task<bool> IsReservationConfirmed(int reservationId)
+        {
+            return await dbcontext.Reservations
+                .AnyAsync(r => r.Id == reservationId && r.Status == ReservationStatus.Confirmed);
+        }
     }
 }
