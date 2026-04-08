@@ -204,5 +204,15 @@ namespace Persistance.Repositories
                                     .ThenBy(t => t.City.NameEn)
                               .ToListAsync();
         }
+
+        public async Task UpdateTechnicianRatingAsync(int technicianId, decimal newAverageRating)
+        {
+            var technician = await context.Set<Technician>().FirstOrDefaultAsync(t => t.Id == technicianId);
+            if (technician != null)
+            {
+                technician.Rating = newAverageRating;
+                await context.SaveChangesAsync();
+            }
+        }
     }
 }

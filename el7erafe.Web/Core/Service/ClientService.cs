@@ -30,7 +30,8 @@ namespace Service
             OtpHelper otpHelper,
             IUnitOfWork unitOfWork,
             IOffersRepository offersRepository,
-            IReservationRepository reservationRepository) : IClientService
+            IReservationRepository reservationRepository,
+            IRatingRepository ratingRepository) : IClientService
     {
         public async Task<ServiceListDto> GetClientServicesAsync()
         {
@@ -939,6 +940,43 @@ namespace Service
                 await reservationRepository.MarkReservationAsDone(reservationId);
             }
             catch
+            {
+                throw new TechnicalException();
+            }
+        }
+
+        public async Task SubmitRatingAsync(int reservationId, int ratingValue, string userId)
+        {
+            var client = await CheckUser(userId);
+
+            if (ratingValue < 1 || ratingValue > 5)
+                throw new InvalidRatingValueException();
+
+            var reservation = await reservationRepository.GetByIdWithDetailsAsync(reservationId);
+
+            if (reservation == null || reservation.Offer.ServiceRequest.ClientId != client.Id)
+                throw new TechnicalException();
+
+            if (! await reservationRepository.IsReservationDone(reservationId))
+                throw new ReservationNotCompletedException();
+
+            if (await ratingRepository.HasRatingAlreadyAsync(reservationId))
+                throw new RatingAlreadySubmittedException();
+
+            try
+            {
+                var newRating = new Rating
+                {
+                    ReservationId = reservationId,
+                    Value = ratingValue
+                };
+                int technicianId = reservation.Offer.TechnicianId;
+
+                decimal newAverage = await ratingRepository.AddRatingAndCalculateAverageAsync(newRating, technicianId);
+
+                await technicianRepository.UpdateTechnicianRatingAsync(technicianId, newAverage);
+            }
+            catch (Exception)
             {
                 throw new TechnicalException();
             }

@@ -16,6 +16,7 @@ namespace Persistance.Databases
         public DbSet<TechnicianService> TechnicianServices { get; set; } = default!;
 
         public DbSet<UserToken> UserTokens { get; set; } = default!;
+        public DbSet<Rating> Ratings { get; set; } = default!;
         public DbSet<Rejection> Rejections { get; set; } = default!;
         public DbSet<Admin> Admins { get; set; } = default!;
         public DbSet<BlockedUser> BlockedUsers { get; set; } = default!;
@@ -47,6 +48,7 @@ namespace Persistance.Databases
             builder.Entity<ServiceRequest>().ToTable("ServiceRequests");
             builder.Entity<RejectionComment>().ToTable("RejectionComments");
             builder.Entity<TechnicianAvailability>().ToTable("TechnicianAvailabilities");
+            builder.Entity<Rating>().ToTable("Ratings");
             builder.Ignore<IdentityUserClaim<string>>();
             builder.Ignore<IdentityUserToken<string>>();
             builder.Ignore<IdentityUserLogin<string>>();
