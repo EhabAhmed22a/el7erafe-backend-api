@@ -169,6 +169,27 @@ namespace Persistance.Repositories
                    .ExecuteUpdateAsync(setters => setters
                        .SetProperty(sr => sr.Status, status));
         }
+
+        public async Task<bool> IsReservationConfirmed(int clientId, int serviceId)
+        {
+            return await dbContext.ServiceRequests
+                .AnyAsync(s => s.ClientId == clientId && s.ServiceId == serviceId && s.Status == ServiceReqStatus.Reserved &&
+                s.Offers.Any(o => o.Reservation != null && o.Reservation.Status == ReservationStatus.Confirmed));
+        }
+
+        public async Task<bool> IsReservationInPayment(int clientId)
+        {
+            return await dbContext.ServiceRequests
+                .AnyAsync(s => s.ClientId == clientId && s.Status == ServiceReqStatus.Reserved &&
+                s.Offers.Any(o => o.Reservation != null && o.Reservation.Status == ReservationStatus.InPayment));
+        }
+
+        public async Task<bool> IsReservationInProgress(int clientId, int serviceId)
+        {
+            return await dbContext.ServiceRequests
+                .AnyAsync(s => s.ClientId == clientId && s.ServiceId == serviceId && s.Status == ServiceReqStatus.Reserved &&
+                s.Offers.Any(o => o.Reservation != null && o.Reservation.Status == ReservationStatus.InProgress));
+        }
     }
 
     public static class TimeOnlyExtensions

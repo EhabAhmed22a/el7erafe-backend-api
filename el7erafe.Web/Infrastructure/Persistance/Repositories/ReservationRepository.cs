@@ -137,25 +137,9 @@ namespace Persistance.Repositories
             await dbcontext.SaveChangesAsync();
         }
 
-        public async Task<bool> IsReservationConfirmed(int clientId, int serviceId)
+        public async Task<bool> IsReservationInPayment(int reservationId)
         {
-            return await dbcontext.ServiceRequests
-                .AnyAsync(s => s.ClientId == clientId && s.ServiceId == serviceId && s.Status == ServiceReqStatus.Reserved &&
-                s.Offers.Any(o => o.Reservation != null && o.Reservation.Status == ReservationStatus.Confirmed));
-        }
-
-        public async Task<bool> IsReservationInPayment(int clientId)
-        {
-            return await dbcontext.ServiceRequests
-                .AnyAsync(s => s.ClientId == clientId && s.Status == ServiceReqStatus.Reserved &&
-                s.Offers.Any(o => o.Reservation != null && o.Reservation.Status == ReservationStatus.InPayment));
-        }
-
-        public async Task<bool> IsReservationInProgress(int clientId, int serviceId)
-        {
-            return await dbcontext.ServiceRequests
-                .AnyAsync(s => s.ClientId == clientId && s.ServiceId == serviceId && s.Status == ServiceReqStatus.Reserved &&
-                s.Offers.Any(o => o.Reservation != null && o.Reservation.Status == ReservationStatus.InProgress));
+            return await dbcontext.Reservations.AnyAsync(r => r.Id == reservationId && r.Status == ReservationStatus.InPayment);
         }
 
         public async Task<bool> IsReservationCancelled(int reservationId)
@@ -199,13 +183,26 @@ namespace Persistance.Repositories
             return await dbcontext.Reservations.AnyAsync(r => r.Id == reservationId);
         }
 
-        public async Task<Reservation> CancelReservation(int reservationId, bool isClient)
+        public async Task<Reservation?> CancelReservation(int reservationId, bool isClient)
         {
             var reservation = await dbcontext.Reservations.Include(r => r.Offer).ThenInclude(o => o.ServiceRequest).FirstOrDefaultAsync(r => r.Id == reservationId);
-
+            if (reservation is null) return null;
             reservation!.Status = isClient ? ReservationStatus.CancelledByClient : ReservationStatus.CancelledByTech;
             await dbcontext.SaveChangesAsync();
             return reservation;
+        }
+
+        public async Task MarkReservationAsDone(int reservationId)
+        {
+            var reservation = await dbcontext.Reservations.FirstOrDefaultAsync(r => r.Id == reservationId);
+            if (reservation is null) return;
+            reservation.Status = ReservationStatus.Done;
+            await dbcontext.SaveChangesAsync();
+        }
+
+        public async Task<bool> IsReservationDone(int reservationId)
+        {
+            return await dbcontext.Reservations.AnyAsync(r => r.Status == ReservationStatus.Done);
         }
     }
 }

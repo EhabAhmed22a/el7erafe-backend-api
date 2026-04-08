@@ -8,6 +8,9 @@ namespace DomainLayer.Contracts
     {
         Task<ServiceRequest?> GetServiceById(int id);
         Task<bool> UpdateAsync(ServiceRequest serviceRequest);
+        Task<bool> IsReservationConfirmed(int clientId, int serviceId);
+        Task<bool> IsReservationInPayment(int clientId);
+        Task<bool> IsReservationInProgress(int clientId, int serviceId);
         Task<bool> IsServicePending(int? clientId, int? serviceId);
         Task<bool> IsTimeConflicted(int clientId, TimeOnly? AvailableFrom, TimeOnly? AvailableTo, DateOnly Date);
         Task<TimeOnly?> GetServiceTime(int clientId);
