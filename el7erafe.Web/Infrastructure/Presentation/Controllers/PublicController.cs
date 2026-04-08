@@ -44,8 +44,8 @@ namespace Presentation.Controllers
 
                     Notification = new FirebaseAdmin.Messaging.Notification()
                     {
-                        Title = "\u200FTest 🔥",
-                        Body = "\u200FIf you see this, Firebase works"
+                        Title = "رساله",
+                        Body = "الرسالة دي مكتوبة بالعربي"
                     },
 
                     Data = new Dictionary<string, string>
