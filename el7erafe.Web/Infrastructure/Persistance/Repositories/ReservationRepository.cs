@@ -203,7 +203,7 @@ namespace Persistance.Repositories
 
         public async Task<bool> IsReservationDone(int reservationId)
         {
-            return await dbcontext.Reservations.AnyAsync(r => r.Status == ReservationStatus.Done);
+            return await dbcontext.Reservations.AnyAsync(r => r.Id == reservationId && r.Status == ReservationStatus.Done);
         }
 
         public async Task<bool> IsReservationConfirmed(int reservationId)
