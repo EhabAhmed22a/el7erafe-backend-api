@@ -951,7 +951,7 @@ namespace Service
             var reservation = await reservationRepository.GetByIdWithDetailsAsync(reservationId);
 
             if (reservation == null || reservation.Offer.ServiceRequest.ClientId != client.Id)
-                throw new TechnicalException();
+                throw new Exception("1");
 
             if (! await reservationRepository.IsReservationDone(reservationId))
                 throw new ReservationNotCompletedException();
@@ -972,9 +972,9 @@ namespace Service
 
                 await technicianRepository.UpdateTechnicianRatingAsync(technicianId, newAverage);
             }
-            catch (Exception)
+            catch
             {
-                throw new TechnicalException();
+                //throw new TechnicalException();
             }
         }
     }
