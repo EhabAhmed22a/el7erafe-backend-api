@@ -941,7 +941,6 @@ namespace Service
                 throw new TechnicalException();
             }
         }
-
         public async Task SubmitRatingAsync(int reservationId, int ratingValue, string userId)
         {
             var client = await CheckUser(userId);
