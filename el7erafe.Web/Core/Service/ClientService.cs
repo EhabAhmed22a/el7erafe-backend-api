@@ -951,14 +951,15 @@ namespace Service
             var reservation = await reservationRepository.GetByIdWithDetailsAsync(reservationId);
 
             if (reservation == null || reservation.Offer.ServiceRequest.ClientId != client.Id)
-                throw new Exception("1");
+                throw new TechnicalException();
 
-            if (! await reservationRepository.IsReservationDone(reservationId))
+            if (reservation.Status != ReservationStatus.Done)
                 throw new ReservationNotCompletedException();
 
             if (await ratingRepository.HasRatingAlreadyAsync(reservationId))
                 throw new RatingAlreadySubmittedException();
 
+            await unitOfWork.BeginTransactionAsync();
             try
             {
                 var newRating = new Rating
@@ -966,15 +967,20 @@ namespace Service
                     ReservationId = reservationId,
                     Value = ratingValue
                 };
+
+                
                 int technicianId = reservation.Offer.TechnicianId;
 
                 decimal newAverage = await ratingRepository.AddRatingAndCalculateAverageAsync(newRating, technicianId);
 
                 await technicianRepository.UpdateTechnicianRatingAsync(technicianId, newAverage);
+
+                await unitOfWork.CommitTransactionAsync();
             }
-            catch
+            catch (Exception)
             {
-                //throw new TechnicalException();
+                await unitOfWork.RollbackTransactionAsync();
+                throw new TechnicalException();
             }
         }
     }
