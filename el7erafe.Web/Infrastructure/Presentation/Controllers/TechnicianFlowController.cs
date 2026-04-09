@@ -322,7 +322,7 @@ namespace Presentation.Controllers
             await notificationService.SendAsync(clientUserId, new NotificationDto
             {
                 Title = "تم إنهاء العمل",
-                Body = "تم الانتهاء من طلبك بنجاح",
+                Body = "تم الانتهاء من طلبك بنجاح، برجاء إتمام عملية الدفع",
                 Action = "CLIENT_STATUS_CHANGED",
                 ExtraPayload = new
                 {
