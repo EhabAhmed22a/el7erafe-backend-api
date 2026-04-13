@@ -28,6 +28,11 @@ namespace Persistance.Repositories.ChatModule
 
             return await CreateChatAsync(newChat);
         }
+        public async Task<Chat?> GetChatAsync(string clientId, string technicianId)
+        {
+            return await dbContext.Chats
+                .FirstOrDefaultAsync(c => c.ClientId == clientId && c.TechnicianId == technicianId);
+        }
         public async Task<Chat?> GetChatByIdAsync(int id)
         {
             return await dbContext.Chats
@@ -36,7 +41,11 @@ namespace Persistance.Repositories.ChatModule
                 .Include(c => c.Messages.OrderByDescending(m => m.CreatedAt).Take(1))
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
-
+        public async Task UpdateChatAsync(Chat chat)
+        {
+            dbContext.Chats.Update(chat);
+            await dbContext.SaveChangesAsync();
+        }
         public async Task<Chat> CreateChatAsync(Chat chat)
         {
             // Check if chat already exists between these two
@@ -55,7 +64,7 @@ namespace Persistance.Repositories.ChatModule
         public async Task<IEnumerable<Chat>> GetUserChatsWithDetailsAsync(string userId)
         {
             return await dbContext.Chats
-                .Where(c => c.ClientId == userId || c.TechnicianId == userId)
+                .Where(c => (c.ClientId == userId || c.TechnicianId == userId) && !c.IsHidden)
                 .Include(c => c.Client)
                 .Include(c => c.Technician)
                 .Include(c => c.Messages)

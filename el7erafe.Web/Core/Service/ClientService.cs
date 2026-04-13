@@ -1,6 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using DomainLayer.Contracts;
+﻿using DomainLayer.Contracts;
+using DomainLayer.Contracts.ChatModule;
 using DomainLayer.Exceptions;
 using DomainLayer.Models;
 using DomainLayer.Models.IdentityModule;
@@ -16,6 +15,8 @@ using Shared.DataTransferObject.OtpDTOs;
 using Shared.DataTransferObject.ReservationDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
 using Shared.DataTransferObject.UpdateDTOs;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace Service
 {
@@ -31,7 +32,8 @@ namespace Service
             IUnitOfWork unitOfWork,
             IOffersRepository offersRepository,
             IReservationRepository reservationRepository,
-            IRatingRepository ratingRepository) : IClientService
+            IRatingRepository ratingRepository,
+            IChatRepository chatRepository) : IClientService
     {
         public async Task<ServiceListDto> GetClientServicesAsync()
         {
@@ -934,6 +936,19 @@ namespace Service
                 var reservation = await reservationRepository.MarkReservationAsDone(reservationId);
                 if (reservation is null)
                     throw new TechnicalException();
+                var client = await clientRepository.GetByIdAsync(reservation.Offer.ServiceRequest.ClientId);
+                var technician = await technicianRepository.GetByIdAsync(reservation.Offer.TechnicianId);
+
+                if (client != null && technician != null)
+                {
+                    var chat = await chatRepository.GetChatAsync(client.UserId, technician.UserId);
+
+                    if (chat != null)
+                    {
+                        chat.IsHidden = true;
+                        await chatRepository.UpdateChatAsync(chat);
+                    }
+                }
                 return reservation.Offer.Technician.UserId;
             }
             catch
