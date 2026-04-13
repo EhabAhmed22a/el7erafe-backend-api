@@ -4,6 +4,7 @@ using DomainLayer.Exceptions;
 using DomainLayer.Models.ChatModule;
 using DomainLayer.Models.ChatModule.Enums;
 using DomainLayer.Models.IdentityModule;
+using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.AspNetCore.Identity;
 using ServiceAbstraction.Chat;
 using Shared.DataTransferObject.ChatDTOs;
@@ -15,6 +16,7 @@ namespace Service.Chat
                              IBlobStorageRepository blobStorageRepository,
                              IClientRepository clientRepository,
                              ITechnicianRepository technicianRepository,
+                             IReservationRepository reservationRepository,
                              UserManager<ApplicationUser> _userManager) : IChatService
     {
         public async Task<UserConnection> AddUserConnectionAsync(string userId, string connectionId)
@@ -43,48 +45,66 @@ namespace Service.Chat
         {
             return await userConnectionRepository.GetUserConnectionsByTypeAsync(userId, HubType.Chat);
         }
-        public async Task<ChatDto> GetOrCreateChatAsync(string user1Id, string user2Id)
+        public async Task<ChatDto> InitChatAsync(string userId, int reservationId)
         {
-            var user1 = await _userManager.FindByIdAsync(user1Id);
-            var roles = await _userManager.GetRolesAsync(user1);
+            var reservation = await reservationRepository.GetByIdWithDetailsAsync(reservationId);
 
-            string clientId;
-            string technicianId;
+            if (reservation == null)
+                throw new Exception("Reservation not found");
 
-            if (roles.Contains("Client"))
+            var clientEntityId = reservation.Offer.ServiceRequest.ClientId;
+            var technicianEntityId = reservation.Offer.TechnicianId;
+
+            var client = await clientRepository.GetByIdAsync(clientEntityId);
+            var technician = await technicianRepository.GetByIdAsync(technicianEntityId);
+
+            if (client == null || technician == null)
+                throw new Exception("Client or Technician not found");
+
+            var clientUserId = client.UserId;
+            var technicianUserId = technician.UserId;
+
+            if (clientUserId != userId && technicianUserId != userId)
+                throw new UnauthorizedAccessException();
+
+            if (reservation.Status != ReservationStatus.Confirmed &&
+                reservation.Status != ReservationStatus.InProgress &&
+                reservation.Status != ReservationStatus.InPayment)
             {
-                clientId = user1Id;
-                technicianId = user2Id;
+                throw new Exception("Chat not allowed for this reservation status");
             }
+
+            var chat = await _chatRepository.GetOrCreateChatAsync(clientUserId, technicianUserId);
+
+            string receiverId;
+
+            if (chat.ClientId == userId)
+                receiverId = chat.TechnicianId;
+            else if (chat.TechnicianId == userId)
+                receiverId = chat.ClientId;
             else
-            {
-                clientId = user2Id;
-                technicianId = user1Id;
-            }
-
-            var chat = await _chatRepository.GetOrCreateChatAsync(clientId, technicianId);
+                throw new UnauthorizedAccessException();
 
             return new ChatDto
             {
                 Id = chat.Id,
-                ClientId = chat.ClientId,
-                TechnicianId = chat.TechnicianId
+                ReceiverId = receiverId
             };
         }
 
-        public async Task<ChatDto?> GetChatByIdAsync(int chatId)
-        {
-            var chat = await _chatRepository.GetChatByIdAsync(chatId);
-            if (chat == null)
-                return null;
+        //public async Task<ChatDto?> GetChatByIdAsync(int chatId)
+        //{
+        //    var chat = await _chatRepository.GetChatByIdAsync(chatId);
+        //    if (chat == null)
+        //        return null;
 
-            return new ChatDto
-            {
-                Id = chat.Id,
-                ClientId = chat.ClientId,
-                TechnicianId = chat.TechnicianId
-            };
-        }
+        //    return new ChatDto
+        //    {
+        //        Id = chat.Id,
+        //        ClientId = chat.ClientId,
+        //        TechnicianId = chat.TechnicianId
+        //    };
+        //}
 
         public async Task<MessageDto> SendMessageAsync(SendMessageDto messageDto, int chatId, string senderId)
         {
@@ -246,6 +266,11 @@ namespace Service.Chat
         public async Task<bool> IsUserOnline(string userId)
         {
             return await userConnectionRepository.IsUserOnlineAsync(userId, HubType.Chat);
+        }
+
+        public Task<ChatDto?> GetChatByIdAsync(int chatId)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Presentation.Hubs;
 using ServiceAbstraction;
+using ServiceAbstraction.Chat;
 using Shared.DataTransferObject.NotificationDTOs;
 using System.Security.Claims;
 
@@ -15,6 +16,7 @@ namespace Presentation.Controllers
         IClientTechnicianCommonService clientTechnicianCommonService,
         IHubContext<ClientHub> clientHub,
         IHubContext<TechnicianHub> technicianHub,
+        IChatService chatService,
         INotificationService notificationService) : ControllerBase
     {
         [HttpPut("cancelreservation/{reservationId:int}")]
@@ -60,6 +62,19 @@ namespace Presentation.Controllers
             }
 
             return Ok(new { message = "تم إلغاء الحجز بنجاح" });
+        }
+
+        [HttpPost("init/{reservationId:int}")]
+        public async Task<IActionResult> InitChat(int reservationId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var chat = await chatService.InitChatAsync(userId, reservationId);
+
+            return Ok(chat);
         }
     }
 }

@@ -12,7 +12,7 @@ namespace ServiceAbstraction.Chat
         Task<List<string>> GetUserChatConnectionsAsync(string userId);
 
         // Chat management
-        Task<ChatDto> GetOrCreateChatAsync(string clientId, string technicianId);
+        Task<ChatDto> InitChatAsync(string clientId, int reservationId);
         Task<ChatDto?> GetChatByIdAsync(int chatId);
 
         // Message operations
