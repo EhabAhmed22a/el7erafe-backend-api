@@ -21,11 +21,13 @@ namespace Persistance.Repositories
 
         public async Task<Governorate?> GetGovernateByCityId(int id)
         {
-            var city = await dbContext.Set<City>().FirstOrDefaultAsync(c => c.Id == id);
-            if(city is null)
-                return null;
-            return await dbContext.Set<Governorate>().FirstOrDefaultAsync(g => g.Id == city.GovernorateId);
+            var city = await dbContext.Set<City>()
+                .Include(c => c.Governorate)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            return city?.Governorate;
         }
+
         public async Task<City?> GetCityByNameAsync(string cityName)
         {
             return await dbContext.Set<City>().Include(c => c.Governorate).FirstOrDefaultAsync(c => c.NameAr == cityName);
