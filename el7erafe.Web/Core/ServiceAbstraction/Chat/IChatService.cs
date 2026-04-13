@@ -9,6 +9,7 @@ namespace ServiceAbstraction.Chat
         // Connection management
         Task<UserConnection> AddUserConnectionAsync(string userId, string connectionId);
         Task RemoveConnectionAsync(string connectionId);
+        Task<List<string>> GetUserChatConnectionsAsync(string userId);
 
         // Chat management
         Task<ChatDto> GetOrCreateChatAsync(string clientId, string technicianId);

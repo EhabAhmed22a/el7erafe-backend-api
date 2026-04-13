@@ -28,7 +28,6 @@ namespace Service.Chat
                 throw new TechnicalException();
             }
         }
-
         public async Task RemoveConnectionAsync(string connectionId)
         {
             try
@@ -39,6 +38,10 @@ namespace Service.Chat
             {
                 throw new TechnicalException();
             }
+        }
+        public async Task<List<string>> GetUserChatConnectionsAsync(string userId)
+        {
+            return await userConnectionRepository.GetUserConnectionsByTypeAsync(userId, HubType.Chat);
         }
         public async Task<ChatDto> GetOrCreateChatAsync(string user1Id, string user2Id)
         {
