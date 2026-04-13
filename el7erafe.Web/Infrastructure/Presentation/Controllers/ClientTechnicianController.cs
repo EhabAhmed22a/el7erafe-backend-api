@@ -64,7 +64,7 @@ namespace Presentation.Controllers
             return Ok(new { message = "تم إلغاء الحجز بنجاح" });
         }
 
-        [HttpPost("init/{reservationId:int}")]
+        [HttpPost("chat/init/{reservationId:int}")]
         public async Task<IActionResult> InitChat(int reservationId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -75,6 +75,32 @@ namespace Presentation.Controllers
             var chat = await chatService.InitChatAsync(userId, reservationId);
 
             return Ok(chat);
+        }
+
+        [HttpGet("chat/history/{chatId:int}")]
+        public async Task<IActionResult> GetChatHistory(int chatId, int page = 1, int pageSize = 50)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var chatHistory = await chatService.GetChatHistoryAsync(userId, chatId, page, pageSize);
+
+            return Ok(chatHistory);
+        }
+
+        [HttpGet("chat/inbox")]
+        public async Task<IActionResult> GetInbox()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var result = await chatService.GetInboxAsync(userId);
+
+            return Ok(result);
         }
     }
 }

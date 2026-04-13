@@ -59,109 +59,91 @@ namespace Service.Hubs
 
         // ========== MESSAGE OPERATIONS ==========
 
-        //public async Task SendMessage(SendMessageDto messageDto)
-        //{
-        //    var senderId = Context.UserIdentifier;
+        public async Task SendMessage(SendMessageDto messageDto)
+        {
+            var senderId = Context.UserIdentifier;
 
-        //    if (string.IsNullOrEmpty(senderId))
-        //        throw new HubException("Unauthorized");
+            if (string.IsNullOrEmpty(senderId))
+                throw new HubException("Unauthorized");
 
-        //    var chat = await _chatService.GetOrCreateChatAsync(senderId, messageDto.ReceiverId);
+            // 1️ Save message
+            var savedMessage = await _chatService.SendMessageAsync(messageDto,senderId);
 
-        //    var savedMessage = await _chatService.SendMessageAsync(messageDto, chat.Id, senderId);
+            // 2️ Get receiver connections (ChatHub only)
+            var receiverConnections = await _chatService.GetUserChatConnectionsAsync(savedMessage.ReceiverId);
 
-        //    var receiverConnections = await _chatService.GetUserChatConnectionsAsync(messageDto.ReceiverId);
+            bool isDelivered = receiverConnections.Any();
 
-        //    bool isDelivered = receiverConnections.Any();
+            // 3️ Update delivery status
+            if (isDelivered)
+            {
+                await _chatService.UpdateMessageStatusAsync(savedMessage.Id,MessageStatus.Delivered);
+                savedMessage.MessageStatus = MessageStatus.Delivered.ToString();
+            }
 
-        //    if (isDelivered)
-        //    {
-        //        await _chatService.UpdateMessageStatusAsync(savedMessage.Id, MessageStatus.Delivered);
-        //        savedMessage.MessageStatus = MessageStatus.Delivered.ToString();
-        //    }
+            // 4️ Send to sender
+            await Clients.Caller.SendAsync("MessageSent", savedMessage);
 
-        //    await Clients.Caller.SendAsync("MessageSent", savedMessage);
+            if (isDelivered)
+            {
+                await Clients.Caller.SendAsync(
+                    "MessageStatusUpdated",
+                    savedMessage.Id,
+                    MessageStatus.Delivered.ToString()
+                );
+            }
 
-        //    if (isDelivered)
-        //    {
-        //        await Clients.Caller.SendAsync("MessageStatusUpdated", savedMessage.Id, MessageStatus.Delivered.ToString());
-        //    }
+            // 5️ Send to receiver
+            foreach (var connectionId in receiverConnections)
+            {
+                await Clients.Client(connectionId)
+                    .SendAsync("ReceiveMessage", savedMessage);
 
-        //    foreach (var connectionId in receiverConnections)
-        //    {
-        //        await Clients.Client(connectionId).SendAsync("ReceiveMessage", savedMessage);
-        //    }
+                await Clients.Client(connectionId)
+                    .SendAsync("MessageStatusUpdated",
+                        savedMessage.Id,
+                        savedMessage.MessageStatus);
+            }
 
-        //    await SendInboxUpdateToUser(messageDto.ReceiverId);
-        //    await SendInboxUpdateToUser(senderId);
-        //}
+            // 6️ Update inbox
+            await SendInboxUpdateToUser(savedMessage.ReceiverId);
+            await SendInboxUpdateToUser(senderId);
+        }
 
-        //public async Task MarkMessagesAsRead(int chatId, string otherUserId)
-        //{
-        //    var userId = Context.UserIdentifier;
+        public async Task MarkMessagesAsRead(int chatId)
+        {
+            var userId = Context.UserIdentifier;
 
-        //    if (string.IsNullOrEmpty(userId))
-        //        throw new HubException("Unauthorized");
+            if (string.IsNullOrEmpty(userId))
+                throw new HubException("Unauthorized");
 
-        //    // 1️⃣ Validate access to chat
-        //    var chat = await _chatService.GetChatByIdAsync(chatId);
-        //    if (chat == null || (chat.ClientId != userId && chat.TechnicianId != userId))
-        //    {
-        //        throw new HubException("Unauthorized");
-        //    }
+            // 1️ Call core logic
+            var (updatedMessageIds, otherUserId) =
+                await _chatService.MarkMessagesAsReadCoreAsync(chatId, userId);
 
-        //    // 2️⃣ Mark messages as read in DB
-        //    var updatedMessageIds = await _chatService.MarkMessagesAsReadAsync(chatId, userId);
+            if (!updatedMessageIds.Any())
+                return;
 
-        //    // 3️⃣ If nothing updated → exit early
-        //    if (!updatedMessageIds.Any())
-        //        return;
+            // 2️ Get receiver connections
+            var otherUserConnections = await _chatService.GetUserChatConnectionsAsync(otherUserId);
 
-        //    // 4️⃣ Get OTHER user's ChatHub connections ONLY ✅
-        //    var otherUserConnections = await _chatService.GetUserChatConnectionsAsync(otherUserId);
+            // 3️ Emit event
+            foreach (var connectionId in otherUserConnections)
+            {
+                await Clients.Client(connectionId).SendAsync(
+                    "MessagesRead",
+                    chatId,
+                    updatedMessageIds,
+                    MessageStatus.Read.ToString()
+                );
+            }
 
-        //    // 5️⃣ Notify the other user (sender of those messages)
-        //    foreach (var connectionId in otherUserConnections)
-        //    {
-        //        await Clients.Client(connectionId).SendAsync(
-        //            "MessagesRead",
-        //            chatId,
-        //            updatedMessageIds,
-        //            MessageStatus.Read.ToString()
-        //        );
-        //    }
-
-        //    // 6️⃣ Update inbox for BOTH users
-        //    await SendInboxUpdateToUser(userId);
-        //    await SendInboxUpdateToUser(otherUserId);
-        //}
+            // 4️ Update inbox
+            await SendInboxUpdateToUser(userId);
+            await SendInboxUpdateToUser(otherUserId);
+        }
 
         // ========== CHAT MANAGEMENT ==========
-
-        //public async Task<ChatDto> GetOrCreateChat(string receiverId)
-        //{
-        //    var userId = Context.UserIdentifier;
-
-        //    if (string.IsNullOrEmpty(userId))
-        //        throw new HubException("Unauthorized");
-
-        //    // JUST create/get chat
-        //    return await _chatService.GetOrCreateChatAsync(userId, receiverId);
-        //}
-
-        //public async Task<IEnumerable<MessageDto>> GetChatHistory(int chatId, int page = 1, int pageSize = 50)
-        //{
-        //    var userId = Context.UserIdentifier;
-
-        //    // Verify user has access
-        //    var chat = await _chatService.GetChatByIdAsync(chatId);
-        //    if (chat == null || (chat.ClientId != userId && chat.TechnicianId != userId))
-        //    {
-        //        throw new HubException("Unauthorized");
-        //    }
-
-        //    return await _chatService.GetChatHistoryAsync(chatId, page, pageSize);
-        //}
 
         private async Task SendInboxUpdateToUser(string userId)
         {

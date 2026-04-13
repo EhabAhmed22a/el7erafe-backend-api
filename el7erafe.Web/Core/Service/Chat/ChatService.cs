@@ -16,8 +16,7 @@ namespace Service.Chat
                              IBlobStorageRepository blobStorageRepository,
                              IClientRepository clientRepository,
                              ITechnicianRepository technicianRepository,
-                             IReservationRepository reservationRepository,
-                             UserManager<ApplicationUser> _userManager) : IChatService
+                             IReservationRepository reservationRepository) : IChatService
     {
         public async Task<UserConnection> AddUserConnectionAsync(string userId, string connectionId)
         {
@@ -92,44 +91,49 @@ namespace Service.Chat
 
             return new ChatDto
             {
-                Id = chat.Id,
-                ReceiverId = receiverId
+                Id = chat.Id
             };
         }
 
-        //public async Task<ChatDto?> GetChatByIdAsync(int chatId)
-        //{
-        //    var chat = await _chatRepository.GetChatByIdAsync(chatId);
-        //    if (chat == null)
-        //        return null;
-
-        //    return new ChatDto
-        //    {
-        //        Id = chat.Id,
-        //        ClientId = chat.ClientId,
-        //        TechnicianId = chat.TechnicianId
-        //    };
-        //}
-
-        public async Task<MessageDto> SendMessageAsync(SendMessageDto messageDto, int chatId, string senderId)
+        public async Task<MessageDto> SendMessageAsync(SendMessageDto messageDto, string senderId)
         {
+            // 1️ Get chat
+            var chat = await _chatRepository.GetChatByIdAsync(messageDto.ChatId);
+
+            if (chat == null)
+                throw new Exception("Chat not found");
+
+            // 2️ Validate sender belongs to chat
+            if (chat.ClientId != senderId && chat.TechnicianId != senderId)
+                throw new UnauthorizedAccessException();
+
+            // 3️ Determine receiver 
+            string receiverId;
+
+            if (chat.ClientId == senderId)
+                receiverId = chat.TechnicianId;
+            else
+                receiverId = chat.ClientId;
+
+            // 4️ Parse message type
             var messageType = ParseMessageType(messageDto.MessageType);
 
-            var domainMessage = new Message
+            // 5️ Create message
+            var message = new Message
             {
-                ChatId = chatId,
+                ChatId = chat.Id,
                 SenderId = senderId,
-                ReceiverId = messageDto.ReceiverId,
+                ReceiverId = receiverId,
                 Content = messageDto.Content,
                 Type = messageType,
                 CreatedAt = DateTime.UtcNow,
-                Status = MessageStatus.Sent,
+                Status = MessageStatus.Sent
             };
 
-            // Persist and get the created message with its Id and timestamps
-            var created = await _chatRepository.AddMessageAsync(domainMessage);
+            // 6️ Save
+            var created = await _chatRepository.AddMessageAsync(message);
 
-            // Map domain Message -> MessageDto
+            // 7️ Return DTO
             return new MessageDto
             {
                 Id = created.Id,
@@ -143,9 +147,18 @@ namespace Service.Chat
             };
         }
 
-        public async Task<IEnumerable<MessageDto>> GetChatHistoryAsync(int chatId, int page = 1, int pageSize = 50)
+        public async Task<IEnumerable<MessageDto>> GetChatHistoryAsync(string userId, int chatId, int page = 1,int pageSize = 50)
         {
+            // 1️ Validate chat ownership
+            var chat = await _chatRepository.GetChatByIdAsync(chatId);
+
+            if (chat == null || (chat.ClientId != userId && chat.TechnicianId != userId))
+                throw new UnauthorizedAccessException();
+
+            // 2️ Get messages 
             var messages = await _chatRepository.GetChatMessagesAsync(chatId, page, pageSize);
+
+            // 3️ Map to DTO
             return messages.Select(message => new MessageDto
             {
                 Id = message.Id,
@@ -159,9 +172,21 @@ namespace Service.Chat
             });
         }
 
-        public async Task<List<int>> MarkMessagesAsReadAsync(int chatId, string userId)
+        public async Task<(List<int> UpdatedMessageIds, string OtherUserId)> MarkMessagesAsReadCoreAsync(int chatId, string userId)
         {
-            return await _chatRepository.MarkMessagesAsReadAsync(chatId, userId);
+            // 1️ Get chat
+            var chat = await _chatRepository.GetChatByIdAsync(chatId);
+
+            if (chat == null || (chat.ClientId != userId && chat.TechnicianId != userId))
+                throw new UnauthorizedAccessException();
+
+            // 2️ Determine other user
+            string otherUserId = chat.ClientId == userId ? chat.TechnicianId : chat.ClientId;
+
+            // 3️ Mark messages as read
+            var updatedMessageIds = await _chatRepository.MarkMessagesAsReadAsync(chatId, userId);
+
+            return (updatedMessageIds, otherUserId);
         }
         public async Task MarkAllMessagesAsDeliveredAsync(string userId)
         {
@@ -271,11 +296,6 @@ namespace Service.Chat
         public async Task<bool> IsUserOnline(string userId)
         {
             return await userConnectionRepository.IsUserOnlineAsync(userId, HubType.Chat);
-        }
-
-        public Task<ChatDto?> GetChatByIdAsync(int chatId)
-        {
-            throw new NotImplementedException();
         }
     }
 }
