@@ -1,5 +1,6 @@
 ﻿using DomainLayer.Contracts;
 using DomainLayer.Contracts.ChatModule;
+using DomainLayer.Exceptions;
 using DomainLayer.Models.ChatModule;
 using DomainLayer.Models.ChatModule.Enums;
 using DomainLayer.Models.IdentityModule;
@@ -10,11 +11,35 @@ using Shared.DataTransferObject.ChatDTOs;
 namespace Service.Chat
 {
     public class ChatService(IChatRepository _chatRepository,
+                             IUserConnectionRepository userConnectionRepository,
                              IBlobStorageRepository blobStorageRepository,
                              IClientRepository clientRepository,
                              ITechnicianRepository technicianRepository,
                              UserManager<ApplicationUser> _userManager) : IChatService
     {
+        public async Task<UserConnection> AddUserConnectionAsync(string userId, string connectionId)
+        {
+            try
+            {
+                return await userConnectionRepository.AddConnectionAsync(userId, connectionId, HubType.Chat);
+            }
+            catch
+            {
+                throw new TechnicalException();
+            }
+        }
+
+        public async Task RemoveConnectionAsync(string connectionId)
+        {
+            try
+            {
+                await userConnectionRepository.RemoveConnectionAsync(connectionId);
+            }
+            catch
+            {
+                throw new TechnicalException();
+            }
+        }
         public async Task<ChatDto> GetOrCreateChatAsync(string user1Id, string user2Id)
         {
             var user1 = await _userManager.FindByIdAsync(user1Id);
@@ -213,6 +238,11 @@ namespace Service.Chat
                 throw new Exception("Invalid message type");
 
             return result;
+        }
+
+        public async Task<bool> IsUserOnline(string userId)
+        {
+            return await userConnectionRepository.IsUserOnlineAsync(userId, HubType.Chat);
         }
     }
 }

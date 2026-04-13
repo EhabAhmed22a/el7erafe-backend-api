@@ -1,10 +1,15 @@
-﻿using DomainLayer.Models.ChatModule.Enums;
+﻿using DomainLayer.Models.ChatModule;
+using DomainLayer.Models.ChatModule.Enums;
 using Shared.DataTransferObject.ChatDTOs;
 
 namespace ServiceAbstraction.Chat
 {
     public interface IChatService
     {
+        // Connection management
+        Task<UserConnection> AddUserConnectionAsync(string userId, string connectionId);
+        Task RemoveConnectionAsync(string connectionId);
+
         // Chat management
         Task<ChatDto> GetOrCreateChatAsync(string clientId, string technicianId);
         Task<ChatDto?> GetChatByIdAsync(int chatId);
@@ -21,5 +26,7 @@ namespace ServiceAbstraction.Chat
         Task AnonymizeUserDataAsync(string userId, string deletedMarker);
 
         Task<IEnumerable<InboxConversationDto>> GetInboxAsync(string userId);
+
+        Task<bool> IsUserOnline(string userId);
     }
 }
