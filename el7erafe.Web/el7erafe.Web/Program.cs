@@ -53,6 +53,7 @@ namespace el7erafe.Web
             }
             #endregion
 
+            #region Controller Settings
             builder.Services.AddControllers(options =>
             {
                 options.Filters.Add<CustomValidationFilter>();
@@ -74,12 +75,17 @@ namespace el7erafe.Web
             .AllowAnyMethod()
             .AllowCredentials());
             });
+            #endregion
 
             #region Json Options
             builder.Services.ConfigureHttpJsonOptions(options =>
             {
                 options.SerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
             });
+            #endregion
+
+            #region SignalR
+            builder.Services.AddSignalR(builder => builder.KeepAliveInterval = TimeSpan.FromSeconds(15));
             #endregion
 
             #region Add services to the container.
@@ -140,6 +146,10 @@ namespace el7erafe.Web
             });
             #endregion
 
+            #region Health Check MiddleWare
+            builder.Services.AddHealthChecks();
+            #endregion
+
             var app = builder.Build();
             await app.SeedDatabaseAsync();
 
@@ -161,6 +171,8 @@ namespace el7erafe.Web
             app.MapHub<ChatHub>("/chatHub");
             app.MapHub<TechnicianHub>("/technicianHub")
                .RequireAuthorization(new AuthorizeAttribute { Roles = "Technician" });
+
+            app.MapHealthChecks("/health");
 
             app.MapHub<ClientHub>("/clientHub")
                .RequireAuthorization(new AuthorizeAttribute { Roles = "Client" });
