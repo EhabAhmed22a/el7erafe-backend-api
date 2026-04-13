@@ -105,8 +105,8 @@ namespace Service
                 if (technician is null)
                     throw new UserNotFoundException("الفني المحدد غير موجود");
 
-                var gov = await cityRepository.GetGovernateByCityId(city.Id);
-                if (gov is null || technician.City.GovernorateId != gov.Id)
+                // ✅ No extra DB call needed
+                if (city.Governorate is null || technician.City.GovernorateId != city.GovernorateId)
                     throw new TechnicalException();
             }
 
