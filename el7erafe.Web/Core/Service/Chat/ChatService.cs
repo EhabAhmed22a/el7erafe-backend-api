@@ -80,15 +80,6 @@ namespace Service.Chat
                 await _chatRepository.UpdateChatAsync(chat);
             }
 
-            string receiverId;
-
-            if (chat.ClientId == userId)
-                receiverId = chat.TechnicianId;
-            else if (chat.TechnicianId == userId)
-                receiverId = chat.ClientId;
-            else
-                throw new UnauthorizedAccessException();
-
             return new ChatDto
             {
                 Id = chat.Id
@@ -188,9 +179,9 @@ namespace Service.Chat
 
             return (updatedMessageIds, otherUserId);
         }
-        public async Task MarkAllMessagesAsDeliveredAsync(string userId)
+        public async Task<Dictionary<string, List<int>>> MarkAllMessagesAsDeliveredAsync(string userId)
         {
-            await _chatRepository.MarkAllMessagesAsDeliveredAsync(userId);
+            return await _chatRepository.MarkAllMessagesAsDeliveredAsync(userId);
         }
 
         public async Task<int> GetUnreadCountAsync(string userId)

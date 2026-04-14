@@ -18,7 +18,7 @@ namespace ServiceAbstraction.Chat
         Task<MessageDto> SendMessageAsync(SendMessageDto messageDto, string senderId);
         Task<IEnumerable<MessageDto>> GetChatHistoryAsync(string userId, int chatId, int page = 1, int pageSize = 50);
         Task<(List<int> UpdatedMessageIds, string OtherUserId)> MarkMessagesAsReadCoreAsync(int chatId, string userId);
-        Task MarkAllMessagesAsDeliveredAsync(string userId);
+        Task<Dictionary<string, List<int>>> MarkAllMessagesAsDeliveredAsync(string userId);
         Task<int> GetUnreadCountAsync(string userId);
         Task UpdateMessageStatusAsync(int messageId, MessageStatus newStatus);
 

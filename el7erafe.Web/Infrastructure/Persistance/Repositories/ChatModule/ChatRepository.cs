@@ -129,14 +129,30 @@ namespace Persistance.Repositories.ChatModule
             return messagesToUpdate.Select(m => m.Id).ToList();
         }
 
-        public Task MarkAllMessagesAsDeliveredAsync(string userId)
+        public async Task<Dictionary<string, List<int>>> MarkAllMessagesAsDeliveredAsync(string userId)
         {
-            return dbContext.Messages
+            var messages = await dbContext.Messages
                 .Where(m => m.ReceiverId == userId &&
-                       m.Status == MessageStatus.Sent &&
-                       !m.IsDeleted) 
-                .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(m => m.Status, MessageStatus.Delivered));
+                            m.Status == MessageStatus.Sent &&
+                            !m.IsDeleted)
+                .ToListAsync();
+
+            if (!messages.Any())
+                return new Dictionary<string, List<int>>();
+
+            foreach (var msg in messages)
+            {
+                msg.Status = MessageStatus.Delivered;
+            }
+
+            await dbContext.SaveChangesAsync();
+
+            return messages
+                .GroupBy(m => m.SenderId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(m => m.Id).ToList()
+                );
         }
 
         public async Task<int> GetUnreadCountAsync(string userId)

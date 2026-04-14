@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction.Chat;
 using Shared.DataTransferObject.ChatDTOs;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace Service.Hubs
 {
@@ -14,23 +15,36 @@ namespace Service.Hubs
         public override async Task OnConnectedAsync()
         {
             var userId = Context.UserIdentifier;
-
             var connectionId = Context.ConnectionId;
-            _logger.LogInformation("=== OnConnectedAsync Started ===");
-            _logger.LogInformation("UserId: {UserId}", userId);
-            _logger.LogInformation("ConnectionId: {ConnectionId}", connectionId);
 
             if (string.IsNullOrEmpty(userId))
             {
-                _logger.LogWarning("❌ UserId is null or empty - aborting connection");
                 Context.Abort();
                 return;
             }
-
+            // 1️ Add connection
             await _chatService.AddUserConnectionAsync(userId, connectionId);
-            await _chatService.MarkAllMessagesAsDeliveredAsync(userId);
-            await Clients.Others.SendAsync("UserOnline", userId);
 
+            // 2️ Mark messages as delivered (grouped by sender)
+            var deliveredMap = await _chatService.MarkAllMessagesAsDeliveredAsync(userId);
+
+            // 3️ Notify each sender with THEIR messages only
+            foreach (var kvp in deliveredMap)
+            {
+                var senderId = kvp.Key;
+                var messageIds = kvp.Value;
+
+                var senderConnections = await _chatService.GetUserChatConnectionsAsync(senderId);
+
+                await Task.WhenAll(senderConnections.Select(connId =>
+                     Clients.Client(connId).SendAsync(
+                         "MessagesDelivered",
+                         messageIds,
+                      MessageStatus.Delivered.ToString()
+                     )));
+            }
+            // 4️ Notify others user is online
+            await Clients.Others.SendAsync("UserOnline", userId);
             await base.OnConnectedAsync();
         }
 
@@ -67,7 +81,7 @@ namespace Service.Hubs
                 throw new HubException("Unauthorized");
 
             // 1️ Save message
-            var savedMessage = await _chatService.SendMessageAsync(messageDto,senderId);
+            var savedMessage = await _chatService.SendMessageAsync(messageDto, senderId);
 
             // 2️ Get receiver connections (ChatHub only)
             var receiverConnections = await _chatService.GetUserChatConnectionsAsync(savedMessage.ReceiverId);
@@ -77,7 +91,7 @@ namespace Service.Hubs
             // 3️ Update delivery status
             if (isDelivered)
             {
-                await _chatService.UpdateMessageStatusAsync(savedMessage.Id,MessageStatus.Delivered);
+                await _chatService.UpdateMessageStatusAsync(savedMessage.Id, MessageStatus.Delivered);
                 savedMessage.MessageStatus = MessageStatus.Delivered.ToString();
             }
 
