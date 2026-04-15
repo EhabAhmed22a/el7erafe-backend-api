@@ -1,12 +1,8 @@
-﻿
-using System.Globalization;
-using DomainLayer.Contracts;
-using DomainLayer.Contracts.ChatModule;
+﻿using DomainLayer.Contracts.ChatModule;
 using DomainLayer.Exceptions;
 using DomainLayer.Models.ChatModule;
-using Service.Helpers;
+using DomainLayer.Models.ChatModule.Enums;
 using ServiceAbstraction;
-using Shared.DataTransferObject.ServiceRequestDTOs;
 
 namespace Service
 {
@@ -16,7 +12,7 @@ namespace Service
         {
             try
             {
-                return await userConnectionRepository.AddConnectionAsync(userId, connectionId);
+                return await userConnectionRepository.AddConnectionAsync(userId, connectionId, HubType.Client);
             }
             catch
             {

@@ -5,7 +5,7 @@ namespace Shared.DataTransferObject.ChatDTOs
     public class SendMessageDto
     {
         [Required]
-        public string ReceiverId { get; set; } = default!;
+        public int ChatId { get; set; } 
 
         [Required]
         public string MessageType { get; set; } = "Text";
