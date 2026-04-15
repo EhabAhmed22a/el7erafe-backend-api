@@ -2,15 +2,17 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+using ServiceAbstraction;
 using ServiceAbstraction.Chat;
 using Shared.DataTransferObject.ChatDTOs;
+using Shared.DataTransferObject.NotificationDTOs;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace Service.Hubs
 {
     [Authorize(AuthenticationSchemes = "Bearer", Roles = "Client,Technician")]
     public class ChatHub(IChatService _chatService,
-                         ILogger<ChatHub> _logger) : Hub
+                         INotificationService notificationService) : Hub
     {
         public override async Task OnConnectedAsync()
         {
@@ -87,6 +89,27 @@ namespace Service.Hubs
             var receiverConnections = await _chatService.GetUserChatConnectionsAsync(savedMessage.ReceiverId);
 
             bool isDelivered = receiverConnections.Any();
+
+            if (!isDelivered)
+            {
+                var sender = await _chatService.GetUserBasicInfoAsync(senderId);
+
+                await notificationService.SendAsync(savedMessage.ReceiverId, new NotificationDto
+                {
+                    Title = $"رسالة جديدة من {sender.Name}",
+                    Body = savedMessage.Content.Length > 50
+                        ? savedMessage.Content.Substring(0, 50) + "..."
+                        : savedMessage.Content,
+                    Action = "CHAT_MESSAGE",
+                    ExtraPayload = new
+                    {
+                        chatId = savedMessage.ChatId,
+                        receiverId = senderId, 
+                        receiverName = sender.Name,
+                        receiverImage = sender.ImageUrl
+                    }
+                });
+            }
 
             // 3️ Update delivery status
             if (isDelivered)

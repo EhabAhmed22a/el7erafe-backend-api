@@ -288,5 +288,42 @@ namespace Service.Chat
         {
             return await userConnectionRepository.IsUserOnlineAsync(userId, HubType.Chat);
         }
+
+        public async Task<(string Name, string? ImageUrl)> GetUserBasicInfoAsync(string userId)
+        {
+            // Try Technician first
+            var technician = await technicianRepository.GetByUserIdAsync(userId);
+            if (technician != null)
+            {
+                string? image = null;
+
+                if (!string.IsNullOrEmpty(technician.ProfilePictureURL))
+                {
+                    image = await blobStorageRepository.GetBlobUrlWithSasTokenAsync(
+                        "technician-documents",
+                        technician.ProfilePictureURL);
+                }
+
+                return (technician.Name, image);
+            }
+
+            // Try Client
+            var client = await clientRepository.GetByUserIdAsync(userId);
+            if (client != null)
+            {
+                string? image = null;
+
+                if (!string.IsNullOrEmpty(client.ImageURL))
+                {
+                    image = await blobStorageRepository.GetBlobUrlWithSasTokenAsync(
+                        "client-profilepics",
+                        client.ImageURL);
+                }
+
+                return (client.Name, image);
+            }
+
+            throw new Exception("User not found");
+        }
     }
 }

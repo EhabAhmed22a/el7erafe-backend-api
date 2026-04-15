@@ -21,6 +21,7 @@ namespace ServiceAbstraction.Chat
         Task<Dictionary<string, List<int>>> MarkAllMessagesAsDeliveredAsync(string userId);
         Task<int> GetUnreadCountAsync(string userId);
         Task UpdateMessageStatusAsync(int messageId, MessageStatus newStatus);
+        Task<(string Name, string? ImageUrl)> GetUserBasicInfoAsync(string userId);
 
         // Delete/Anonymize (called when user is deleted)
         Task AnonymizeUserDataAsync(string userId, string deletedMarker);
