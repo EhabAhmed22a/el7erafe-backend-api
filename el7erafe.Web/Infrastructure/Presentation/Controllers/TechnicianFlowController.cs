@@ -266,7 +266,7 @@ namespace Presentation.Controllers
 
             var clientUserId = await technicianService.StartJob(userId, reservationId.ReservationId);
 
-            await clientHub.Clients.User(clientUserId).SendAsync("JobStarted", new { reservationId });
+            await clientHub.Clients.User(clientUserId).SendAsync("JobStarted",  reservationId);
 
             await notificationService.SendAsync(clientUserId, new NotificationDto
             {
