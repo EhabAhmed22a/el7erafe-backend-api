@@ -8,10 +8,18 @@ namespace Service.Helpers
         {
             if (from == null || to == null) return null;
 
+            // Intercept 23:59 and treat it as 12:00 AM
+            TimeOnly formattedTo = to.Value;
+            if (formattedTo.Hour == 23 && formattedTo.Minute == 59)
+            {
+                formattedTo = new TimeOnly(0, 0);
+            }
+
             // 1. Get the time with AM/PM translated to ص/م
-            string timeString = $"{from.Value.ToString("hh:mm tt", new CultureInfo("ar-EG"))} - {to.Value.ToString("hh:mm tt", new CultureInfo("ar-EG"))}";
+            string timeString = $"{from.Value.ToString("hh:mm tt", new CultureInfo("ar-EG"))} - {formattedTo.ToString("hh:mm tt", new CultureInfo("ar-EG"))}";
 
             // 2. Brute-force the digits to Arabic-Indic
+            // (This is actually the safest cross-platform way to guarantee Eastern Arabic numerals!)
             return timeString
                 .Replace("0", "٠").Replace("1", "١").Replace("2", "٢")
                 .Replace("3", "٣").Replace("4", "٤").Replace("5", "٥")
