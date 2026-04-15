@@ -1,8 +1,8 @@
-﻿
-using DomainLayer.Contracts;
+﻿using DomainLayer.Contracts;
 using DomainLayer.Contracts.ChatModule;
 using DomainLayer.Exceptions;
 using DomainLayer.Models.ChatModule;
+using DomainLayer.Models.ChatModule.Enums;
 using ServiceAbstraction;
 
 namespace Service
@@ -15,7 +15,7 @@ namespace Service
         {
             try
             {
-                return await userConnectionRepository.AddConnectionAsync(userId, connectionId);
+                return await userConnectionRepository.AddConnectionAsync(userId, connectionId, HubType.Technician);
             }
             catch
             {

@@ -5,7 +5,9 @@ namespace DomainLayer.Contracts.ChatModule
     public interface IChatRepository
     {
         Task<Chat> GetOrCreateChatAsync(string clientId, string technicianId);
+        Task<Chat?> GetChatAsync(string clientId, string technicianId);
         Task<Chat?> GetChatByIdAsync(int id);
+        Task UpdateChatAsync(Chat chat);
         Task<Chat> CreateChatAsync(Chat chat);
         Task<IEnumerable<Chat>> GetUserChatsWithDetailsAsync(string userId);
 
@@ -15,7 +17,7 @@ namespace DomainLayer.Contracts.ChatModule
         Task<Message> AddMessageAsync(Message message);
         Task UpdateMessageAsync(Message message);
         Task<List<int>> MarkMessagesAsReadAsync(int chatId, string userId);
-        Task MarkAllMessagesAsDeliveredAsync(string userId);
+        Task<Dictionary<string, List<int>>> MarkAllMessagesAsDeliveredAsync(string userId);
         Task<int> GetUnreadCountAsync(string userId);
 
         // Delete operations (for hard delete scenario)

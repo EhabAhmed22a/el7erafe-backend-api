@@ -232,19 +232,6 @@ namespace Presentation.Controllers
             return Ok(new { message = response.Message });
         }
 
-        [HttpGet("cf/inbox")]
-        public async Task<IActionResult> GetInbox()
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
-
-            var result = await chatService.GetInboxAsync(userId);
-
-            return Ok(result);
-        }
-
         [HttpGet("cf/offers/quick")]
         public async Task<IActionResult> GetQuickOffers([FromQuery] ReqIdDTO reqIdDTO)
         {

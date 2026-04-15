@@ -1,4 +1,5 @@
-﻿using DomainLayer.Models.IdentityModule;
+﻿using DomainLayer.Models.ChatModule.Enums;
+using DomainLayer.Models.IdentityModule;
 
 namespace DomainLayer.Models.ChatModule
 {
@@ -8,6 +9,7 @@ namespace DomainLayer.Models.ChatModule
         public string UserId { get; set; } = default!;
         public string ConnectionId { get; set; } = default!;
         public DateTime ConnectedAt { get; set; }
+        public HubType HubType { get; set; }
 
         public ApplicationUser User { get; set; } = default!;
     }
