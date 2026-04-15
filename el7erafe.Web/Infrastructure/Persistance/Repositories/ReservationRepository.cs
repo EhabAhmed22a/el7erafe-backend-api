@@ -194,7 +194,12 @@ namespace Persistance.Repositories
 
         public async Task<Reservation?> MarkReservationAsDone(int reservationId)
         {
-            var reservation = await dbcontext.Reservations.Include(r => r.Offer).ThenInclude(o => o.Technician).FirstOrDefaultAsync(r => r.Id == reservationId);
+            var reservation = await dbcontext.Reservations
+                                                .Include(r => r.Offer)
+                                                    .ThenInclude(o => o.Technician)
+                                                .Include(r => r.Offer)
+                                                    .ThenInclude(o => o.ServiceRequest) 
+                                                .FirstOrDefaultAsync(r => r.Id == reservationId);
             if (reservation is null) return null;
             reservation.Status = ReservationStatus.Done;
             await dbcontext.SaveChangesAsync();
