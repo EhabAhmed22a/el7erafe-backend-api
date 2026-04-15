@@ -16,6 +16,11 @@ namespace Service
     {
         public async Task<MakeOfferEventResultDto> MakeOfferAsync(MakeOfferDto dto, string technicianUserId)
         {
+            if (dto.ToTime == new TimeOnly(0, 0))
+            {
+                dto.ToTime = new TimeOnly(23, 59);
+            }
+
             if (dto.FromTime >= dto.ToTime)
                 throw new ArgumentException("يجب أن يكون وقت البداية قبل وقت النهاية.");
 

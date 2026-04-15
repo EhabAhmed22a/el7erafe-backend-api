@@ -22,7 +22,7 @@ namespace Persistance.Repositories
                 TechnicianId = technicianId,
                 DayOfWeek = null,
                 FromTime = TimeOnly.Parse("00:00:00"),
-                ToTime = TimeOnly.Parse("23:00:00")
+                ToTime = TimeOnly.Parse("23:59:00")
             };
             return CreateAsync(defaultAvailability);
         }
