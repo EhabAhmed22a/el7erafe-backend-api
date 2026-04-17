@@ -164,11 +164,6 @@ namespace Persistance.Databases
                 entity.HasIndex(e => e.TechnicianId)
                     .HasDatabaseName("IX_Chats_TechnicianId");
 
-                // Unique constraint to prevent duplicate chats between same client/technician
-                entity.HasIndex(e => new { e.ClientId, e.TechnicianId })
-                    .IsUnique()
-                    .HasDatabaseName("IX_Chats_Client_Technician");
-
                 // Relationships
                 entity.HasOne(e => e.Client)
                     .WithMany(u => u.ClientChats)
