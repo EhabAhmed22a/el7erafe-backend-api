@@ -1,6 +1,7 @@
 ﻿using DomainLayer.Contracts.ChatModule;
 using DomainLayer.Models.ChatModule;
 using DomainLayer.Models.ChatModule.Enums;
+using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.EntityFrameworkCore;
 using Persistance.Databases;
 
@@ -64,9 +65,18 @@ namespace Persistance.Repositories.ChatModule
         public async Task<IEnumerable<Chat>> GetUserChatsWithDetailsAsync(string userId)
         {
             return await dbContext.Chats
-                .Where(c => (c.ClientId == userId || c.TechnicianId == userId))
+                .Where(c =>
+                    (c.ClientId == userId || c.TechnicianId == userId)
+                    &&
+                    c.Reservation != null
+                    &&
+                    (c.Reservation.Status == ReservationStatus.Confirmed ||
+                     c.Reservation.Status == ReservationStatus.InProgress ||
+                     c.Reservation.Status == ReservationStatus.InPayment)
+                )
                 .Include(c => c.Client)
                 .Include(c => c.Technician)
+                .Include(c => c.Reservation) 
                 .Include(c => c.Messages)
                 .ToListAsync();
         }
