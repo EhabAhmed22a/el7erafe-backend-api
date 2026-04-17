@@ -255,16 +255,16 @@ namespace Presentation.Controllers
 
             await clientHub.Clients.User(clientUserId).SendAsync("JobStarted",  new { reservationId });
 
-            await notificationService.SendAsync(clientUserId, new NotificationDto
-            {
-                Title = "تم بدء العمل",
-                Body = "بدأ الفني العمل على طلبك",
-                Action = "CLIENT_STATUS_CHANGED",
-                ExtraPayload = new
-                {
-                    reservationId = reservationId.ReservationId
-                }
-            });
+            //await notificationService.SendAsync(clientUserId, new NotificationDto
+            //{
+            //    Title = "تم بدء العمل",
+            //    Body = "بدأ الفني العمل على طلبك",
+            //    Action = "CLIENT_STATUS_CHANGED",
+            //    ExtraPayload = new
+            //    {
+            //        reservationId = reservationId.ReservationId
+            //    }
+            //});
 
             return Ok(new {message = "تم بدء العمل" });
         }
