@@ -20,8 +20,7 @@ namespace Persistance.Repositories.ChatModule
             {
                 ReservationId = reservationId,
                 ClientId = clientId,
-                TechnicianId = technicianId,
-                IsHidden = false
+                TechnicianId = technicianId
             };
 
             dbContext.Chats.Add(newChat);
@@ -65,7 +64,7 @@ namespace Persistance.Repositories.ChatModule
         public async Task<IEnumerable<Chat>> GetUserChatsWithDetailsAsync(string userId)
         {
             return await dbContext.Chats
-                .Where(c => (c.ClientId == userId || c.TechnicianId == userId) && !c.IsHidden)
+                .Where(c => (c.ClientId == userId || c.TechnicianId == userId))
                 .Include(c => c.Client)
                 .Include(c => c.Technician)
                 .Include(c => c.Messages)

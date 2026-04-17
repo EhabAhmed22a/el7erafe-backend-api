@@ -74,11 +74,6 @@ namespace Service.Chat
             }
 
             var chat = await _chatRepository.GetOrCreateChatAsync(reservationId,clientUserId, technicianUserId);
-            if (chat.IsHidden)
-            {
-                chat.IsHidden = false;
-                await _chatRepository.UpdateChatAsync(chat);
-            }
 
             return new ChatDto
             {

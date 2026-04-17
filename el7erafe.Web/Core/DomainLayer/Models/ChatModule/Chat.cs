@@ -8,7 +8,6 @@ namespace DomainLayer.Models.ChatModule
         public int Id { get; set; }
         public string ClientId { get; set; } = default!;
         public string TechnicianId { get; set; } = default!;
-        public bool IsHidden { get; set; } = false;
         public int ReservationId { get; set; }
 
         public ApplicationUser Client { get; set; } = default!;
