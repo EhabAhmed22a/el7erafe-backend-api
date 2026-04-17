@@ -1,11 +1,9 @@
-﻿using DomainLayer.Contracts;
-using DomainLayer.Models.ChatModule.Enums;
+﻿using DomainLayer.Models.ChatModule.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using ServiceAbstraction;
 using ServiceAbstraction.Chat;
-using ServiceAbstraction.Moderation;
 using Shared.DataTransferObject.ChatDTOs;
 using Shared.DataTransferObject.NotificationDTOs;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
@@ -14,9 +12,7 @@ namespace Service.Hubs
 {
     [Authorize(AuthenticationSchemes = "Bearer", Roles = "Client,Technician")]
     public class ChatHub(IChatService _chatService,
-                         INotificationService notificationService,
-                         IModerationService moderationService,
-                         IBlobStorageRepository blobStorageRepository) : Hub
+                         INotificationService notificationService) : Hub
     {
         public override async Task OnConnectedAsync()
         {
@@ -85,48 +81,6 @@ namespace Service.Hubs
 
             if (string.IsNullOrEmpty(senderId))
                 throw new HubException("Unauthorized");
-
-            #region MODERATION_CHECK
-            var moderation = await moderationService.CheckMessageAsync(messageDto.Content);
-
-            if (!moderation.IsSafe)
-            {
-                // Regex layer fail
-                if (moderation.Layer == "regex")
-                {
-                    await Clients.Caller.SendAsync("MessageRejected", new
-                    {
-                        reason = moderation.Reason,
-                        layer = "regex"
-                    });
-                    return;
-                }
-
-                // ML layer fail
-                if (moderation.Layer == "machine_learning")
-                {
-                    bool highConfidence = (moderation.Confidence ?? 0) >= 0.7;
-
-                    await Clients.Caller.SendAsync("MessageRejected", new
-                    {
-                        reason = moderation.Reason,
-                        layer = "ml",
-                        confidence = moderation.Confidence
-                    });
-
-                    if (!highConfidence)
-                    {
-                        await blobStorageRepository.AppendToReviewListAsync(
-                            messageDto.Content,
-                            (float)(moderation.Confidence ?? 0),
-                            "__label__unsafe"
-                        );
-                    }
-
-                    return;
-                }
-            } 
-            #endregion
 
             // 1️ Save message
             var savedMessage = await _chatService.SendMessageAsync(messageDto, senderId);

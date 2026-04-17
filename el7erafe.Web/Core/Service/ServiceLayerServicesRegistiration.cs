@@ -2,10 +2,8 @@
 using Service.Chat;
 using Service.Email;
 using Service.Helpers;
-using Service.Moderation;
 using ServiceAbstraction;
 using ServiceAbstraction.Chat;
-using ServiceAbstraction.Moderation;
 
 namespace Service
 {
@@ -34,7 +32,6 @@ namespace Service
             services.AddScoped<IOfferService, OfferService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<INotificationService, NotificationService>();
-            services.AddHttpClient<IModerationService, ModerationService>();
             services.AddSignalR();
             return services;
         }
