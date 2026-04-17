@@ -1,6 +1,7 @@
 ﻿using DomainLayer.Contracts.ChatModule;
 using DomainLayer.Models.ChatModule;
 using DomainLayer.Models.ChatModule.Enums;
+using DomainLayer.Models.IdentityModule.Enums;
 using Microsoft.EntityFrameworkCore;
 using Persistance.Databases;
 
@@ -9,24 +10,24 @@ namespace Persistance.Repositories.ChatModule
     public class ChatRepository(ApplicationDbContext dbContext) : IChatRepository
     {
         // ========== CHAT OPERATIONS ==========
-        public async Task<Chat> GetOrCreateChatAsync(string clientId, string technicianId)
+        public async Task<Chat> GetOrCreateChatAsync(int reservationId, string clientId, string technicianId)
         {
-            var chat = await dbContext.Chats
-                .Include(c => c.Client)
-                .Include(c => c.Technician)
-                .Include(c => c.Messages.OrderByDescending(m => m.CreatedAt).Take(1))
-                .FirstOrDefaultAsync(c => c.ClientId == clientId && c.TechnicianId == technicianId);
+            var chat = await dbContext.Chats.FirstOrDefaultAsync(c => c.ReservationId == reservationId);
 
             if (chat != null)
                 return chat;
 
             var newChat = new Chat
             {
+                ReservationId = reservationId,
                 ClientId = clientId,
                 TechnicianId = technicianId
             };
 
-            return await CreateChatAsync(newChat);
+            dbContext.Chats.Add(newChat);
+            await dbContext.SaveChangesAsync();
+
+            return newChat;
         }
         public async Task<Chat?> GetChatAsync(string clientId, string technicianId)
         {
@@ -64,9 +65,18 @@ namespace Persistance.Repositories.ChatModule
         public async Task<IEnumerable<Chat>> GetUserChatsWithDetailsAsync(string userId)
         {
             return await dbContext.Chats
-                .Where(c => (c.ClientId == userId || c.TechnicianId == userId) && !c.IsHidden)
+                .Where(c =>
+                    (c.ClientId == userId || c.TechnicianId == userId)
+                    &&
+                    c.Reservation != null
+                    &&
+                    (c.Reservation.Status == ReservationStatus.Confirmed ||
+                     c.Reservation.Status == ReservationStatus.InProgress ||
+                     c.Reservation.Status == ReservationStatus.InPayment)
+                )
                 .Include(c => c.Client)
                 .Include(c => c.Technician)
+                .Include(c => c.Reservation) 
                 .Include(c => c.Messages)
                 .ToListAsync();
         }

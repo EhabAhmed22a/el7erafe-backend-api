@@ -939,16 +939,6 @@ namespace Service
                 var client = await clientRepository.GetByIdAsync(reservation.Offer.ServiceRequest.ClientId);
                 var technician = await technicianRepository.GetByIdAsync(reservation.Offer.TechnicianId);
 
-                if (client != null && technician != null)
-                {
-                    var chat = await chatRepository.GetChatAsync(client.UserId, technician.UserId);
-
-                    if (chat != null)
-                    {
-                        chat.IsHidden = true;
-                        await chatRepository.UpdateChatAsync(chat);
-                    }
-                }
                 return reservation.Offer.Technician.UserId;
             }
             catch
