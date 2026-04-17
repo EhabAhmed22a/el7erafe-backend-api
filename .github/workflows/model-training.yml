@@ -2,9 +2,7 @@ name: Train, Test, and Deploy Safety Guard
 
 on:
   push:
-    branches: [ "main" ]
-    paths:
-      - 'Regex/**'
+    branches: [ "newinfra" ]
   workflow_dispatch:
 jobs:
   build-and-deploy:

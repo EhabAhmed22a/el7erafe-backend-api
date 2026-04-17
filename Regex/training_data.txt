@@ -57,14 +57,3 @@ __label__unsafe يعم خلاص لما تيجي هبقي اديك نمرتي
 __label__unsafe هبقي احسبك خارج عن البرنامج لما نقابل
 __label__unsafe بص لما هشوفك هبقي اديك نمرتي ونتكلم 
 __label__unsafe خلاص سيبك من البرنامج ونتعامل احنا مع بعض
-__label__unsafe طيب كده الحساب كام بقي لما هقابلك نتحاسب خارج الابلكيشن
-__label__unsafe هات رفمك
-__label__unsafe هات رقمك يا ريس
-__label__unsafe كلمني واتس يا هندسة
-__label__unsafe ابعتلي اللوكيشن على زيرو عشره يا باشا
-__label__unsafe رقمك كام يا غالي
-__label__unsafe سيبك من الابلكيشن يسطا
-__label__unsafe هات رقمك
-__label__unsafe هات ركمك
-__label__unsafe هات نمرتك
-__label__unsafe هات نمرنك

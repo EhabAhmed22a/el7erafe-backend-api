@@ -62,34 +62,19 @@ async def moderate_text(request: ModerationRequest):
 
     # --- LAYER 2: MACHINE LEARNING (Probabilistic) ---
     # Strip newlines for FastText
-    # --- LAYER 2: MACHINE LEARNING (Probabilistic) ---
     clean_for_model = original_text.replace('\n', ' ') 
     predictions = nlp_model.predict(clean_for_model)
     
-    predicted_label = predictions[0][0] 
-    raw_confidence = float(predictions[1][0]) 
+    predicted_label = predictions[0][0] # e.g., '__label__unsafe'
+    confidence = float(predictions[1][0]) # e.g., 0.95
 
-    # 1. Standardize the metric! Always calculate how UNSAFE it is.
-    if predicted_label == "__label__safe":
-        # If it's 90% safe, it is 10% unsafe.
-        unsafe_probability = 1.0 - raw_confidence 
-    else:
-        # If it's 80% unsafe, it is 80% unsafe.
-        unsafe_probability = raw_confidence
-
-    # 2. Now use a STRICT threshold to block (e.g., 70% sure it's bad)
-    if unsafe_probability >= 0.70:
+    # If the ML model is highly confident it's unsafe
+    if predicted_label == "__label__unsafe" and confidence > 0.50:
         return {
             "is_safe": False, 
             "reason": "unsafe_intent_detected", 
             "layer": "machine_learning",
-            "unsafe_probability": round(unsafe_probability, 2)
+            "confidence": round(confidence, 2)
         }
 
-    # 3. If it survives, return it as clean, but pass the correct threat level!
-    return {
-        "is_safe": True, 
-        "reason": "clean", 
-        "layer": "machine_learning",          
-        "unsafe_probability": round(unsafe_probability, 2) 
-    }
+    return {"is_safe": True, "reason": "clean", "layer": "none"}
