@@ -203,17 +203,17 @@ namespace Presentation.Controllers
 
             await clientHub.Clients.User(result.ClientUserId).SendAsync("ReceiveNewOffer", result.ClientOffer);
 
-            //await notificationService.SendAsync(result.ClientUserId, new NotificationDto
-            //{
-            //    Title = "عرض جديد",
-            //    Body = "قام فني بإرسال عرض على طلبك",
-            //    Action = "CLIENT_NEW_OFFER",
-            //    ExtraPayload = new
-            //    {
-            //        requestId = result.ClientOffer.RequestId,
-            //        offerId = result.ClientOffer.OfferId
-            //    }
-            //});
+            await notificationService.SendAsync(result.ClientUserId, new NotificationDto
+            {
+                Title = "عرض جديد",
+                Body = "قام فني بإرسال عرض على طلبك",
+                Action = "CLIENT_NEW_OFFER",
+                ExtraPayload = new
+                {
+                    requestId = result.ClientOffer.RequestId,
+                    offerId = result.ClientOffer.OfferId
+                }
+            });
 
             await technicianHub.Clients.User(userId).SendAsync("ReceivePendingOffer", result.TechnicianOffer);
 
@@ -255,16 +255,16 @@ namespace Presentation.Controllers
 
             await clientHub.Clients.User(clientUserId).SendAsync("JobStarted",  new { reservationId });
 
-            //await notificationService.SendAsync(clientUserId, new NotificationDto
-            //{
-            //    Title = "تم بدء العمل",
-            //    Body = "بدأ الفني العمل على طلبك",
-            //    Action = "CLIENT_STATUS_CHANGED",
-            //    ExtraPayload = new
-            //    {
-            //        reservationId = reservationId.ReservationId
-            //    }
-            //});
+            await notificationService.SendAsync(clientUserId, new NotificationDto
+            {
+                Title = "تم بدء العمل",
+                Body = "بدأ الفني العمل على طلبك",
+                Action = "CLIENT_STATUS_CHANGED",
+                ExtraPayload = new
+                {
+                    reservationId = reservationId.ReservationId
+                }
+            });
 
             return Ok(new {message = "تم بدء العمل" });
         }
