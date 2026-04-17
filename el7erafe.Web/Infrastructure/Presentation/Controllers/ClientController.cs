@@ -94,6 +94,8 @@ namespace Presentation.Controllers
                 var technician = await technicianService.GetTechnicianByIdAsync((int)requestRegDTO.TechnicianId);
                 if (technician is null)
                     throw new Exception("a7ehhhhhh ana 3reft el mosh");
+                if (technician.User is null)
+                    throw new Exception("ya ehabbbbb");
                 await technicianHub.Clients.User(technician?.User.Id!).SendAsync("ReceiveNewDirectRequest", newData);
                 await notificationService.SendAsync(technician?.User.Id!, new NotificationDto
                 {
