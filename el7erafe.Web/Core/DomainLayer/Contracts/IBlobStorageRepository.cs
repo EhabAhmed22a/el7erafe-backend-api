@@ -19,6 +19,7 @@ namespace DomainLayer.Contracts
             int expiryHours = 1);
         Task<int> CountBlobsWithPrefixAsync(string containerName, string prefix);
         Task<int> DeleteBlobsWithPrefixAsync(string containerName, string prefix);
+        Task AppendToReviewListAsync(string text, float conf, string label);
 
     }
 }
