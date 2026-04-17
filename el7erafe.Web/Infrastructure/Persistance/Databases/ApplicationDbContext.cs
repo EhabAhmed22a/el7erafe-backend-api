@@ -179,6 +179,11 @@ namespace Persistance.Databases
                     .WithMany(u => u.TechnicianChats)
                     .HasForeignKey(e => e.TechnicianId)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(c => c.Reservation)
+                    .WithOne(r => r.Chat)
+                    .HasForeignKey<Chat>(c => c.ReservationId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             builder.Entity<Message>(entity =>
