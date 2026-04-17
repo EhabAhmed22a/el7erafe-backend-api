@@ -55,6 +55,7 @@ namespace Service
 
         public async Task<List<TechnicianAvailabilityResponseDto>> GetTechnicianAvailableTimeAsync(string technicianId)
         {
+            // if to time retusn as 23:59 return it as 12 am
             var technician = await technicianRepository.GetByUserIdAsync(technicianId);
             if (technician is null) 
                 throw new TechNotFoundException(technicianId);
@@ -67,7 +68,7 @@ namespace Service
             {
                 DayOfWeek = (int?)a.DayOfWeek,
                 FromTime = a.FromTime,
-                ToTime = a.ToTime
+                ToTime = a.ToTime == new TimeOnly(23, 59) ? new TimeOnly(0, 0) : a.ToTime
             }).ToList();
         }
 
@@ -95,16 +96,22 @@ namespace Service
             if (hasNull && hasSpecific)
                 throw new Exception("لا يمكن الجمع بين التوفر لكل أيام الأسبوع والتوفر لأيام محددة");
 
-            // Validate time format (hours only)
             foreach (var block in blocks)
             {
                 if (block.FromTime >= block.ToTime)
                     throw new Exception("وقت البداية يجب أن يكون قبل وقت النهاية");
 
-                if (block.FromTime.Minute != 0 || block.ToTime.Minute != 0 ||
-                    block.FromTime.Second != 0 || block.ToTime.Second != 0)
+                // 1. FromTime MUST be exactly on the hour (Minute == 0)
+                if (block.FromTime.Minute != 0 || block.FromTime.Second != 0)
                 {
-                    throw new Exception("يجب إدخال الوقت بالساعات فقط مثل 10:00 أو 14:00");
+                    throw new Exception("يجب أن يكون وقت البداية على رأس الساعة تماماً (مثال: 14:00 أو 10:00)");
+                }
+
+                // 2. ToTime MUST NOT be exactly on the hour (Minute != 0)
+                // This accepts 14:30, 14:45, 14:59, and 23:59 perfectly!
+                if (block.ToTime.Minute == 0)
+                {
+                    throw new Exception("يجب ألا يكون وقت النهاية على رأس الساعة (أدخل الدقائق مثل 14:30 أو 14:59)");
                 }
             }
 
@@ -112,9 +119,10 @@ namespace Service
             {
                 var ordered = group.OrderBy(b => b.FromTime).ToList();
 
+                // The overlap check handles any minutes perfectly now
                 for (int i = 1; i < ordered.Count; i++)
                 {
-                    if (ordered[i].FromTime < ordered[i - 1].ToTime)
+                    if (ordered[i].FromTime <= ordered[i - 1].ToTime)
                         throw new ArgumentException("الفترات الزمنية المحددة متداخلة");
                 }
             }

@@ -144,19 +144,6 @@ namespace Presentation.Controllers
             return Ok(new { message = "تم حذف الحساب بنجاح" });
         }
 
-        [HttpGet("inbox")]
-        public async Task<IActionResult> GetInbox()
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
-
-            var result = await chatService.GetInboxAsync(userId);
-
-            return Ok(result);
-        }
-
         [HttpPost("availability/set")]
         public async Task<IActionResult> SetAvailability(List<AvailabilityBlockDto> blocks)
         {
@@ -266,7 +253,7 @@ namespace Presentation.Controllers
 
             var clientUserId = await technicianService.StartJob(userId, reservationId.ReservationId);
 
-            await clientHub.Clients.User(clientUserId).SendAsync("JobStarted", new { reservationId });
+            await clientHub.Clients.User(clientUserId).SendAsync("JobStarted",  new { reservationId });
 
             await notificationService.SendAsync(clientUserId, new NotificationDto
             {
