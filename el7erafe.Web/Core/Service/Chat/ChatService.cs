@@ -49,7 +49,7 @@ namespace Service.Chat
             var reservation = await reservationRepository.GetByIdWithDetailsAsync(reservationId);
 
             if (reservation == null)
-                throw new Exception("Reservation not found");
+                throw new KeyNotFoundException("Reservation not found");
 
             var clientEntityId = reservation.Offer.ServiceRequest.ClientId;
             var technicianEntityId = reservation.Offer.TechnicianId;
@@ -73,7 +73,7 @@ namespace Service.Chat
                 throw new Exception("Chat not allowed for this reservation status");
             }
 
-            var chat = await _chatRepository.GetOrCreateChatAsync(clientUserId, technicianUserId);
+            var chat = await _chatRepository.GetOrCreateChatAsync(reservationId,clientUserId, technicianUserId);
             if (chat.IsHidden)
             {
                 chat.IsHidden = false;

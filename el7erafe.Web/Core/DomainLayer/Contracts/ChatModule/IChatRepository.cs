@@ -4,7 +4,7 @@ namespace DomainLayer.Contracts.ChatModule
 {
     public interface IChatRepository
     {
-        Task<Chat> GetOrCreateChatAsync(string clientId, string technicianId);
+        Task<Chat> GetOrCreateChatAsync(int reservationId, string clientId, string technicianId);
         Task<Chat?> GetChatAsync(string clientId, string technicianId);
         Task<Chat?> GetChatByIdAsync(int id);
         Task UpdateChatAsync(Chat chat);

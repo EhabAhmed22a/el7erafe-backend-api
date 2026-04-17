@@ -9,24 +9,25 @@ namespace Persistance.Repositories.ChatModule
     public class ChatRepository(ApplicationDbContext dbContext) : IChatRepository
     {
         // ========== CHAT OPERATIONS ==========
-        public async Task<Chat> GetOrCreateChatAsync(string clientId, string technicianId)
+        public async Task<Chat> GetOrCreateChatAsync(int reservationId, string clientId, string technicianId)
         {
-            var chat = await dbContext.Chats
-                .Include(c => c.Client)
-                .Include(c => c.Technician)
-                .Include(c => c.Messages.OrderByDescending(m => m.CreatedAt).Take(1))
-                .FirstOrDefaultAsync(c => c.ClientId == clientId && c.TechnicianId == technicianId);
+            var chat = await dbContext.Chats.FirstOrDefaultAsync(c => c.ReservationId == reservationId);
 
             if (chat != null)
                 return chat;
 
             var newChat = new Chat
             {
+                ReservationId = reservationId,
                 ClientId = clientId,
-                TechnicianId = technicianId
+                TechnicianId = technicianId,
+                IsHidden = false
             };
 
-            return await CreateChatAsync(newChat);
+            dbContext.Chats.Add(newChat);
+            await dbContext.SaveChangesAsync();
+
+            return newChat;
         }
         public async Task<Chat?> GetChatAsync(string clientId, string technicianId)
         {
