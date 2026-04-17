@@ -1,12 +1,10 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
-using Azure.Storage.Blobs.Specialized;
 using Azure.Storage.Sas;
 using DomainLayer.Contracts;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
-using System.Text;
 
 namespace Persistance
 {
@@ -14,8 +12,7 @@ namespace Persistance
                                        IUserDelegationKeyCache _userDelegationKeyCache,
                                        BlobServiceClient _blobServiceClient) : IBlobStorageRepository
     {
-        private readonly string _containerName = "ml-logs";
-        private readonly string _blobName = "review_queue.txt";
+
         public async Task<string> UploadFileAsync(IFormFile file, string containerName, string? customFileName = null)
         {
             // File validation
@@ -338,28 +335,6 @@ namespace Persistance
             }
 
             return deletedCount;
-        }
-
-        public async Task AppendToReviewListAsync(string text, float conf, string label)
-        {
-            // 1️ Get container
-            var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
-
-            // 2️ Ensure container exists (safe)
-            await containerClient.CreateIfNotExistsAsync();
-
-            // 3️ Get append blob
-            var appendBlobClient = containerClient.GetAppendBlobClient(_blobName);
-
-            // 4️ Create if not exists
-            await appendBlobClient.CreateIfNotExistsAsync();
-
-            // 5️ Format log
-            string logEntry = $"{label} | {conf:P1} | {text}{Environment.NewLine}";
-
-            // 6️ Append
-            using var ms = new MemoryStream(Encoding.UTF8.GetBytes(logEntry));
-            await appendBlobClient.AppendBlockAsync(ms);
         }
     }
 }
