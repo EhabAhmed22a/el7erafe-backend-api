@@ -85,7 +85,7 @@ namespace el7erafe.Web
             #endregion
 
             #region SignalR
-            builder.Services.AddSignalR(builder => builder.KeepAliveInterval = TimeSpan.FromSeconds(15));
+            builder.Services.AddSignalR(builder => builder.KeepAliveInterval = TimeSpan.FromSeconds(15)).AddAzureSignalR(); ;
             #endregion
 
             #region Add services to the container.
