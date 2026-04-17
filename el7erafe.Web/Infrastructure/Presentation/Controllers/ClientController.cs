@@ -91,19 +91,26 @@ namespace Presentation.Controllers
 
             if (requestRegDTO.TechnicianId.HasValue)
             {
-                var technician = await technicianService.GetTechnicianByIdAsync((int)requestRegDTO.TechnicianId);
-                await technicianHub.Clients.User(technician?.User.Id!).SendAsync("ReceiveNewDirectRequest", newData);
-                await notificationService.SendAsync(technician?.User.Id!, new NotificationDto
+                try
                 {
-                    Title = "طلب خدمة جديد",
-                    Body = "تم إرسال طلب خدمة لك من قبل عميل",
-                    Action = "TECH_NEW_REQUEST",
-                    ExtraPayload = new
+                    var technician = await technicianService.GetTechnicianByIdAsync((int)requestRegDTO.TechnicianId);
+                    await technicianHub.Clients.User(technician?.User.Id!).SendAsync("ReceiveNewDirectRequest", newData);
+                    await notificationService.SendAsync(technician?.User.Id!, new NotificationDto
                     {
-                        requestId = newData.requestId,
-                        serviceId = newData.ServiceId
-                    }
-                });
+                        Title = "طلب خدمة جديد",
+                        Body = "تم إرسال طلب خدمة لك من قبل عميل",
+                        Action = "TECH_NEW_REQUEST",
+                        ExtraPayload = new
+                        {
+                            requestId = newData.requestId,
+                            serviceId = newData.ServiceId
+                        }
+                    });
+                }
+                catch
+                {
+                    throw new Exception("A7ehhhhh");
+                }
             }
             return Ok(new { message = "تم إرسال طلب الخدمة للفني المحدد. في انتظار قبوله" });
         }
