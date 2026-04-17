@@ -1,4 +1,5 @@
 ﻿
+using DomainLayer.Models.ChatModule;
 using DomainLayer.Models.IdentityModule.Enums;
 
 namespace DomainLayer.Models
@@ -14,5 +15,6 @@ namespace DomainLayer.Models
         public int OfferId { get; set; }
 
         public Offer Offer { get; set; } = default!;
+        public Chat Chat { get; set; } = default!;
     }
 }
