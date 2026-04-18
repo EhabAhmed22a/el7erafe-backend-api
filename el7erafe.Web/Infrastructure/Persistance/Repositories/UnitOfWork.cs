@@ -20,7 +20,7 @@ namespace Persistance.Repositories
             _currentTransaction = await _context.Database.BeginTransactionAsync();
         }
 
-        public async Task CommitTransactionAsync()
+        public async Task CommitTransactionWithoutSavingChangesAsync()
         {
             try
             {

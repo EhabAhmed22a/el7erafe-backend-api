@@ -88,7 +88,7 @@ namespace Service
                         await blobStorageRepository.DeleteFileAsync(oldImageUrl, "technician-documents");
                     }
 
-                    await unitOfWork.CommitTransactionAsync();
+                    await unitOfWork.CommitTransactionWithoutSavingChangesAsync();
                 }
                 catch
                 {
@@ -231,7 +231,7 @@ namespace Service
                 if (!updateResult.Succeeded)
                     throw new TechnicalException();
 
-                await unitOfWork.CommitTransactionAsync();
+                await unitOfWork.CommitTransactionWithoutSavingChangesAsync();
             }
             catch (UnprocessableEntityException)
             {
@@ -289,7 +289,7 @@ namespace Service
                 if (deleted == 0)
                     throw new TechnicalException();
 
-                await unitOfWork.CommitTransactionAsync();
+                await unitOfWork.CommitTransactionWithoutSavingChangesAsync();
 
                 var blobDeleteTasks = new List<Task>();
 
