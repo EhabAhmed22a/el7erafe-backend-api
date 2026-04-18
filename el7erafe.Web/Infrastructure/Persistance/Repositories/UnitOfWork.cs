@@ -24,7 +24,6 @@ namespace Persistance.Repositories
         {
             try
             {
-                await _context.SaveChangesAsync();
                 if (_currentTransaction != null)
                     await _currentTransaction.CommitAsync();
             }
