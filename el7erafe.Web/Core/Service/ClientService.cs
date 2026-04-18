@@ -167,7 +167,7 @@ namespace Service
                        "service-requests-images",
                        $"{createdRequest.Id}_{Guid.NewGuid()}");
 
-                    await unitOfWork.CommitTransactionWithoutSavingChangesAsync();
+                    await unitOfWork.CommitTransactionAsync();
                 }
                 catch
                 {
@@ -240,7 +240,7 @@ namespace Service
                 if (!deleted)
                     throw new TechnicalException();
 
-                await unitOfWork.CommitTransactionWithoutSavingChangesAsync();
+                await unitOfWork.CommitTransactionAsync();
             }
             catch
             {
@@ -453,7 +453,7 @@ namespace Service
                 if (!updateResult.Succeeded)
                     throw new TechnicalException();
 
-                await unitOfWork.CommitTransactionWithoutSavingChangesAsync();
+                await unitOfWork.CommitTransactionAsync();
             }
             catch (UnprocessableEntityException)
             {
@@ -980,7 +980,7 @@ namespace Service
 
                 await technicianRepository.UpdateTechnicianRatingAsync(technicianId, newAverage);
 
-                await unitOfWork.CommitTransactionWithoutSavingChangesAsync();
+                await unitOfWork.CommitTransactionAsync();
             }
             catch (Exception)
             {
