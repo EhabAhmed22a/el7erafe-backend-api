@@ -46,28 +46,45 @@ namespace Service
 
         private async Task SendPush(string token, NotificationDto dto)
         {
-            var payload = dto.ExtraPayload != null
-                ? JsonSerializer.Serialize(dto.ExtraPayload)
-                : "";
-
-            var message = new Message()
+            try
             {
-                Token = token,
+                // 1. Failsafe: Don't crash if Firebase didn't load
+                if (FirebaseMessaging.DefaultInstance == null) return;
 
-                Notification = new FirebaseAdmin.Messaging.Notification()
+                var payload = dto.ExtraPayload != null
+                    ? JsonSerializer.Serialize(dto.ExtraPayload)
+                    : "";
+
+                var message = new Message()
                 {
-                    Title = dto.Title,
-                    Body = dto.Body
-                },
+                    Token = token,
 
-                Data = new Dictionary<string, string>
+                    Notification = new FirebaseAdmin.Messaging.Notification()
+                    {
+                        Title = dto.Title,
+                        Body = dto.Body
+                    },
+
+                    Data = new Dictionary<string, string>
             {
                 { "action", dto.Action },
                 { "payload", payload }
             }
-            };
+                };
 
-            await FirebaseMessaging.DefaultInstance.SendAsync(message);
+                // 2. The actual send attempt
+                await FirebaseMessaging.DefaultInstance.SendAsync(message);
+            }
+            catch (FirebaseMessagingException ex)
+            {
+                // 3. This catches the "Requested entity was not found" error (Dead Token)
+                Console.WriteLine($"Firebase Error (Token likely dead): {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                // 4. Catches any other weird errors to protect the API
+                Console.WriteLine($"General Push Failed: {ex.Message}");
+            }
         }
     }
 }
