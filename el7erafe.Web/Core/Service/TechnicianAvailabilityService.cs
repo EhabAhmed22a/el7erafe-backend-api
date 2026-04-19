@@ -15,7 +15,7 @@ namespace Service
         public async Task<List<TechnicianAvailabilityResponseDto>> CreateScheduleAsync(string technicianId, List<AvailabilityBlockDto> blocks)
         {
             var technician = await technicianRepository.GetByUserIdAsync(technicianId);
-            if (technician is null) 
+            if (technician is null)
                 throw new TechNotFoundException(technicianId);
 
             if (blocks == null || !blocks.Any())
@@ -57,7 +57,7 @@ namespace Service
         {
             // if to time retusn as 23:59 return it as 12 am
             var technician = await technicianRepository.GetByUserIdAsync(technicianId);
-            if (technician is null) 
+            if (technician is null)
                 throw new TechNotFoundException(technicianId);
 
             var availabilities = await technicianAvailabilityRepository.GetByTechnicianIdAsync(technician.Id);
@@ -101,17 +101,17 @@ namespace Service
                 if (block.FromTime >= block.ToTime)
                     throw new Exception("وقت البداية يجب أن يكون قبل وقت النهاية");
 
-                // 1. FromTime MUST be exactly on the hour (Minute == 0)
                 if (block.FromTime.Minute != 0 || block.FromTime.Second != 0)
                 {
                     throw new Exception("يجب أن يكون وقت البداية على رأس الساعة تماماً (مثال: 14:00 أو 10:00)");
                 }
 
-                // 2. ToTime MUST NOT be exactly on the hour (Minute != 0)
-                // This accepts 14:30, 14:45, 14:59, and 23:59 perfectly!
-                if (block.ToTime.Minute == 0)
+                bool isToTimeOnHour = block.ToTime.Minute == 0 && block.ToTime.Second == 0;
+                bool isEndOfDay = block.ToTime.Hour == 23 && block.ToTime.Minute == 59;
+
+                if (!isToTimeOnHour && !isEndOfDay)
                 {
-                    throw new Exception("يجب ألا يكون وقت النهاية على رأس الساعة (أدخل الدقائق مثل 14:30 أو 14:59)");
+                    throw new Exception("يجب إدخال الوقت بالساعات فقط (مثل 10:00 أو 14:00)، باستثناء نهاية اليوم 23:59");
                 }
             }
 
@@ -119,10 +119,9 @@ namespace Service
             {
                 var ordered = group.OrderBy(b => b.FromTime).ToList();
 
-                // The overlap check handles any minutes perfectly now
                 for (int i = 1; i < ordered.Count; i++)
                 {
-                    if (ordered[i].FromTime <= ordered[i - 1].ToTime)
+                    if (ordered[i].FromTime < ordered[i - 1].ToTime)
                         throw new ArgumentException("الفترات الزمنية المحددة متداخلة");
                 }
             }
