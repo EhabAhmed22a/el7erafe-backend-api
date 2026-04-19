@@ -39,9 +39,10 @@ namespace Service
 
         public async Task SendAsync(List<string> userIds, NotificationDto dto)
         {
-            var tasks = userIds.Select(userId => SendAsync(userId, dto));
-
-            await Task.WhenAll(tasks);
+            foreach (var userId in userIds)
+            {
+                await SendAsync(userId, dto);
+            }
         }
 
         private async Task SendPush(string token, NotificationDto dto)
