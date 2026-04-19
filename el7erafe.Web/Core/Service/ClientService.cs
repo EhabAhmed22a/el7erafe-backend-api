@@ -55,378 +55,167 @@ namespace Service
             return result;
         }
 
-        //public async Task<BroadCastServiceRequestDTO> ServiceRequest(ServiceRequestRegDTO regDTO, string userId)
-        //{
-        //    if (regDTO.AllDayAvailability)
-        //    {
-        //        if (regDTO.AvailableFrom.HasValue || regDTO.AvailableTo.HasValue)
-        //            throw new UnprocessableEntityException("عند اختيار 'متاح طوال اليوم'، يجب إرسال حقلي وقت البداية والنهاية فارغين");
-        //    }
-        //    else
-        //    {
-        //        if (!regDTO.AvailableFrom.HasValue || !regDTO.AvailableTo.HasValue)
-        //            throw new UnprocessableEntityException("يجب تحديد وقت البداية والنهاية عندما لا تكون متاحاً طوال اليوم");
-
-        //        var fromTime = regDTO.AvailableFrom.Value;
-        //        var toTime = regDTO.AvailableTo.Value;
-
-        //        if (fromTime == toTime)
-        //            throw new UnprocessableEntityException("وقت البداية والنهاية لا يمكن أن يكونا متطابقين");
-
-        //        TimeSpan duration = toTime - fromTime;
-
-        //        if (duration.TotalHours < 0)
-        //        {
-        //            duration += TimeSpan.FromHours(24);
-        //        }
-
-        //        if (duration.TotalHours > 23)
-        //            throw new UnprocessableEntityException("إذا كنت متاحاً طوال اليوم، الرجاء اختيار 'متاح طوال اليوم'");
-
-        //        if (regDTO.ServiceDate == DateOnly.FromDateTime(DateTime.Today))
-        //        {
-        //            if (fromTime.ToTimeSpan() < DateTime.Now.TimeOfDay)
-        //                throw new UnprocessableEntityException("وقت البداية لا يمكن أن يكون في الماضي");
-        //        }
-        //    }
-
-        //    var client = await clientRepository.GetByUserIdAsync(userId);
-        //    if (client is null)
-        //        throw new ForbiddenAccessException("هذا الإجراء متاح للعملاء فقط");
-
-        //    var city = await cityRepository.GetCityByNameAsync(regDTO.CityName ?? "");
-        //    if (city is null)
-        //        throw new CityNotFoundException(regDTO.CityName ?? "");
-
-        //    var service = await servicesRepository.GetByIdAsync(regDTO.ServiceId);
-        //    if (service is null) throw new TechnicalException();
-
-        //    if (regDTO.TechnicianId is not null)
-        //    {
-        //        var technician = await technicianRepository.GetByIdAsync((int)regDTO.TechnicianId);
-        //        if (technician is null)
-        //            throw new UserNotFoundException("الفني المحدد غير موجود");
-
-        //        // ✅ No extra DB call needed
-        //        if (city.Governorate is null || technician.City.GovernorateId != city.GovernorateId)
-        //            throw new TechnicalException();
-        //    }
-
-        //    int clientId = client.Id;
-        //    if (await serviceRequestRepository.IsServicePending(clientId, regDTO.ServiceId))
-        //        throw new PendingServiceAlreadyRequestedException();
-
-        //    if (await serviceRequestRepository.IsReservationConfirmed(clientId, regDTO.ServiceId))
-        //        throw new ReservationAlreadyConfirmedException();
-
-        //    if (await serviceRequestRepository.IsReservationInProgress(clientId, regDTO.ServiceId))
-        //        throw new ReservationInProgressException();
-
-        //    if (await serviceRequestRepository.IsReservationInPayment(clientId))
-        //        throw new ReservationPendingPaymentException();
-
-        //    var serviceReq = new ServiceRequest()
-        //    {
-        //        Description = regDTO.Description,
-        //        CityId = city.Id,
-        //        ServiceId = regDTO.ServiceId,
-        //        SpecialSign = regDTO.SpecialSign,
-        //        Street = regDTO.Street,
-        //        ServiceDate = regDTO.ServiceDate,
-        //        AvailableFrom = regDTO.AvailableFrom,
-        //        AvailableTo = regDTO.AvailableTo,
-        //        CreatedAt = DateTime.UtcNow,
-        //        ClientId = clientId,
-        //        TechnicianId = regDTO.TechnicianId,
-        //        Status = ServiceReqStatus.Pending
-        //    };
-        //    ServiceRequest? createdRequest = null;
-        //    bool noImages = !(regDTO.Images is not null && regDTO.Images.Count > 0);
-
-        //    if (noImages)
-        //    {
-        //        try
-        //        {
-        //            createdRequest = await serviceRequestRepository.CreateAsync(serviceReq);
-        //        }
-        //        catch
-        //        {
-        //            throw new TechnicalException();
-        //        }
-        //    }
-        //    else
-        //    {
-        //        List<string> uploadedFiles = new List<string>();
-        //        await unitOfWork.BeginTransactionAsync();
-        //        try
-        //        {
-        //            createdRequest = await serviceRequestRepository.CreateAsync(serviceReq);
-
-        //            await blobStorageRepository.UploadMultipleFilesAsync(
-        //               regDTO.Images!,
-        //               "service-requests-images",
-        //               $"{createdRequest.Id}_{Guid.NewGuid()}");
-
-        //            await unitOfWork.CommitTransactionAsync();
-        //        }
-        //        catch
-        //        {
-        //            await unitOfWork.RollbackTransactionAsync();
-
-        //            foreach (var file in uploadedFiles)
-        //            {
-        //                try
-        //                {
-        //                    await blobStorageRepository.DeleteFileAsync(file, "service-requests-images");
-        //                }
-        //                catch { }
-        //            }
-
-        //            throw new TechnicalException();
-        //        }
-        //    }
-        //    List<string> serviceURLs = new List<string>();
-        //    if (!noImages)
-        //    {
-        //        serviceURLs = await blobStorageRepository.GetBlobUrlsWithPrefixAsync("service-requests-images", $"{createdRequest.Id}_");
-        //    }
-
-        //    string? clientImageURL = null;
-        //    if (client.ImageURL is not null)
-        //        clientImageURL = await blobStorageRepository.GetBlobUrlWithSasTokenAsync("client-profilepics", client.ImageURL);
-
-        //    return new BroadCastServiceRequestDTO()
-        //    {
-        //        requestId = createdRequest.Id,
-        //        clientName = client.Name,
-        //        clientImage = clientImageURL,
-        //        day = createdRequest.ServiceDate,
-        //        clientTimeInterval = HelperClass.FormatArabicTimeInterval(createdRequest.AvailableFrom, createdRequest.AvailableTo),
-        //        serviceType = service?.NameAr,
-        //        description = createdRequest.Description,
-        //        serviceImages = serviceURLs,
-        //        governorate = city.Governorate?.NameAr,
-        //        city = city.NameAr,
-        //        street = createdRequest.Street,
-        //        specialSign = createdRequest.SpecialSign,
-        //        From = createdRequest.AvailableFrom,
-        //        To = createdRequest.AvailableTo,
-        //        GovernorateId = city.GovernorateId,
-        //        ServiceId = createdRequest.ServiceId
-        //    };
-        //}
-
         public async Task<BroadCastServiceRequestDTO> ServiceRequest(ServiceRequestRegDTO regDTO, string userId)
         {
-            var fromTime = regDTO.AvailableFrom ?? default;
-            var toTime = regDTO.AvailableTo ?? default;
-            TimeSpan duration = default;
-            dynamic client = null!;
-            dynamic city = null!;
-            dynamic service = null!;
-            dynamic technician = null!;
-            int clientId = 0;
-            ServiceRequest serviceReq = null!;
-            ServiceRequest? createdRequest = null;
-            bool noImages = false;
-            List<string> uploadedFiles = new List<string>();
-            List<string> serviceURLs = new List<string>();
-            string? clientImageURL = null;
-
             if (regDTO.AllDayAvailability)
             {
-                try
-                {
-                    if (regDTO.AvailableFrom.HasValue || regDTO.AvailableTo.HasValue)
-                        throw new UnprocessableEntityException("عند اختيار 'متاح طوال اليوم'، يجب إرسال حقلي وقت البداية والنهاية فارغين");
-                }
-                catch (Exception) { throw new Exception("1"); }
+                if (regDTO.AvailableFrom.HasValue || regDTO.AvailableTo.HasValue)
+                    throw new UnprocessableEntityException("عند اختيار 'متاح طوال اليوم'، يجب إرسال حقلي وقت البداية والنهاية فارغين");
             }
             else
             {
-                try
+                if (!regDTO.AvailableFrom.HasValue || !regDTO.AvailableTo.HasValue)
+                    throw new UnprocessableEntityException("يجب تحديد وقت البداية والنهاية عندما لا تكون متاحاً طوال اليوم");
+
+                var fromTime = regDTO.AvailableFrom.Value;
+                var toTime = regDTO.AvailableTo.Value;
+
+                if (fromTime == toTime)
+                    throw new UnprocessableEntityException("وقت البداية والنهاية لا يمكن أن يكونا متطابقين");
+
+                TimeSpan duration = toTime - fromTime;
+
+                if (duration.TotalHours < 0)
                 {
-                    if (!regDTO.AvailableFrom.HasValue || !regDTO.AvailableTo.HasValue)
-                        throw new UnprocessableEntityException("يجب تحديد وقت البداية والنهاية عندما لا تكون متاحاً طوال اليوم");
+                    duration += TimeSpan.FromHours(24);
                 }
-                catch (Exception) { throw new Exception("2"); }
 
-                try { fromTime = regDTO.AvailableFrom.Value; } catch (Exception) { throw new Exception("3"); }
-
-                try { toTime = regDTO.AvailableTo.Value; } catch (Exception) { throw new Exception("4"); }
-
-                try
-                {
-                    if (fromTime == toTime)
-                        throw new UnprocessableEntityException("وقت البداية والنهاية لا يمكن أن يكونا متطابقين");
-                }
-                catch (Exception) { throw new Exception("5"); }
-
-                try { duration = toTime - fromTime; } catch (Exception) { throw new Exception("6"); }
-
-                try
-                {
-                    if (duration.TotalHours < 0)
-                    {
-                        duration += TimeSpan.FromHours(24);
-                    }
-                }
-                catch (Exception) { throw new Exception("7"); }
-
-                try
-                {
-                    if (duration.TotalHours > 23)
-                        throw new UnprocessableEntityException("إذا كنت متاحاً طوال اليوم، الرجاء اختيار 'متاح طوال اليوم'");
-                }
-                catch (Exception) { throw new Exception("8"); }
+                if (duration.TotalHours > 23)
+                    throw new UnprocessableEntityException("إذا كنت متاحاً طوال اليوم، الرجاء اختيار 'متاح طوال اليوم'");
 
                 if (regDTO.ServiceDate == DateOnly.FromDateTime(DateTime.Today))
                 {
-                    try
-                    {
-                        if (fromTime.ToTimeSpan() < DateTime.Now.TimeOfDay)
-                            throw new UnprocessableEntityException("وقت البداية لا يمكن أن يكون في الماضي");
-                    }
-                    catch (Exception) { throw new Exception("9"); }
+                    if (fromTime.ToTimeSpan() < DateTime.Now.TimeOfDay)
+                        throw new UnprocessableEntityException("وقت البداية لا يمكن أن يكون في الماضي");
                 }
             }
 
-            try { client = await clientRepository.GetByUserIdAsync(userId); } catch (Exception) { throw new Exception("10"); }
+            var client = await clientRepository.GetByUserIdAsync(userId);
+            if (client is null)
+                throw new ForbiddenAccessException("هذا الإجراء متاح للعملاء فقط");
 
-            try { if (client is null) throw new ForbiddenAccessException("هذا الإجراء متاح للعملاء فقط"); } catch (Exception) { throw new Exception("11"); }
+            var city = await cityRepository.GetCityByNameAsync(regDTO.CityName ?? "");
+            if (city is null)
+                throw new CityNotFoundException(regDTO.CityName ?? "");
 
-            try { city = await cityRepository.GetCityByNameAsync(regDTO.CityName ?? ""); } catch (Exception) { throw new Exception("12"); }
-
-            try { if (city is null) throw new CityNotFoundException(regDTO.CityName ?? ""); } catch (Exception) { throw new Exception("13"); }
-
-            try { service = await servicesRepository.GetByIdAsync(regDTO.ServiceId); } catch (Exception) { throw new Exception("14"); }
-
-            try { if (service is null) throw new TechnicalException(); } catch (Exception) { throw new Exception("15"); }
+            var service = await servicesRepository.GetByIdAsync(regDTO.ServiceId);
+            if (service is null) throw new TechnicalException();
 
             if (regDTO.TechnicianId is not null)
             {
-                try { technician = await technicianRepository.GetByIdAsync((int)regDTO.TechnicianId); } catch (Exception) { throw new Exception("16"); }
+                var technician = await technicianRepository.GetByIdAsync((int)regDTO.TechnicianId);
+                if (technician is null)
+                    throw new UserNotFoundException("الفني المحدد غير موجود");
 
-                try { if (technician is null) throw new UserNotFoundException("الفني المحدد غير موجود"); } catch (Exception) { throw new Exception("17"); }
-
-                try { if (city.Governorate is null || technician.City.GovernorateId != city.GovernorateId) throw new TechnicalException(); } catch (Exception) { throw new Exception("18"); }
+                // ✅ No extra DB call needed
+                if (city.Governorate is null || technician.City.GovernorateId != city.GovernorateId)
+                    throw new TechnicalException();
             }
 
-            try { clientId = client.Id; } catch (Exception) { throw new Exception("19"); }
+            int clientId = client.Id;
+            if (await serviceRequestRepository.IsServicePending(clientId, regDTO.ServiceId))
+                throw new PendingServiceAlreadyRequestedException();
 
-            try { if (await serviceRequestRepository.IsServicePending(clientId, regDTO.ServiceId)) throw new PendingServiceAlreadyRequestedException(); } catch (Exception) { throw new Exception("20"); }
+            if (await serviceRequestRepository.IsReservationConfirmed(clientId, regDTO.ServiceId))
+                throw new ReservationAlreadyConfirmedException();
 
-            try { if (await serviceRequestRepository.IsReservationConfirmed(clientId, regDTO.ServiceId)) throw new ReservationAlreadyConfirmedException(); } catch (Exception) { throw new Exception("21"); }
+            if (await serviceRequestRepository.IsReservationInProgress(clientId, regDTO.ServiceId))
+                throw new ReservationInProgressException();
 
-            try { if (await serviceRequestRepository.IsReservationInProgress(clientId, regDTO.ServiceId)) throw new ReservationInProgressException(); } catch (Exception) { throw new Exception("22"); }
+            if (await serviceRequestRepository.IsReservationInPayment(clientId))
+                throw new ReservationPendingPaymentException();
 
-            try { if (await serviceRequestRepository.IsReservationInPayment(clientId)) throw new ReservationPendingPaymentException(); } catch (Exception) { throw new Exception("23"); }
-
-            try
+            var serviceReq = new ServiceRequest()
             {
-                serviceReq = new ServiceRequest()
-                {
-                    Description = regDTO.Description,
-                    CityId = city.Id,
-                    ServiceId = regDTO.ServiceId,
-                    SpecialSign = regDTO.SpecialSign,
-                    Street = regDTO.Street,
-                    ServiceDate = regDTO.ServiceDate,
-                    AvailableFrom = regDTO.AvailableFrom,
-                    AvailableTo = regDTO.AvailableTo,
-                    CreatedAt = DateTime.UtcNow,
-                    ClientId = clientId,
-                    TechnicianId = regDTO.TechnicianId,
-                    Status = ServiceReqStatus.Pending
-                };
-            }
-            catch (Exception) { throw new Exception("24"); }
-
-            try { noImages = !(regDTO.Images is not null && regDTO.Images.Count > 0); } catch (Exception) { throw new Exception("25"); }
+                Description = regDTO.Description,
+                CityId = city.Id,
+                ServiceId = regDTO.ServiceId,
+                SpecialSign = regDTO.SpecialSign,
+                Street = regDTO.Street,
+                ServiceDate = regDTO.ServiceDate,
+                AvailableFrom = regDTO.AvailableFrom,
+                AvailableTo = regDTO.AvailableTo,
+                CreatedAt = DateTime.UtcNow,
+                ClientId = clientId,
+                TechnicianId = regDTO.TechnicianId,
+                Status = ServiceReqStatus.Pending
+            };
+            ServiceRequest? createdRequest = null;
+            bool noImages = !(regDTO.Images is not null && regDTO.Images.Count > 0);
 
             if (noImages)
             {
                 try
                 {
-                    try { createdRequest = await serviceRequestRepository.CreateAsync(serviceReq); } catch (Exception) { throw new Exception("26"); }
+                    createdRequest = await serviceRequestRepository.CreateAsync(serviceReq);
                 }
-                catch (Exception)
+                catch
                 {
-                    try { throw new TechnicalException(); } catch (Exception) { throw new Exception("27"); }
+                    throw new TechnicalException();
                 }
             }
             else
             {
-                try { uploadedFiles = new List<string>(); } catch (Exception) { throw new Exception("28"); }
-
-                try { await unitOfWork.BeginTransactionAsync(); } catch (Exception) { throw new Exception("29"); }
-
+                List<string> uploadedFiles = new List<string>();
+                await unitOfWork.BeginTransactionAsync();
                 try
                 {
-                    try { createdRequest = await serviceRequestRepository.CreateAsync(serviceReq); } catch (Exception) { throw new Exception("30"); }
+                    createdRequest = await serviceRequestRepository.CreateAsync(serviceReq);
 
-                    try
-                    {
-                        await blobStorageRepository.UploadMultipleFilesAsync(
-                            regDTO.Images!,
-                            "service-requests-images",
-                            $"{createdRequest.Id}_{Guid.NewGuid()}");
-                    }
-                    catch (Exception) { throw new Exception("31"); }
+                    await blobStorageRepository.UploadMultipleFilesAsync(
+                       regDTO.Images!,
+                       "service-requests-images",
+                       $"{createdRequest.Id}_{Guid.NewGuid()}");
 
-                    try { await unitOfWork.CommitTransactionAsync(); } catch (Exception) { throw new Exception("32"); }
+                    await unitOfWork.CommitTransactionAsync();
                 }
-                catch (Exception)
+                catch
                 {
-                    try { await unitOfWork.RollbackTransactionAsync(); } catch (Exception) { throw new Exception("33"); }
+                    await unitOfWork.RollbackTransactionAsync();
 
                     foreach (var file in uploadedFiles)
                     {
                         try
                         {
-                            try { await blobStorageRepository.DeleteFileAsync(file, "service-requests-images"); } catch (Exception) { throw new Exception("34"); }
+                            await blobStorageRepository.DeleteFileAsync(file, "service-requests-images");
                         }
                         catch { }
                     }
 
-                    try { throw new TechnicalException(); } catch (Exception) { throw new Exception("35"); }
+                    throw new TechnicalException();
                 }
             }
-
+            List<string> serviceURLs = new List<string>();
             if (!noImages)
             {
-                try { serviceURLs = await blobStorageRepository.GetBlobUrlsWithPrefixAsync("service-requests-images", $"{createdRequest.Id}_"); } catch (Exception) { throw new Exception("36"); }
+                serviceURLs = await blobStorageRepository.GetBlobUrlsWithPrefixAsync("service-requests-images", $"{createdRequest.Id}_");
             }
 
+            string? clientImageURL = null;
             if (client.ImageURL is not null)
-            {
-                try { clientImageURL = await blobStorageRepository.GetBlobUrlWithSasTokenAsync("client-profilepics", client.ImageURL); } catch (Exception) { throw new Exception("37"); }
-            }
+                clientImageURL = await blobStorageRepository.GetBlobUrlWithSasTokenAsync("client-profilepics", client.ImageURL);
 
-            try
+            return new BroadCastServiceRequestDTO()
             {
-                return new BroadCastServiceRequestDTO()
-                {
-                    requestId = createdRequest.Id,
-                    clientName = client.Name,
-                    clientImage = clientImageURL,
-                    day = createdRequest.ServiceDate,
-                    clientTimeInterval = HelperClass.FormatArabicTimeInterval(createdRequest.AvailableFrom, createdRequest.AvailableTo),
-                    serviceType = service?.NameAr,
-                    description = createdRequest.Description,
-                    serviceImages = serviceURLs,
-                    governorate = city.Governorate?.NameAr,
-                    city = city.NameAr,
-                    street = createdRequest.Street,
-                    specialSign = createdRequest.SpecialSign,
-                    From = createdRequest.AvailableFrom,
-                    To = createdRequest.AvailableTo,
-                    GovernorateId = city.GovernorateId,
-                    ServiceId = createdRequest.ServiceId
-                };
-            }
-            catch (Exception) { throw new Exception("38"); }
+                requestId = createdRequest.Id,
+                clientName = client.Name,
+                clientImage = clientImageURL,
+                day = createdRequest.ServiceDate,
+                clientTimeInterval = HelperClass.FormatArabicTimeInterval(createdRequest.AvailableFrom, createdRequest.AvailableTo),
+                serviceType = service?.NameAr,
+                description = createdRequest.Description,
+                serviceImages = serviceURLs,
+                governorate = city.Governorate?.NameAr,
+                city = city.NameAr,
+                street = createdRequest.Street,
+                specialSign = createdRequest.SpecialSign,
+                From = createdRequest.AvailableFrom,
+                To = createdRequest.AvailableTo,
+                GovernorateId = city.GovernorateId,
+                ServiceId = createdRequest.ServiceId
+            };
         }
+
         public async Task DeleteAccount(string userId)
         {
             var client = await clientRepository.GetByUserIdAsync(userId);
