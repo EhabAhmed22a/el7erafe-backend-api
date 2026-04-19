@@ -218,7 +218,6 @@ namespace Service
 
         public async Task<BroadCastServiceRequestDTO> ServiceRequest(ServiceRequestRegDTO regDTO, string userId)
         {
-            // 🔥 HOISTED VARIABLES: Declared up here so they survive the hundreds of try/catch blocks below
             var fromTime = regDTO.AvailableFrom ?? default;
             var toTime = regDTO.AvailableTo ?? default;
             TimeSpan duration = default;
@@ -241,7 +240,7 @@ namespace Service
                     if (regDTO.AvailableFrom.HasValue || regDTO.AvailableTo.HasValue)
                         throw new UnprocessableEntityException("عند اختيار 'متاح طوال اليوم'، يجب إرسال حقلي وقت البداية والنهاية فارغين");
                 }
-                catch (Exception ex) { throw new Exception("1", ex); }
+                catch (Exception) { throw new Exception("1"); }
             }
             else
             {
@@ -250,20 +249,20 @@ namespace Service
                     if (!regDTO.AvailableFrom.HasValue || !regDTO.AvailableTo.HasValue)
                         throw new UnprocessableEntityException("يجب تحديد وقت البداية والنهاية عندما لا تكون متاحاً طوال اليوم");
                 }
-                catch (Exception ex) { throw new Exception("2", ex); }
+                catch (Exception) { throw new Exception("2"); }
 
-                try { fromTime = regDTO.AvailableFrom.Value; } catch (Exception ex) { throw new Exception("3", ex); }
+                try { fromTime = regDTO.AvailableFrom.Value; } catch (Exception) { throw new Exception("3"); }
 
-                try { toTime = regDTO.AvailableTo.Value; } catch (Exception ex) { throw new Exception("4", ex); }
+                try { toTime = regDTO.AvailableTo.Value; } catch (Exception) { throw new Exception("4"); }
 
                 try
                 {
                     if (fromTime == toTime)
                         throw new UnprocessableEntityException("وقت البداية والنهاية لا يمكن أن يكونا متطابقين");
                 }
-                catch (Exception ex) { throw new Exception("5", ex); }
+                catch (Exception) { throw new Exception("5"); }
 
-                try { duration = toTime - fromTime; } catch (Exception ex) { throw new Exception("6", ex); }
+                try { duration = toTime - fromTime; } catch (Exception) { throw new Exception("6"); }
 
                 try
                 {
@@ -272,14 +271,14 @@ namespace Service
                         duration += TimeSpan.FromHours(24);
                     }
                 }
-                catch (Exception ex) { throw new Exception("7", ex); }
+                catch (Exception) { throw new Exception("7"); }
 
                 try
                 {
                     if (duration.TotalHours > 23)
                         throw new UnprocessableEntityException("إذا كنت متاحاً طوال اليوم، الرجاء اختيار 'متاح طوال اليوم'");
                 }
-                catch (Exception ex) { throw new Exception("8", ex); }
+                catch (Exception) { throw new Exception("8"); }
 
                 if (regDTO.ServiceDate == DateOnly.FromDateTime(DateTime.Today))
                 {
@@ -288,40 +287,40 @@ namespace Service
                         if (fromTime.ToTimeSpan() < DateTime.Now.TimeOfDay)
                             throw new UnprocessableEntityException("وقت البداية لا يمكن أن يكون في الماضي");
                     }
-                    catch (Exception ex) { throw new Exception("9", ex); }
+                    catch (Exception) { throw new Exception("9"); }
                 }
             }
 
-            try { client = await clientRepository.GetByUserIdAsync(userId); } catch (Exception ex) { throw new Exception("10", ex); }
+            try { client = await clientRepository.GetByUserIdAsync(userId); } catch (Exception) { throw new Exception("10"); }
 
-            try { if (client is null) throw new ForbiddenAccessException("هذا الإجراء متاح للعملاء فقط"); } catch (Exception ex) { throw new Exception("11", ex); }
+            try { if (client is null) throw new ForbiddenAccessException("هذا الإجراء متاح للعملاء فقط"); } catch (Exception) { throw new Exception("11"); }
 
-            try { city = await cityRepository.GetCityByNameAsync(regDTO.CityName ?? ""); } catch (Exception ex) { throw new Exception("12", ex); }
+            try { city = await cityRepository.GetCityByNameAsync(regDTO.CityName ?? ""); } catch (Exception) { throw new Exception("12"); }
 
-            try { if (city is null) throw new CityNotFoundException(regDTO.CityName ?? ""); } catch (Exception ex) { throw new Exception("13", ex); }
+            try { if (city is null) throw new CityNotFoundException(regDTO.CityName ?? ""); } catch (Exception) { throw new Exception("13"); }
 
-            try { service = await servicesRepository.GetByIdAsync(regDTO.ServiceId); } catch (Exception ex) { throw new Exception("14", ex); }
+            try { service = await servicesRepository.GetByIdAsync(regDTO.ServiceId); } catch (Exception) { throw new Exception("14"); }
 
-            try { if (service is null) throw new TechnicalException(); } catch (Exception ex) { throw new Exception("15", ex); }
+            try { if (service is null) throw new TechnicalException(); } catch (Exception) { throw new Exception("15"); }
 
             if (regDTO.TechnicianId is not null)
             {
-                try { technician = await technicianRepository.GetByIdAsync((int)regDTO.TechnicianId); } catch (Exception ex) { throw new Exception("16", ex); }
+                try { technician = await technicianRepository.GetByIdAsync((int)regDTO.TechnicianId); } catch (Exception) { throw new Exception("16"); }
 
-                try { if (technician is null) throw new UserNotFoundException("الفني المحدد غير موجود"); } catch (Exception ex) { throw new Exception("17", ex); }
+                try { if (technician is null) throw new UserNotFoundException("الفني المحدد غير موجود"); } catch (Exception) { throw new Exception("17"); }
 
-                try { if (city.Governorate is null || technician.City.GovernorateId != city.GovernorateId) throw new TechnicalException(); } catch (Exception ex) { throw new Exception("18", ex); }
+                try { if (city.Governorate is null || technician.City.GovernorateId != city.GovernorateId) throw new TechnicalException(); } catch (Exception) { throw new Exception("18"); }
             }
 
-            try { clientId = client.Id; } catch (Exception ex) { throw new Exception("19", ex); }
+            try { clientId = client.Id; } catch (Exception) { throw new Exception("19"); }
 
-            try { if (await serviceRequestRepository.IsServicePending(clientId, regDTO.ServiceId)) throw new PendingServiceAlreadyRequestedException(); } catch (Exception ex) { throw new Exception("20", ex); }
+            try { if (await serviceRequestRepository.IsServicePending(clientId, regDTO.ServiceId)) throw new PendingServiceAlreadyRequestedException(); } catch (Exception) { throw new Exception("20"); }
 
-            try { if (await serviceRequestRepository.IsReservationConfirmed(clientId, regDTO.ServiceId)) throw new ReservationAlreadyConfirmedException(); } catch (Exception ex) { throw new Exception("21", ex); }
+            try { if (await serviceRequestRepository.IsReservationConfirmed(clientId, regDTO.ServiceId)) throw new ReservationAlreadyConfirmedException(); } catch (Exception) { throw new Exception("21"); }
 
-            try { if (await serviceRequestRepository.IsReservationInProgress(clientId, regDTO.ServiceId)) throw new ReservationInProgressException(); } catch (Exception ex) { throw new Exception("22", ex); }
+            try { if (await serviceRequestRepository.IsReservationInProgress(clientId, regDTO.ServiceId)) throw new ReservationInProgressException(); } catch (Exception) { throw new Exception("22"); }
 
-            try { if (await serviceRequestRepository.IsReservationInPayment(clientId)) throw new ReservationPendingPaymentException(); } catch (Exception ex) { throw new Exception("23", ex); }
+            try { if (await serviceRequestRepository.IsReservationInPayment(clientId)) throw new ReservationPendingPaymentException(); } catch (Exception) { throw new Exception("23"); }
 
             try
             {
@@ -341,30 +340,30 @@ namespace Service
                     Status = ServiceReqStatus.Pending
                 };
             }
-            catch (Exception ex) { throw new Exception("24", ex); }
+            catch (Exception) { throw new Exception("24"); }
 
-            try { noImages = !(regDTO.Images is not null && regDTO.Images.Count > 0); } catch (Exception ex) { throw new Exception("25", ex); }
+            try { noImages = !(regDTO.Images is not null && regDTO.Images.Count > 0); } catch (Exception) { throw new Exception("25"); }
 
             if (noImages)
             {
                 try
                 {
-                    try { createdRequest = await serviceRequestRepository.CreateAsync(serviceReq); } catch (Exception ex) { throw new Exception("26", ex); }
+                    try { createdRequest = await serviceRequestRepository.CreateAsync(serviceReq); } catch (Exception) { throw new Exception("26"); }
                 }
-                catch (Exception originalInnerEx)
+                catch (Exception)
                 {
-                    try { throw new TechnicalException(); } catch (Exception ex) { throw new Exception("27", ex); }
+                    try { throw new TechnicalException(); } catch (Exception) { throw new Exception("27"); }
                 }
             }
             else
             {
-                try { uploadedFiles = new List<string>(); } catch (Exception ex) { throw new Exception("28", ex); }
+                try { uploadedFiles = new List<string>(); } catch (Exception) { throw new Exception("28"); }
 
-                try { await unitOfWork.BeginTransactionAsync(); } catch (Exception ex) { throw new Exception("29", ex); }
+                try { await unitOfWork.BeginTransactionAsync(); } catch (Exception) { throw new Exception("29"); }
 
                 try
                 {
-                    try { createdRequest = await serviceRequestRepository.CreateAsync(serviceReq); } catch (Exception ex) { throw new Exception("30", ex); }
+                    try { createdRequest = await serviceRequestRepository.CreateAsync(serviceReq); } catch (Exception) { throw new Exception("30"); }
 
                     try
                     {
@@ -373,35 +372,35 @@ namespace Service
                             "service-requests-images",
                             $"{createdRequest.Id}_{Guid.NewGuid()}");
                     }
-                    catch (Exception ex) { throw new Exception("31", ex); }
+                    catch (Exception) { throw new Exception("31"); }
 
-                    try { await unitOfWork.CommitTransactionAsync(); } catch (Exception ex) { throw new Exception("32", ex); }
+                    try { await unitOfWork.CommitTransactionAsync(); } catch (Exception) { throw new Exception("32"); }
                 }
-                catch (Exception originalEx)
+                catch (Exception)
                 {
-                    try { await unitOfWork.RollbackTransactionAsync(); } catch (Exception ex) { throw new Exception("33", ex); }
+                    try { await unitOfWork.RollbackTransactionAsync(); } catch (Exception) { throw new Exception("33"); }
 
                     foreach (var file in uploadedFiles)
                     {
                         try
                         {
-                            try { await blobStorageRepository.DeleteFileAsync(file, "service-requests-images"); } catch (Exception ex) { throw new Exception("34", ex); }
+                            try { await blobStorageRepository.DeleteFileAsync(file, "service-requests-images"); } catch (Exception) { throw new Exception("34"); }
                         }
-                        catch { } // Ignoring inner blob delete fails as per original code
+                        catch { }
                     }
 
-                    try { throw new TechnicalException(); } catch (Exception ex) { throw new Exception("35", ex); }
+                    try { throw new TechnicalException(); } catch (Exception) { throw new Exception("35"); }
                 }
             }
 
             if (!noImages)
             {
-                try { serviceURLs = await blobStorageRepository.GetBlobUrlsWithPrefixAsync("service-requests-images", $"{createdRequest.Id}_"); } catch (Exception ex) { throw new Exception("36", ex); }
+                try { serviceURLs = await blobStorageRepository.GetBlobUrlsWithPrefixAsync("service-requests-images", $"{createdRequest.Id}_"); } catch (Exception) { throw new Exception("36"); }
             }
 
             if (client.ImageURL is not null)
             {
-                try { clientImageURL = await blobStorageRepository.GetBlobUrlWithSasTokenAsync("client-profilepics", client.ImageURL); } catch (Exception ex) { throw new Exception("37", ex); }
+                try { clientImageURL = await blobStorageRepository.GetBlobUrlWithSasTokenAsync("client-profilepics", client.ImageURL); } catch (Exception) { throw new Exception("37"); }
             }
 
             try
@@ -426,9 +425,8 @@ namespace Service
                     ServiceId = createdRequest.ServiceId
                 };
             }
-            catch (Exception ex) { throw new Exception("38", ex); }
+            catch (Exception) { throw new Exception("38"); }
         }
-
         public async Task DeleteAccount(string userId)
         {
             var client = await clientRepository.GetByUserIdAsync(userId);
