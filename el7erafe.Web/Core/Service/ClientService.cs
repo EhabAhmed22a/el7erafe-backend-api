@@ -858,36 +858,42 @@ namespace Service
 
             foreach (var schedule in schedules)
             {
-                var workStart = schedule.FromTime;
-                var workEnd = schedule.ToTime;
+                // 🔹 Convert schedule to TimeSpan
+                var workStartTs = NormalizeTime(schedule.FromTime);
+                var workEndTs = NormalizeTime(schedule.ToTime);
 
-                TimeOnly start;
-                TimeOnly end;
+                TimeSpan startTs;
+                TimeSpan endTs;
 
                 if (request.AllDayAvailable)
                 {
-                    start = workStart;
-                    end = workEnd;
+                    startTs = workStartTs;
+                    endTs = workEndTs;
                 }
                 else
                 {
-                    start = workStart > request.FromTime!.Value ? workStart : request.FromTime.Value;
-                    end = workEnd < request.ToTime!.Value ? workEnd : request.ToTime.Value;
+                    var reqStartTs = NormalizeTime(request.FromTime!.Value);
+                    var reqEndTs = NormalizeTime(request.ToTime!.Value);
 
-                    if (start >= end)
+                    startTs = workStartTs > reqStartTs ? workStartTs : reqStartTs;
+                    endTs = workEndTs < reqEndTs ? workEndTs : reqEndTs;
+
+                    // ❗ no overlap
+                    if (startTs >= endTs)
                         continue;
 
-                    if ((end - start) < TimeSpan.FromHours(1))
+                    // ❗ less than 1 hour
+                    if ((endTs - startTs) < TimeSpan.FromHours(1))
                         continue;
                 }
 
-                if (HasFreeSlot(start, end, reservations))
+                if (HasFreeSlot(startTs, endTs, reservations))
                     return true;
             }
 
             return false;
         }
-        private bool HasFreeSlot(TimeOnly start, TimeOnly end, List<Reservation> reservations)
+        private bool HasFreeSlot(TimeSpan start, TimeSpan end, List<Reservation> reservations)
         {
             var current = start;
 
@@ -896,8 +902,12 @@ namespace Service
                 if (r.Offer.WorkFrom == null || r.Offer.WorkTo == null)
                     continue;
 
-                var resStart = r.Offer.WorkFrom.Value < start ? start : r.Offer.WorkFrom.Value;
-                var resEnd = r.Offer.WorkTo.Value > end ? end : r.Offer.WorkTo.Value;
+                var resStart = NormalizeTime(r.Offer.WorkFrom.Value);
+                var resEnd = NormalizeTime(r.Offer.WorkTo.Value);
+
+                // clamp inside range
+                if (resStart < start) resStart = start;
+                if (resEnd > end) resEnd = end;
 
                 if (resStart > current)
                 {
@@ -915,6 +925,14 @@ namespace Service
                 return true;
 
             return false;
+        }
+        private TimeSpan NormalizeTime(TimeOnly time)
+        {
+            // treat 23:59 as end of day (24:00)
+            if (time == new TimeOnly(23, 59))
+                return TimeSpan.FromHours(24);
+
+            return time.ToTimeSpan();
         }
 
         public async Task<string> PayNow(int reservationId)
