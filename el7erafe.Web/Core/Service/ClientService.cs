@@ -15,8 +15,6 @@ using Shared.DataTransferObject.OtpDTOs;
 using Shared.DataTransferObject.ReservationDTOs;
 using Shared.DataTransferObject.ServiceRequestDTOs;
 using Shared.DataTransferObject.UpdateDTOs;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
 namespace Service
 {
