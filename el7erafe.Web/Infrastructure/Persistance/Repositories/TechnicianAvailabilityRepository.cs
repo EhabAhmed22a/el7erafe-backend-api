@@ -105,6 +105,35 @@ namespace Persistance.Repositories
 
             return availableIds;
         }
+
+        public async Task<List<Technician>> GetCandidateTechsForRequestAsync(
+    int serviceId,
+    int govId,
+    WeekDay date,
+    TimeOnly? requestedFrom,
+    TimeOnly? requestedTo,
+    TimeOnly? minimumStartTime)
+        {
+            // 🔥 Start from Technician so we can Include the necessary child tables
+            var query = dbContext.Set<Technician>()
+                .Include(t => t.User)
+                .Include(t => t.Availability)
+                .Include(t => t.ServiceRequests)
+                .Include(t => t.Offers)
+                    .ThenInclude(o => o.Reservation)
+                .Where(t => t.City.GovernorateId == govId && t.ServiceId == serviceId)
+                .AsQueryable();
+
+            // The EF Core First-Pass Filter: Make sure they at least have a shift that fits the raw time constraints
+            query = query.Where(t => t.Availability.Any(a =>
+                (a.DayOfWeek == date || a.DayOfWeek == null) &&
+                (!minimumStartTime.HasValue || a.ToTime > minimumStartTime.Value) &&
+                (!requestedFrom.HasValue || !requestedTo.HasValue || (a.FromTime < requestedTo.Value && a.ToTime > requestedFrom.Value))
+            ));
+
+            return await query.Distinct().ToListAsync();
+        }
+
         public async Task<TechnicianAvailability?> GetByIdAsync(int id)
         {
             return await dbContext.Set<TechnicianAvailability>()

@@ -78,9 +78,21 @@ namespace Service
             {
                 var requestedDay = HelperClass.MapToWeekDay(date.DayOfWeek);
 
-                var availableTechs = await technicianAvailabilityRepository.GetAvailableTechsForRequestAsync(serviceId, govId, requestedDay, from, to, minTime);
+                // 1. Get raw candidate technicians from DB
+                var candidateTechs = await technicianAvailabilityRepository.GetCandidateTechsForRequestAsync(serviceId, govId, requestedDay, from, to, minTime);
 
-                return availableTechs.ToList();
+                var finalAvailableUserIds = new List<string>();
+
+                // 2. Run the gap logic
+                foreach (var tech in candidateTechs)
+                {
+                    if (AvailabilityLogic.IsTechnicianAvailable(tech, date, requestedDay, from, to))
+                    {
+                        finalAvailableUserIds.Add(tech.User.Id);
+                    }
+                }
+
+                return finalAvailableUserIds;
             }
             catch
             {
