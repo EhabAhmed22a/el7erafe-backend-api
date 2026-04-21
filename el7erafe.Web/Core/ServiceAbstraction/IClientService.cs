@@ -28,7 +28,7 @@ namespace ServiceAbstraction
         Task SubmitRatingAsync(int reservationId, int ratingValue, string clientId);
         Task<OtpResponseDTO> ResendOtpForPendingEmail(string userId);
         Task<Client?> GetClientByIdAsync(int clientId);
-        Task<AcceptOfferResultDto> AcceptOffer(int offerId);
+        Task<AcceptOfferResultDto> AcceptOffer(int offerId, string userId);
         Task<DeclineOfferResultDto> DeclineOffer(int offerId);
         Task<List<PreviousReservationsDTO>> GetPreviousReservations(string userId);
     }

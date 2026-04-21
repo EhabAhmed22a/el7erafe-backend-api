@@ -326,7 +326,7 @@ namespace Presentation.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("المستخدم غير موجود");
 
-            var result = await _clientService.AcceptOffer(offerId.offerId);
+            var result = await _clientService.AcceptOffer(offerId.offerId, userId);
 
             await technicianHub.Clients.User(result.AcceptedTechnicianUserId).SendAsync("OfferAccepted",
                 new

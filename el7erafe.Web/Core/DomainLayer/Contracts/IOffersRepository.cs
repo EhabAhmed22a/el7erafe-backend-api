@@ -13,5 +13,6 @@ namespace DomainLayer.Contracts
         Task<List<string>> GetRejectedTechnicianUserIds(int requestId, int acceptedOfferId);
         Task RejectOtherOffers(int requestId, int acceptedOfferId);
         Task RejectOfferAsync(int offerId);
+        Task<int> UpdateAsync(Offer offer);
     }
 }
