@@ -233,5 +233,27 @@ namespace Persistance.Repositories
                 .OrderByDescending(r => r.Offer.ServiceRequest.ServiceDate)
                 .ToListAsync();
         }
+        public async Task<bool> HasReservationConflict(int technicianId, DateOnly day, TimeOnly? from, TimeOnly? to)
+        {
+            if (!from.HasValue || !to.HasValue)
+                return false; 
+
+            return await dbcontext.Reservations
+                .AnyAsync(r =>
+                    r.Offer.TechnicianId == technicianId &&
+                    r.Offer.ServiceRequest.ServiceDate == day &&
+                    (
+                        r.Status == ReservationStatus.Confirmed ||
+                        r.Status == ReservationStatus.InProgress ||
+                        r.Status == ReservationStatus.InPayment
+                    ) &&
+                    r.Offer.WorkFrom.HasValue &&
+                    r.Offer.WorkTo.HasValue &&
+                    (
+                        r.Offer.WorkFrom.Value < to.Value &&
+                        from.Value < r.Offer.WorkTo.Value
+                    )
+                );
+        }
     }
 }

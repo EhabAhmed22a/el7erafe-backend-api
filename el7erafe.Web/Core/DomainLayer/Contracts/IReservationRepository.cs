@@ -24,6 +24,7 @@ namespace DomainLayer.Contracts
         Task<bool> HasActiveInProgressJob(int technicianId);
         Task<List<Reservation>> GetPreviousJobsForTechnicianAsync(int technicianId);
         Task<bool> IsReservationConfirmed(int reservationId);
+        Task<bool> HasReservationConflict(int technicianId, DateOnly day, TimeOnly? from, TimeOnly? to);
         Task SaveChangesAsync();
     }
 }

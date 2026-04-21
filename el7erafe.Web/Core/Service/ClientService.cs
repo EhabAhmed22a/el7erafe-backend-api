@@ -655,25 +655,50 @@ namespace Service
             return await clientRepository.GetByIdAsync(clientId);
         }
 
-        public async Task<AcceptOfferResultDto> AcceptOffer(int offerId)
+        public async Task<AcceptOfferResultDto> AcceptOffer(int offerId, string userId)
         {
             var existing = await reservationRepository.GetByOfferIdAsync(offerId);
 
             if (existing != null)
-                throw new Exception("تم قبول هذا العرض بالفعل");
+                throw new InvalidOperationException("تم قبول هذا العرض بالفعل");
 
             var offer = await offersRepository.GetByIdAsync(offerId);
 
             if (offer == null)
-                throw new Exception("لم يتم العثور على العرض");
+                throw new InvalidOperationException("لم يتم العثور على العرض");
 
             var request = await serviceRequestRepository.GetServiceById(offer.ServiceRequestId);
+            
 
             if (request == null)
-                throw new Exception("لم يتم العثور على طلب الخدمة");
+                throw new InvalidOperationException("لم يتم العثور على طلب الخدمة");
+
+            var user = await CheckUser(userId);
+
+            if (request.ClientId != user.Id)
+                throw new UnauthorizedAccessException("غير مسموح لك بتنفيذ هذا الإجراء");
 
             if (request.Status != ServiceReqStatus.Pending)
-                throw new Exception("تم حجز طلب الخدمة بالفعل");
+                throw new InvalidOperationException("تم حجز طلب الخدمة بالفعل");
+
+            var hasConflict = await reservationRepository.HasReservationConflict(offer.TechnicianId,request.ServiceDate,offer.WorkFrom,offer.WorkTo);
+
+            if (hasConflict)
+            {
+                offer.Status = OfferStatus.Rejected;
+
+                if (request.TechnicianId == null)
+                    await offersRepository.UpdateAsync(offer);
+                else 
+                {
+                    request.Status = ServiceReqStatus.Canceled;
+
+                    await offersRepository.UpdateAsync(offer);
+                    await serviceRequestRepository.UpdateAsync(request);
+                }
+
+                throw new InvalidOperationException("هذا الفني لديه حجز في نفس الوقت");
+            }
 
             request.Status = ServiceReqStatus.Reserved;
             offer.Status = OfferStatus.Accepted;

@@ -118,5 +118,11 @@ namespace Persistance.Repositories
             if (affected == 0)
                 throw new Exception("Offer not found or not pending");
         }
+
+        public async Task<int> UpdateAsync(Offer offer)
+        {
+            dbContext.Offers.Update(offer);
+            return await dbContext.SaveChangesAsync();
+        }
     }
 }
