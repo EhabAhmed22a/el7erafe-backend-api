@@ -1,9 +1,15 @@
-﻿using System.Globalization;
+﻿using DomainLayer.Models.IdentityModule.Enums;
+using System.Globalization;
 
 namespace Service.Helpers
 {
     public static class HelperClass
     {
+        public static WeekDay MapToWeekDay(DayOfWeek dayOfWeek)
+        {
+            return (WeekDay)(((int)dayOfWeek + 1) % 7 + 1);
+        }
+
         public static string? FormatArabicTimeInterval(TimeOnly? from, TimeOnly? to)
         {
             if (from == null || to == null) return null;
