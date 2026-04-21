@@ -113,6 +113,28 @@ namespace Presentation.Controllers
             if (requestRegDTO.TechnicianId.HasValue)
             {
                 var technician = await technicianService.GetTechnicianByIdAsync((int)requestRegDTO.TechnicianId);
+                
+                if (technician is null)
+                    return BadRequest("الفني غير موجود");
+
+                // Validation: Ensure technician is available for the requested day and time
+                var isAvailable = await _clientService.GetAvailableTechniciansAsync(new GetAvailableTechniciansRequest
+                {
+                    ServiceName = newData.serviceType!,
+                    CityName = newData.city!,
+                    Day = newData.day ?? DateOnly.MinValue,
+                    AllDayAvailable = requestRegDTO.AllDayAvailability,
+                    FromTime = requestRegDTO.AvailableFrom,
+                    ToTime = requestRegDTO.AvailableTo,
+                    Sorted = false
+                });
+
+                if (!isAvailable.Any(t => t.Id == technician.Id))
+                {
+                    // If the tech was not in the "Available" list for this specific day/time
+                    return BadRequest("الفني غير متاح في الوقت المحدد");
+                }
+
                 await technicianHub.Clients.User(technician?.User.Id!).SendAsync("ReceiveNewDirectRequest", newData);
                 await notificationService.SendAsync(technician?.User.Id!, new NotificationDto
                 {

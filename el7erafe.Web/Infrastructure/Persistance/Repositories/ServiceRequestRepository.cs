@@ -125,19 +125,38 @@ namespace Persistance.Repositories
                 )
                 .ToListAsync();
 
+            var now = DateTime.UtcNow; // Standardize on UTC or pass from service if needed
+            // However, for time comparisons in TimeOnly, we should align with the system's timezone (Egypt)
+            // Since this is a repository, we'll use a simple comparison or ideally pass the 'now' time.
+            
             var validRequests = potentialRequests.Where(sr =>
             {
-                if (sr.TechnicianId == techId) return true;
-
-                // Map System.DayOfWeek to WeekDay enum values (Saturday=1, Sunday=2, ...)
                 var requestDayMapped = (int)((int)sr.ServiceDate.DayOfWeek + 1) % 7 + 1;
+                var isToday = sr.ServiceDate == DateOnly.FromDateTime(now.AddHours(2)); // Rough Egypt adjustment or just use Today
 
                 return techSchedule.Any(ta =>
-                    (ta.DayOfWeek == null || (int)ta.DayOfWeek == requestDayMapped) &&
-                    ((sr.AvailableFrom == null && sr.AvailableTo == null)
-                        ||
-                        (sr.AvailableFrom <= ta.ToTime && sr.AvailableTo >= ta.FromTime))
-                );
+                {
+                    // 1. Day Match
+                    if (!(ta.DayOfWeek == null || (int)ta.DayOfWeek == requestDayMapped))
+                        return false;
+
+                    // 2. Time Match
+                    if (sr.AvailableFrom == null && sr.AvailableTo == null)
+                    {
+                        // ALL DAY Case: If it's today, tech must have shift time remaining
+                        if (isToday)
+                        {
+                            var currentTime = TimeOnly.FromDateTime(now.AddHours(2));
+                            return ta.ToTime > currentTime;
+                        }
+                        return true;
+                    }
+                    else
+                    {
+                        // Specific Time Case
+                        return sr.AvailableFrom <= ta.ToTime && sr.AvailableTo >= ta.FromTime;
+                    }
+                });
             }).ToList();
 
             return validRequests;
