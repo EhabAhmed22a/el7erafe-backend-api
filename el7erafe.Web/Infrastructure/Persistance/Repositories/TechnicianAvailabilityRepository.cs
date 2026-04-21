@@ -86,13 +86,15 @@ namespace Persistance.Repositories
                 query = query.Where(a => a.ToTime > minimumStartTime.Value);
             }
 
-            // 2. CHECK SPECIFIC TIME REQUESTS (Encapsulation)
+            // 2. CHECK SPECIFIC TIME REQUESTS (Partial Overlap)
             if (requestedFrom.HasValue && requestedTo.HasValue)
             {
                 var fromTime = requestedFrom.Value;
                 var toTime = requestedTo.Value;
 
-                query = query.Where(a => a.FromTime <= fromTime && a.ToTime >= toTime);
+                // Technician is available if their shift starts before the request ends 
+                // AND their shift ends after the request starts.
+                query = query.Where(a => a.FromTime < toTime && a.ToTime > fromTime);
             }
 
             var availableIds = await query

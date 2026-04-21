@@ -889,8 +889,7 @@ namespace Service
                     startTs = workStartTs > reqStartTs ? workStartTs : reqStartTs;
                     endTs = workEndTs < reqEndTs ? workEndTs : reqEndTs;
 
-                    // If request is for today, we already have a check in the beginning of ServiceRequest for specific times, 
-                    // but here we are in GetAvailableTechniciansAsync which might need it too if not handled in controller/dto validation
+                    // If request is for today
                     if (request.Day == DateOnly.FromDateTime(HelperClass.GetEgyptNow()))
                     {
                         var nowTs = HelperClass.GetEgyptNow().TimeOfDay;
