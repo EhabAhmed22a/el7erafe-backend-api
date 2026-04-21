@@ -870,6 +870,18 @@ namespace Service
                 {
                     startTs = workStartTs;
                     endTs = workEndTs;
+
+                    // If request is for today, technician must be available after "Now"
+                    if (request.Day == DateOnly.FromDateTime(HelperClass.GetEgyptNow()))
+                    {
+                        var nowTs = HelperClass.GetEgyptNow().TimeOfDay;
+                        if (nowTs > startTs)
+                            startTs = nowTs;
+
+                        // If the tech's shift already ended or has less than 1 hour remaining from now
+                        if (startTs >= endTs || (endTs - startTs) < TimeSpan.FromHours(1))
+                            continue;
+                    }
                 }
                 else
                 {
@@ -878,6 +890,15 @@ namespace Service
 
                     startTs = workStartTs > reqStartTs ? workStartTs : reqStartTs;
                     endTs = workEndTs < reqEndTs ? workEndTs : reqEndTs;
+
+                    // If request is for today, we already have a check in the beginning of ServiceRequest for specific times, 
+                    // but here we are in GetAvailableTechniciansAsync which might need it too if not handled in controller/dto validation
+                    if (request.Day == DateOnly.FromDateTime(HelperClass.GetEgyptNow()))
+                    {
+                        var nowTs = HelperClass.GetEgyptNow().TimeOfDay;
+                        if (nowTs > startTs)
+                            startTs = nowTs;
+                    }
 
                     // ❗ no overlap
                     if (startTs >= endTs)
