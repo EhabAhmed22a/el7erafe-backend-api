@@ -20,7 +20,7 @@ jobs:
           DELETE FROM UserConnections;
           DELETE FROM ServiceRequests;
           DELETE FROM Notifications;
-          UPDATE Technicians SET ratings = 0;
+          UPDATE Technicians SET Rating = 0;
           PRINT 'Data successfully cleared via standard SQL authentication.';
           EOF
 
