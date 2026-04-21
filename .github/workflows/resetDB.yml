@@ -13,6 +13,9 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       # 1. Log into Azure using OIDC (Passwordless)
       - name: Azure Login
         uses: azure/login@v2
@@ -21,36 +24,24 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      # 2. Request an Access Token specifically for Azure SQL
-      - name: Get Azure SQL Access Token
+      # 2. Write your SQL commands to a temporary file
+      # (The Azure SQL Action requires a file path to execute)
+      - name: Create SQL Script
         run: |
-          TOKEN=$(az account get-access-token --resource https://database.windows.net/ --query accessToken -o tsv)
-          echo "::add-mask::$TOKEN"
-          echo "SQL_TOKEN=$TOKEN" >> $GITHUB_ENV
+          cat << 'EOF' > ./reset_tables.sql
+          SET NOCOUNT ON;
+          DELETE FROM UserTokens;
+          DELETE FROM UserConnections;
+          DELETE FROM ServiceRequests;
+          DELETE FROM Notifications;
+          UPDATE Technicians SET ratings = 0;
+          PRINT 'Data successfully cleared via Entra ID auth.';
+          EOF
 
-      # 3. Quickly install the official mssql-tools18 natively on the runner
-      - name: Install Microsoft SQL Tools
-        run: |
-          curl -sSL https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc
-          curl -sSL https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list | sudo tee /etc/apt/sources.list.d/mssql-release.list
-          sudo apt-get update
-          sudo ACCEPT_EULA=Y apt-get install -y mssql-tools18
-
-      # 4. Run the SQL Command natively using the token
+      # 3. Execute the script using the official Azure action
       - name: Execute SQL script
-        run: |
-          /opt/mssql-tools18/bin/sqlcmd \
-            -S "${{ secrets.DB_SERVER }}" \
-            -d "${{ secrets.DB_NAME }}" \
-            -G \
-            -P "${{ env.SQL_TOKEN }}" \
-            -C \
-            -Q "
-              SET NOCOUNT ON;
-              DELETE FROM UserTokens;
-              DELETE FROM UserConnections;
-              DELETE FROM ServiceRequests;
-              DELETE FROM Notifications;
-              UPDATE Technicians SET ratings = 0;
-              PRINT 'Data successfully cleared via Entra ID auth.';
-            "
+        uses: azure/sql-action@v2.3
+        with:
+          # This connection string tells it to use the OIDC token from Step 1 automatically
+          connection-string: "Server=${{ secrets.DB_SERVER }};Initial Catalog=${{ secrets.DB_NAME }};Authentication=Active Directory Default;Encrypt=True;"
+          path: './reset_tables.sql'
