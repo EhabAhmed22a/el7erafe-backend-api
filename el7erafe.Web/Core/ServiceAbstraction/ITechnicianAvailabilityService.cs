@@ -8,6 +8,6 @@ namespace ServiceAbstraction
         Task<List<TechnicianAvailabilityResponseDto>> GetTechnicianAvailableTimeAsync(string technicianId);
 
         Task<List<TechnicianAvailabilityResponseDto>> CreateScheduleAsync(string technicianId,List<AvailabilityBlockDto> blocks);
-        Task<List<string>> GetAvailableTechnicianByUserIdsAsync(int serviceId, int govId, DateOnly date, TimeOnly? from, TimeOnly? to);
+        Task<List<string>> GetAvailableTechnicianByUserIdsAsync(int serviceId, int govId, DateOnly date, TimeOnly? from, TimeOnly? to, TimeOnly? minTime);
     }
 }

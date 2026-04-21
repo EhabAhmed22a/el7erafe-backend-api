@@ -72,13 +72,13 @@ namespace Service
             }).ToList();
         }
 
-        public async Task<List<string>> GetAvailableTechnicianByUserIdsAsync(int serviceId, int govId, DateOnly date, TimeOnly? from, TimeOnly? to)
+        public async Task<List<string>> GetAvailableTechnicianByUserIdsAsync(int serviceId, int govId, DateOnly date, TimeOnly? from, TimeOnly? to, TimeOnly? minTime)
         {
             try
             {
                 var requestedDay = (WeekDay)date.DayOfWeek;
 
-                var availableTechs = await technicianAvailabilityRepository.GetAvailableTechsForRequestAsync(serviceId, govId, requestedDay, from, to);
+                var availableTechs = await technicianAvailabilityRepository.GetAvailableTechsForRequestAsync(serviceId, govId, requestedDay, from, to, minTime);
 
                 return availableTechs.ToList();
             }

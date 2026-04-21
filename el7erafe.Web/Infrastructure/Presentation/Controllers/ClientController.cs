@@ -44,13 +44,34 @@ namespace Presentation.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("المستخدم غير موجود");
 
+            // 1. Create the request in the DB
             var newData = await _clientService.ServiceRequest(requestRegDTO, userId);
             await clientHub.Clients.User(userId).SendAsync("ReceivePendingRequests", newData);
 
-            var targetTechs = await technicianAvailabilityService.GetAvailableTechnicianByUserIdsAsync(newData.ServiceId, newData.GovernorateId, newData.day ?? DateOnly.MinValue, newData.From, newData.To);
+            // 🔥 2. THE FIX: Calculate the minimum start time to prevent dead shifts!
+            TimeOnly? minStartTime = null;
+
+            // Check if the service is requested for Today
+            if (newData.day.HasValue && newData.day.Value == DateOnly.FromDateTime(DateTime.Now))
+            {
+                // If it's today, technicians MUST be working later than right now
+                minStartTime = TimeOnly.FromDateTime(DateTime.Now);
+            }
+
+            // 3. Search the pool using the new parameter
+            var targetTechs = await technicianAvailabilityService.GetAvailableTechnicianByUserIdsAsync(
+                newData.ServiceId,
+                newData.GovernorateId,
+                newData.day ?? DateOnly.MinValue,
+                newData.From,
+                newData.To,
+                minStartTime // 🎯 Pass it right here!
+            );
+
             if (targetTechs.Any())
             {
                 await technicianHub.Clients.Users(targetTechs).SendAsync("ReceiveNewQuickRequest", newData);
+
                 await notificationService.SendAsync(targetTechs, new NotificationDto
                 {
                     Title = "طلب خدمة جديد",
