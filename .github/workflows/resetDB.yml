@@ -35,11 +35,12 @@ jobs:
       # If you didn't, you need to add the firewall IP steps here before running this.
       - name: Execute SQL script
         run: |
-          docker run --rm mcr.microsoft.com/mssql-tools /opt/mssql-tools/bin/sqlcmd \
+          docker run --rm mcr.microsoft.com/mssql-tools18 /opt/mssql-tools18/bin/sqlcmd \
             -S "${{ secrets.DB_SERVER }}" \
             -d "${{ secrets.DB_NAME }}" \
             -G \
             -P "${{ env.SQL_TOKEN }}" \
+            -C \
             -Q "
               SET NOCOUNT ON;
               DELETE FROM UserTokens;
