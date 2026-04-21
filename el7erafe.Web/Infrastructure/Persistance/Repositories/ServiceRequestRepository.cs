@@ -129,10 +129,11 @@ namespace Persistance.Repositories
             {
                 if (sr.TechnicianId == techId) return true;
 
-                var requestDayInt = (int)sr.ServiceDate.DayOfWeek;
+                // Map System.DayOfWeek to WeekDay enum values (Saturday=1, Sunday=2, ...)
+                var requestDayMapped = (int)((int)sr.ServiceDate.DayOfWeek + 1) % 7 + 1;
 
                 return techSchedule.Any(ta =>
-                    (ta.DayOfWeek == null || (int)ta.DayOfWeek == requestDayInt) &&
+                    (ta.DayOfWeek == null || (int)ta.DayOfWeek == requestDayMapped) &&
                     ((sr.AvailableFrom == null && sr.AvailableTo == null)
                         ||
                         (sr.AvailableFrom <= ta.ToTime && sr.AvailableTo >= ta.FromTime))

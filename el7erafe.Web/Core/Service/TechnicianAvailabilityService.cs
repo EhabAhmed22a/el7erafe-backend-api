@@ -2,6 +2,7 @@
 using DomainLayer.Exceptions;
 using DomainLayer.Models.IdentityModule;
 using DomainLayer.Models.IdentityModule.Enums;
+using Service.Helpers;
 using ServiceAbstraction;
 using Shared.DataTransferObject.TechnicianSchedule;
 
@@ -9,8 +10,7 @@ namespace Service
 {
     public class TechnicianAvailabilityService(
         ITechnicianAvailabilityRepository technicianAvailabilityRepository,
-        ITechnicianRepository technicianRepository,
-        ICityRepository cityRepository) : ITechnicianAvailabilityService
+        ITechnicianRepository technicianRepository) : ITechnicianAvailabilityService
     {
         public async Task<List<TechnicianAvailabilityResponseDto>> CreateScheduleAsync(string technicianId, List<AvailabilityBlockDto> blocks)
         {
@@ -76,7 +76,7 @@ namespace Service
         {
             try
             {
-                var requestedDay = (WeekDay)date.DayOfWeek;
+                var requestedDay = HelperClass.MapToWeekDay(date.DayOfWeek);
 
                 var availableTechs = await technicianAvailabilityRepository.GetAvailableTechsForRequestAsync(serviceId, govId, requestedDay, from, to, minTime);
 

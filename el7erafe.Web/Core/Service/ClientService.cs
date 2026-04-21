@@ -835,10 +835,11 @@ namespace Service
         }
         private bool IsTechnicianAvailable(Technician t, GetAvailableTechniciansRequest request)
         {
+            var requestedDay = HelperClass.MapToWeekDay(request.Day.DayOfWeek);
             var schedules = t.Availability
                 .Where(a =>
                     a.DayOfWeek == null ||
-                    (int)a.DayOfWeek == (int)request.Day.DayOfWeek)
+                    a.DayOfWeek == requestedDay)
                 .ToList();
 
             if (!schedules.Any())
