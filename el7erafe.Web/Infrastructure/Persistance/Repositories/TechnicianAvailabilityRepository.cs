@@ -62,25 +62,39 @@ namespace Persistance.Repositories
             return await dbContext.Set<TechnicianAvailability>().AnyAsync(ta => ta.TechnicianId == technicianId);
         }
 
-        public async Task<ICollection<string>> GetAvailableTechsForRequestAsync(int serviceId, int govId, WeekDay date, TimeOnly? from, TimeOnly? to)
+        public async Task<ICollection<string>> GetAvailableTechsForRequestAsync(
+            int serviceId,
+            int govId,
+            WeekDay date,
+            TimeOnly? requestedFrom,
+            TimeOnly? requestedTo,
+            TimeOnly? minimumStartTime) 
         {
-            var query = dbContext.Set<TechnicianAvailability>()
-                .AsQueryable();
+            var query = dbContext.Set<TechnicianAvailability>().AsQueryable();
 
             query = query.Where(a =>
                 a.Technician.City.Governorate.Id == govId &&
                 a.Technician.ServiceId == serviceId);
 
-
             query = query.Where(a => a.DayOfWeek == date || a.DayOfWeek == null);
 
-            if (from.HasValue && to.HasValue)
+            // 1. FILTER OUT DEAD SHIFTS (The 5 PM vs 1 PM problem)
+            if (minimumStartTime.HasValue)
             {
-                var fromTime = from.Value;
-                var toTime = to.Value;
-                query = query.Where(a => fromTime <= a.ToTime && toTime >= a.FromTime);
+                // The tech's shift MUST end AFTER the request was created.
+                // This instantly kills the 1 PM tech if the request was made at 5 PM!
+                query = query.Where(a => a.ToTime > minimumStartTime.Value);
             }
-           
+
+            // 2. CHECK SPECIFIC TIME REQUESTS (Encapsulation)
+            if (requestedFrom.HasValue && requestedTo.HasValue)
+            {
+                var fromTime = requestedFrom.Value;
+                var toTime = requestedTo.Value;
+
+                query = query.Where(a => a.FromTime <= fromTime && a.ToTime >= toTime);
+            }
+
             var availableIds = await query
                 .Where(a => !string.IsNullOrEmpty(a.Technician.User.Id))
                 .Select(a => a.Technician.User.Id)
@@ -89,7 +103,6 @@ namespace Persistance.Repositories
 
             return availableIds;
         }
-
         public async Task<TechnicianAvailability?> GetByIdAsync(int id)
         {
             return await dbContext.Set<TechnicianAvailability>()
