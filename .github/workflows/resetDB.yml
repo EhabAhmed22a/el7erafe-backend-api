@@ -1,0 +1,51 @@
+name: Secure Reset Database Data (Entra ID)
+
+on:
+  workflow_dispatch:
+
+# CRITICAL: This permissions block is required for OIDC passwordless authentication
+permissions:
+  id-token: write 
+  contents: read  
+
+jobs:
+  reset-db:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # 1. Log into Azure using OIDC (Passwordless)
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID2 }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID2 }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID2 }}
+
+      # 2. Request an Access Token specifically for Azure SQL
+      - name: Get Azure SQL Access Token
+        run: |
+          TOKEN=$(az account get-access-token --resource https://database.windows.net/ --query accessToken -o tsv)
+          # Mask the token so it never accidentally prints in GitHub Action logs
+          echo "::add-mask::$TOKEN"
+          # Save it to environment variables for the next step
+          echo "SQL_TOKEN=$TOKEN" >> $GITHUB_ENV
+
+      # 3. Run the SQL Command using the token
+      # Assuming you checked "Allow Azure services" in the firewall based on our last chat.
+      # If you didn't, you need to add the firewall IP steps here before running this.
+      - name: Execute SQL script
+        run: |
+          docker run --rm mcr.microsoft.com/mssql-tools /opt/mssql-tools/bin/sqlcmd \
+            -S "${{ secrets.DB_SERVER }}" \
+            -d "${{ secrets.DB_NAME }}" \
+            -G \
+            -P "${{ env.SQL_TOKEN }}" \
+            -Q "
+              SET NOCOUNT ON;
+              DELETE FROM UserTokens;
+              DELETE FROM UserConnections;
+              DELETE FROM ServiceRequests;
+              DELETE FROM Notifications;
+              UPDATE Technicians SET ratings = 0;
+              PRINT 'Data successfully cleared via Entra ID auth.';
+            "
